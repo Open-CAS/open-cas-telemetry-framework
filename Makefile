@@ -3,4 +3,4 @@ all:
 
 test:
 	@echo "Make test called"
-	$(error Error)
+#	$(error Error)
