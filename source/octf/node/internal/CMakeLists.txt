@@ -1,0 +1,10 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/MethodHandler.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ClientEventHandler.cpp
+	${CMAKE_CURRENT_LIST_DIR}/MethodHandler.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeShadowEventDispatcher.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ClientEventHandler.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeEventDispatcherNull.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeShadowEventDispatcher.h
+)

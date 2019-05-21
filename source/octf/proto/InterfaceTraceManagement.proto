@@ -1,0 +1,63 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+syntax = "proto3";
+option cc_generic_services = true;
+import "google/protobuf/descriptor.proto";
+import "defs.proto";
+import "opts.proto";
+import "traceDefinitions.proto";
+package octf.proto;
+
+message TracePathPrefix {
+    string prefix = 1 [
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "prefix",
+        (opts_param).cli_desc =
+            "Prefix of trace path, used for specifying a set of traces. "
+            "Used as a complete trace path or as path prefix when ended with "
+            "'*'"
+    ];
+}
+
+// General trace operations, possibly common for both producer and consumer
+service InterfaceTraceManagement {
+    option (opts_interface).cli = true;
+
+    option (opts_interface).version = 1;
+
+    // Lists existing traces consistent with specified trace prefix.
+    // Lists all traces when given no prefix
+    rpc listTraces(TracePathPrefix) returns (TraceList) {
+        option (opts_command).cli = true;
+
+        option (opts_command).cli_short_key = "L";
+
+        option (opts_command).cli_long_key = "list-traces";
+
+        option (opts_command).cli_desc = "Lists available traces";
+    };
+
+    // Removes specified traces.
+    rpc removeTraces(TracePathPrefix) returns (Void) {
+        option (opts_command).cli = true;
+
+        option (opts_command).cli_short_key = "R";
+
+        option (opts_command).cli_long_key = "remove-trace";
+
+        option (opts_command).cli_desc = "Removes specified trace(s)";
+    };
+
+    // Returns summary of common trace parameters.
+    rpc getTraceSummary(TracePath) returns (TraceSummary) {
+        option (opts_command).cli = true;
+
+        option (opts_command).cli_short_key = "G";
+
+        option (opts_command).cli_long_key = "get-trace-summary";
+
+        option (opts_command).cli_desc = "Returns summary of specified trace";
+    };
+}

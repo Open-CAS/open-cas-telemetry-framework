@@ -1,0 +1,17 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/Parameter.h
+	${CMAKE_CURRENT_LIST_DIR}/Parameter.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ParamYesNo.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ParamHelp.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ParamHelp.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamYesNo.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamEnum.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamNumber.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamString.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamString.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IParameter.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamEnum.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ParamFlag.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamNumber.cpp
+)

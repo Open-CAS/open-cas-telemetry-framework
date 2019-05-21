@@ -1,0 +1,12 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/RpcProxy.h
+	${CMAKE_CURRENT_LIST_DIR}/ConnectionContext.h
+	${CMAKE_CURRENT_LIST_DIR}/IClientEventHandler.h
+	${CMAKE_CURRENT_LIST_DIR}/ConnectionContext.cpp
+	${CMAKE_CURRENT_LIST_DIR}/MethodClient.cpp
+	${CMAKE_CURRENT_LIST_DIR}/MethodClient.h
+	${CMAKE_CURRENT_LIST_DIR}/ConnectionContextDeleter.h
+	${CMAKE_CURRENT_LIST_DIR}/ConnectionContextDeleter.cpp
+	${CMAKE_CURRENT_LIST_DIR}/RpcProxy.cpp
+)
