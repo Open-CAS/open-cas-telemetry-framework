@@ -139,7 +139,7 @@ make test
 Feel like making OCTF better? Don't hesitate to submit a pull request!
 You can find more information about our contribution process
 [here](https://github.com/Open-CAS/open-cas-telemetry-framework/blob/master/CONTRIBUTING.md).
-In case of any questions feel free to contact [maintainers](mailto:mariusz.barczak@intel.com,tomasz.rybicki@intel.com).
+In case of any questions feel free to contact [maintainers](mailto:mariusz.barczak@intel.com;tomasz.rybicki@intel.com).
 
 <a id="related_projects"></a>
 
@@ -149,7 +149,7 @@ Please explore related projects:
 the Linux tool for advanced IO tracing that utilizes OCTF
 * [Open CAS Framework](https://github.com/Open-CAS/ocf) - high performance block
 storage caching meta-library
-* [Open CAS Linux](https://github.com/Open-CAS/ocf) - Linux block storage cache
+* [Open CAS Linux](https://github.com/Open-CAS/open-cas-linux) - Linux block storage cache
 
 <a id="notice"></a>
 
