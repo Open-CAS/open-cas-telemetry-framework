@@ -1,0 +1,59 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+syntax = "proto3";
+package octf.proto;
+option cc_generic_services = true;
+import "defs.proto";
+
+message MethodResult {
+    // Method result
+    ResultCode code = 1;
+
+    // Message in case of error
+    string errorMessage = 2;
+}
+
+message PacketMethodRequest {
+    // Node path to node on which this method shell be executed
+    NodePath path = 1;
+
+    // Name of interface (proto service) to be used for calling method
+    InterfaceId interface = 2;
+
+    // ID of Method from interface (proto service)
+    int32 mid = 3;
+
+    // Sequence ID for particular method call. For a connection
+    // (e.g. client - plug-in), each call of a method has to have unique
+    // SID. On the basis of this SID particular method response is matched with
+    // particular method call
+    uint32 sid = 4;
+
+    // Method request (input parameter) payload
+    bytes request = 5;
+}
+
+message PacketMethodResponse {
+    // ID of Method from interface (proto service)
+    int32 mid = 3;
+
+    // Reference SID which correlates this particular method response
+    // with particular method call
+    uint32 ref_sid = 4;
+
+    // Method response (output parameter) payload
+    bytes response = 5;
+
+    // Method execution result
+    MethodResult result = 6;
+}
+
+message Packet {
+    oneof what {
+        PacketMethodRequest methodRequest = 1;
+
+        PacketMethodResponse methodResponse = 2;
+    }
+}

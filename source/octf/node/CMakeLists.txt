@@ -1,0 +1,18 @@
+add_subdirectory(events)
+add_subdirectory(internal)
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/NodeShadow.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeClient.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeServer.h
+	${CMAKE_CURRENT_LIST_DIR}/INode.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeId.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeGeneric.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeServer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeClient.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeId.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeShadow.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeBase.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeGeneric.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeBase.cpp
+)

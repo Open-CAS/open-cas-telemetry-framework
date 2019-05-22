@@ -1,0 +1,95 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+syntax = "proto3";
+option cc_generic_services = true;
+import "google/protobuf/descriptor.proto";
+import "defs.proto";
+import "opts.proto";
+package octf.proto;
+
+// Tracing state definition
+enum TraceState {
+    option (opts_enum_param).cli_desc = "Status of trace collecting";
+
+    UNDEFINED = 0 [
+        (opts_enumval).cli_desc = "Not valid state",
+        (opts_enumval).cli_switch = "UNDEFINED"
+    ];
+
+    NOT_STARTED = 1 [
+        (opts_enumval).cli_desc = "No trace collecting has been triggered",
+        (opts_enumval).cli_switch = "NOT_STARTED"
+    ];
+
+    INITIALIZING = 2 [
+        (opts_enumval).cli_desc = "Initializing trace collection",
+        (opts_enumval).cli_switch = "INITIALIZING"
+    ];
+
+    RUNNING = 3 [
+        (opts_enumval).cli_desc = "Traces are currently being collected",
+        (opts_enumval).cli_switch = "RUNNING"
+    ];
+
+    COMPLETE = 4 [
+        (opts_enumval).cli_desc = "Successfully completed collecting traces",
+        (opts_enumval).cli_switch = "COMPLETE"
+    ];
+
+    ERROR = 5 [
+        (opts_enumval).cli_desc = "Couldn't successfully collect traces",
+        (opts_enumval).cli_switch = "ERROR"
+    ];
+}
+
+message TracePath {
+    // Path indicating specific trace (set of files associated with single run
+    // of start-stop tracing)
+    string tracePath = 1 [
+        (opts_param).cli_required = true,
+        (opts_param).cli_long_key = "path",
+        (opts_param).cli_desc = "Path specifying trace"
+    ];
+}
+
+message TraceListItem {
+    // Path to trace
+    string tracePath = 1;
+
+    // State of trace
+    TraceState state = 2;
+}
+
+message TraceList {
+    repeated TraceListItem trace = 1;
+}
+
+message TraceSummary {
+    string tracePath = 1 [ (opts_param).cli_desc = "Trace path" ];
+
+    TraceState state = 2 [ (opts_param).cli_desc = "Trace status" ];
+
+    NodePath sourceNode = 3
+        [ (opts_param).cli_desc = "Source which created trace." ];
+
+    string traceStartDateTime = 4
+        [ (opts_param).cli_desc =
+              "Date and time of starting trace. Format: dd-mm-yyyy hh:mm" ];
+
+    int64 traceDuration = 5
+        [ (opts_param).cli_desc = "Duration of running trace (in seconds)" ];
+
+    int32 traceSize = 6
+        [ (opts_param).cli_desc = "Size of the trace file (in MiB)" ];
+
+    int64 tracedEvents = 7
+        [ (opts_param).cli_desc = "Number of traced events" ];
+
+    int64 droppedEvents = 8
+        [ (opts_param).cli_desc = "Number of dropped events" ];
+
+    int64 queueCount = 9 [ (opts_param).cli_desc = "Number of IO queues" ];
+}

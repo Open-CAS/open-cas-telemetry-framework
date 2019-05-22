@@ -1,0 +1,25 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+syntax = "proto3";
+option cc_generic_services = true;
+import "defs.proto";
+import "opts.proto";
+package octf.proto;
+
+message ChildrenList {
+    repeated NodeId child = 1;
+}
+
+message InterfaceList {
+    repeated InterfaceId interface = 1;
+}
+
+service InterfaceIdentification {
+    rpc getNodeId(Void) returns (NodeId);
+
+    rpc getChildren(Void) returns (ChildrenList);
+
+    rpc getInterfaces(Void) returns (InterfaceList);
+}

@@ -1,0 +1,11 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/INodeEventHandler.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeEventGeneric.h
+	${CMAKE_CURRENT_LIST_DIR}/INodeEvent.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeEventHandlerGeneric.h
+	${CMAKE_CURRENT_LIST_DIR}/INodeEventDispatcher.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeShadowEvents.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeEventFilter.h
+	${CMAKE_CURRENT_LIST_DIR}/NodeEventHandlerFunction.h
+)

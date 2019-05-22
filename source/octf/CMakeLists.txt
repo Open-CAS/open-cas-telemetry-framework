@@ -1,0 +1,9 @@
+add_subdirectory(cli)
+add_subdirectory(communication)
+add_subdirectory(interface)
+add_subdirectory(node)
+add_subdirectory(plugin)
+add_subdirectory(trace)
+add_subdirectory(socket)
+add_subdirectory(utils)
+

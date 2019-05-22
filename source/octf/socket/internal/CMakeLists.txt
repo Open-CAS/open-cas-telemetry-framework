@@ -1,0 +1,12 @@
+add_subdirectory(unixsocket)
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachineServer.h
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachine.h
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachineClient.h
+	${CMAKE_CURRENT_LIST_DIR}/Packetizer.h
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachineServer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachineClient.cpp
+	${CMAKE_CURRENT_LIST_DIR}/SocketManagerStateMachine.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Packetizer.cpp
+)

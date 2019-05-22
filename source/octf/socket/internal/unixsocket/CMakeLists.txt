@@ -1,0 +1,9 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/Client.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Client.h
+	${CMAKE_CURRENT_LIST_DIR}/Connection.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Connection.h
+	${CMAKE_CURRENT_LIST_DIR}/Server.h
+	${CMAKE_CURRENT_LIST_DIR}/Server.cpp
+)

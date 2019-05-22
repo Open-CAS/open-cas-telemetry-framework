@@ -1,0 +1,141 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+syntax = "proto3";
+package octf.proto;
+import "google/protobuf/descriptor.proto";
+
+// Extended options for interfaces
+message OptsInterface {
+    // Indicates if given interface shall be accessible via CLI
+    bool cli = 1;
+
+    // Defines version of interface, if missed, version is set to 0 by default
+    uint32 version = 2;
+}
+
+message OptsCommand {
+    // indicates if given method can be executed via CLI
+    bool cli = 1;
+
+    // defines short key command switch (i.e. -X)
+    // allowed characters are: [a-zA-Z]
+    // char H not allowed, dedicated for printing help
+    // it shall be unique across all interfaces for particular node
+    string cli_short_key = 2;
+
+    // defines long key command switch (i.e. --command-long-key)
+    // allowed characters are: [a-zA-Z] and "-"
+    // "help" not allowed, dedicated for printing help
+    // it shall be unique across all interfaces for particular node
+    string cli_long_key = 3;
+
+    // defines command description displayed when user invokes help
+    string cli_desc = 4;
+}
+
+// specifies extended options for number parameter
+message OptsParamNum {
+    // specifies minimum value of number parameter
+    int64 min = 1;
+
+    // specifies maximum value of number parameter
+    int64 max = 2;
+
+    // specifies default value of number parameter
+    int64 default_value = 3;
+}
+
+// specifies extended options for string parameter
+message OptsParamString {
+    // specifies default value of string parameter
+    string default_value = 1;
+}
+
+message OptsEnumValue {
+    // defines CLI switch for selecting given enumerator value in terminal
+    string cli_switch = 1;
+
+    // defines enumerator value description (full name) used for printing help
+    string cli_desc = 2;
+
+    // Enumerator value
+    int32 value = 3;
+}
+
+message OptsParamEnum {
+    // Specifies default value of enumerator parameter
+    int32 default_value = 1;
+
+    // Reserved, describes enumerator values, set by framework
+    repeated OptsEnumValue enum_value = 2;
+
+    // Type name of enumerator
+    string enum_name = 3;
+}
+
+message OptsParamMessage {
+    // Name of the message
+    string message_name = 1;
+}
+
+message OptsParam {
+    // configures parameters as required and user has to set it in terminal
+    bool cli_required = 1;
+
+    // defines short key parameter switch (i.e. -X)
+    // allowed characters are: [a-zA-Z]
+    // char H not allowed, dedicated for printing help
+    string cli_short_key = 2;
+
+    // defines long key command switch (i.e. --command-long-key)
+    // allowed characters are: [a-zA-Z] and "-"
+    // "help" not allowed, dedicated for printing help
+    string cli_long_key = 3;
+
+    // defines command description displayed when user invokes help
+    string cli_desc = 4;
+
+    // Name of the field - used for output description
+    string field_name = 5;
+
+    // Is the parameter repeated
+    bool is_repeated = 6;
+
+    // defines specific options for different types (number, string, etc...)
+    oneof cli_param {
+        OptsParamNum cli_num = 100; // options for number parameter
+
+        OptsParamString cli_str = 101; // options for string parameter
+
+        OptsParamEnum cli_enum = 102; // options for enumerator parameter
+
+        OptsParamMessage cli_msg = 103; // options for message parameter
+    };
+}
+
+// When extending option, for new options, select non-existing field id
+extend google.protobuf.ServiceOptions {
+    OptsInterface opts_interface = 50000;
+}
+
+// When extending option, for new options, select non-existing field id
+extend google.protobuf.MethodOptions {
+    OptsCommand opts_command = 50000;
+}
+
+// When extending option, for new options, select non-existing field id
+extend google.protobuf.FieldOptions {
+    OptsParam opts_param = 50000;
+}
+
+// When extending option, for new options, select non-existing field id
+extend google.protobuf.EnumValueOptions {
+    OptsEnumValue opts_enumval = 50000;
+}
+
+// When extending option, for new options, select non-existing field id
+extend google.protobuf.EnumOptions {
+    OptsParam opts_enum_param = 50000;
+}

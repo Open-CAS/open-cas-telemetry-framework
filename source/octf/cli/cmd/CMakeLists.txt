@@ -1,0 +1,14 @@
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/Command.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CmdHelp.h
+	${CMAKE_CURRENT_LIST_DIR}/CmdVersion.h
+	${CMAKE_CURRENT_LIST_DIR}/CmdVersion.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CmdHelp.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CommandProtobufLocal.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CommandProtobuf.h
+	${CMAKE_CURRENT_LIST_DIR}/Command.h
+	${CMAKE_CURRENT_LIST_DIR}/CommandProtobuf.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ICommand.h
+	${CMAKE_CURRENT_LIST_DIR}/CommandProtobufLocal.h
+)
