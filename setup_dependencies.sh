@@ -45,6 +45,15 @@ function detect_distribution ()
         fi
     fi
 
+    if [ -f /etc/os-release ]
+    then
+        if ( cat /etc/os-release | grep "Ubuntu 18" &>/dev/null )
+        then
+            echo UBUNTU18
+            return 0
+        fi
+    fi
+
     return 1
 }
 
@@ -108,6 +117,18 @@ function setup_rhel7 ()
     setup_protocol_buffer
 }
 
+function setup_ubuntu18 ()
+{
+    info "Setup google test"
+    rm -rf build/gtest
+    mkdir -p build/gtest
+    pushd build/gtest
+    cmake /usr/src/gtest && \
+    make -j$(nproc) && \
+    make install -j$(nproc)
+    check_result $? "Cannot setup google test"
+}
+
 DISTRO=$(detect_distribution)
 PACKAGES=""
 INSTALLER=""
@@ -120,6 +141,13 @@ case ${DISTRO} in
         curl make gcc-c++ unzip"
     INSTALLER="yum"
     DISTRO_SETUP=setup_rhel7
+    ;;
+"UBUNTU18")
+    info "Ubuntu 18 detected"
+    PACKAGES="cmake autoconf automake libtool curl make g++ unzip
+        libprotobuf-dev protobuf-compiler libgtest-dev"
+    INSTALLER="apt-get"
+    DISTRO_SETUP=setup_ubuntu18
     ;;
 *)
     error "Unknown linux distribution"
