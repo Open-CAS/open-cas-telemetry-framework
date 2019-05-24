@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_TRACE_PARSER_TRACEEVENTHANDLERJSONPRINTER_H
 
 #include <google/protobuf/util/json_util.h>
+#include <iostream>
 #include <octf/trace/parser/TraceEventHandler.h>
 
 namespace octf {
