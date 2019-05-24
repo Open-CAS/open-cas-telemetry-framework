@@ -7,10 +7,10 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <third_party/safestringlib.h>
 #include <unistd.h>
 #include <algorithm>
 #include <iostream>
-
 #include <octf/interface/internal/FileTraceSerializer.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/ProtoConverter.h>
@@ -67,7 +67,13 @@ bool FileTraceSerializer::close() {
 bool FileTraceSerializer::serialize(const void *blob, uint32_t size) {
     auto buffer = getBuffer(size);
 
-    memcpy(buffer, blob, size);
+    int64_t destSize = m_size - (m_dataOffset - m_fileOffset);
+    if (destSize < 0) {
+        Exception("File trace serializer buffer error");
+    }
+
+    memcpy_s(buffer, destSize, blob, size);
+
     moveDataPointer(size);
 
     return true;

@@ -10,6 +10,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <third_party/safestringlib.h>
 #include <octf/socket/internal/unixsocket/Connection.h>
 #include <octf/socket/internal/unixsocket/Server.h>
 
@@ -57,7 +58,7 @@ bool Server::open() {
     }
 
     // Prepare address path
-    memset(&unaddr, 0, sizeof(unaddr));
+    memset_s(&unaddr, sizeof(unaddr), 0);
     unaddr.sun_family = AF_UNIX;
     strncpy(unaddr.sun_path, m_address.c_str(), sizeof(unaddr.sun_path) - 1);
 
@@ -100,7 +101,7 @@ SocketConnectionShRef Server::listen() {
 
     struct sockaddr_un clntUnixAddr;
     socklen_t clt_unaddr_len = 0;
-    memset(&clntUnixAddr, 0, sizeof(struct sockaddr_un));
+    memset_s(&clntUnixAddr, sizeof(struct sockaddr_un), 0);
 
     int clntfd =
             accept(m_fd, (struct sockaddr *) &clntUnixAddr, &clt_unaddr_len);
