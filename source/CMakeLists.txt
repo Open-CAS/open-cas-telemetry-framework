@@ -3,10 +3,13 @@ set(srcDir ${CMAKE_CURRENT_SOURCE_DIR}/octf)
 set(buildDir ${CMAKE_CURRENT_BINARY_DIR}/octf)
 
 add_library(octf SHARED ""
-	 $<TARGET_OBJECTS:protooctf>)
+	 $<TARGET_OBJECTS:protooctf>
+	 $<TARGET_OBJECTS:safestringlib>
+)
 set(OCTF_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/octf/proto)
 add_subdirectory(octf)
 add_subdirectory(octf/proto)
+add_subdirectory(third_party)
 
 # TODO enable examples compilation
 # add_subdirectory(examples)
@@ -21,7 +24,8 @@ target_include_directories(octf
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
-	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>)
+	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
+	)
 # Specify libraries to link - specifies dependencies
 # and allows valid concurrent build
 target_link_libraries(octf PUBLIC pthread)
