@@ -46,6 +46,12 @@ To build OCTF, the following tools are needed:
 * Google Tests for unit tests
 * CMake 3.1 or above
 
+> **NOTE:**  You can use setup dependencies script to install above tools.
+> 
+~~~{.sh}
+sudo ./setup_dependencies.sh
+~~~
+
 Building command is:
 
 ~~~{.sh}
