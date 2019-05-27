@@ -125,7 +125,7 @@ function setup_ubuntu18 ()
 
     info "Setup google test"
 
-    rm -rf local "${build_dir}"
+    rm -rf "${build_dir}"
     mkdir -p "${build_dir}"
 
     pushd "${build_dir}"
@@ -134,6 +134,7 @@ function setup_ubuntu18 ()
     make install -j$(nproc)
     check_result $? "Cannot setup google test"
 
+    popd
     rm -rf "${build_dir}"
 }
 
