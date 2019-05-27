@@ -3,11 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <memory>
 #include <vector>
 #include <octf/cli/CLIUtils.h>
