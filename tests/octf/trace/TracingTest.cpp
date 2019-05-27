@@ -207,7 +207,7 @@ TEST_F(TracingTest, PushOnePopOne) {
     int result;
     int i = 0;
 
-    list<Event> pushedEvents, readEvents;
+    list<Event> pushedEvents, popEvents;
 
     for (i = 0; i < BUFFER_SIZE / MAX_EVENT_SIZE * 2048; i++) {
         uint32_t size = randomDistribution(randomGenerator) % MAX_EVENT_SIZE;
@@ -228,17 +228,17 @@ TEST_F(TracingTest, PushOnePopOne) {
         result = octf_trace_pop(m_traceConsumer, content, &size);
         if (0 == result) {
             Event e(content, size);
-            readEvents.push_back(e);
+            popEvents.push_back(e);
         } else {
             FAIL();
         }
     }
 
     // Check if number of events is equal in input and output list
-    ASSERT_EQ(pushedEvents.size(), readEvents.size());
+    ASSERT_EQ(pushedEvents.size(), popEvents.size());
 
     // Check content of events
-    EXPECT_TRUE(pushedEvents == readEvents);
+    EXPECT_TRUE(pushedEvents == popEvents);
 
     EXPECT_EQ(1, octf_trace_is_empty(m_traceProducer));
     EXPECT_EQ(1, octf_trace_is_empty(m_traceConsumer));
@@ -590,6 +590,10 @@ private:
 };
 
 TEST_F(TracingMultiThreadTest, PushManyPopMany) {
+    run(1, 1);
+}
+
+TEST_F(TracingMultiThreadTest, OneProducerOneConsumer) {
     run(1, 1);
 }
 
