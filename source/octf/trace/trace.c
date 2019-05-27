@@ -113,7 +113,7 @@ static int _init_ring(octf_trace_t trace, void *mempool, size_t size,
         trace->ring_buffer = mempool + p_hdr_size;
     }
 
-    // Set ring size considering trace aligned
+    // Set ring size considering trace alignment
     trace->ring_size = size;
     trace->ring_size /= TRACE_ALIGNMENT;
     trace->ring_size *= TRACE_ALIGNMENT;
@@ -157,7 +157,7 @@ static int _init_consumer(struct octf_trace *trace, void *buffer,
         return -EINVAL;
     }
 
-    // Check if producer and customer are created with external headers or nut
+    // Check if producer and customer are created with external headers or not
     if (!!env_atomic64_read(&trace->phdr->has_chdr) != !!hdr) {
         return -EINVAL;
     }
@@ -326,7 +326,6 @@ static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
     rdp = env_atomic64_read(&trace->chdr->rd_ptr);
 
     // First allocate space for trace header
-
     if (sizeof(*hdr) > _get_continuous_space(trace, rdp, wrp)) {
         goto END;
     }
@@ -340,16 +339,16 @@ static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
     hdr = (struct trace_event_hdr*)(trace->ring_buffer + wrp);
     wrp = _move_ptr(trace, wrp, sizeof(*hdr));
 
-    // Allocate continues space for trace data
+    // Allocate continuous space for trace data
     _size = TRACE_ALIGN(size);
     continuous = _get_continuous_space(trace, rdp, wrp);
     if (_size > continuous) {
         if (_is_wrap(rdp, wrp) && (rdp != 0)) {
             // We are at the end of circular buffer and not able to find enough
-            // space at it. So will move pointer at the beginning of ring buffer
-            // and check if there is enough space for trace data.
+            // space in it. So we will move pointer at the beginning of ring
+            // buffer and check if there is enough space for trace data.
             wrp = _move_ptr(trace, wrp, continuous);
-            // No write pointer pointer has to be zero
+            // Now write pointer pointer has to be zero
             ENV_BUG_ON(0 != wrp);
 
             if (_size > _get_continuous_space(trace, rdp, wrp)) {
@@ -357,7 +356,7 @@ static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
                 goto END;
             }
         } else {
-            // No enough space for trace data, fail trace allocation
+            // Not enough space for trace data, fail trace allocation
             goto END;
         }
     }
