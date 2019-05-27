@@ -10,6 +10,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <third_party/safestringlib.h>
 #include <octf/socket/internal/unixsocket/Connection.h>
 
 using namespace std;
@@ -27,7 +28,7 @@ SocketConnectionShRef Client::connect() {
     struct sockaddr_un srvAddr;
 
     // Initialize address
-    memset(&srvAddr, 0, sizeof(struct sockaddr_un));
+    memset_s(&srvAddr, sizeof(struct sockaddr_un), 0);
 
     // Open stream and get file descriptor
     clntfd = socket(AF_UNIX, SOCK_STREAM, 0);
