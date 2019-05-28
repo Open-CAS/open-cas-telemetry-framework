@@ -6,8 +6,6 @@
 #ifndef SOURCE_OCTF_TRACE_INTERNAL_TRACE_ENV_USR_H
 #define SOURCE_OCTF_TRACE_INTERNAL_TRACE_ENV_USR_H
 
-// TODO (mbarczak) synchronize environment definition with latest CAS
-
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
@@ -15,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <third_party/safestringlib.h>
 
 #ifndef MIN
 #define MIN(x, y)                \
@@ -95,7 +94,7 @@ static inline void *env_zalloc(size_t size) {
     void *ptr = malloc(size);
 
     if (ptr)
-        memset(ptr, 0, size);
+        memset_s(ptr, size, 0);
 
     return ptr;
 }
