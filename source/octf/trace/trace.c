@@ -287,13 +287,12 @@ static int _try_lock_wr(octf_trace_t trace) {
     uint32_t try = 0;
 
     do {
-        // Try lock for reading event
-        lock = env_atomic64_cmpxchg(&trace->phdr->wr_lock, 0, 1);
-
         if (try++ > 128) {
             return -EBUSY;
         }
 
+        // Try lock for reading event
+        lock = env_atomic64_cmpxchg(&trace->phdr->wr_lock, 0, 1);
     } while (lock != 0);
 
     return 0;
@@ -471,7 +470,7 @@ static int _try_lock_rd(octf_trace_t trace) {
     int lock = env_atomic64_cmpxchg(&trace->chdr->rd_lock, 0, 1);
 
     if (lock != 0) {
-        // Other thread took lock, return
+        // Other thread took lock, return busy
         return -EBUSY;
     }
 
