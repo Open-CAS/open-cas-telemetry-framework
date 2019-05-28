@@ -130,16 +130,16 @@ static int _init_producer(struct octf_trace *trace, void *buffer,
         return result;
     }
 
-    //  Zero buffer
+    //  Zero buffers
     memset_s(buffer, size, 0);
+    if (hdr) {
+        memset_s(hdr, sizeof(*hdr), 0);
+    }
 
     trace->mode = octf_trace_open_mode_producer;
     env_atomic64_set(&trace->phdr->magic, TRACE_MAGIC_BUFFER);
     env_atomic64_set(&trace->phdr->version, TRACE_VER);
     env_atomic64_set(&trace->phdr->has_chdr, NULL != hdr);
-
-    // Move read pointer before write
-    env_atomic64_set(&trace->chdr->rd_ptr, trace->ring_size - 1);
 
     return 0;
 }
@@ -242,15 +242,13 @@ static uint64_t _get_continuous_space(struct octf_trace *trace,
 {
     uint64_t space = 0;
 
-    if (wrp > rdp) {
+    if (wrp >= rdp) {
         space = trace->ring_size - wrp;
-        if (0 == rdp) {
+        if (!rdp) {
             space--;
         }
-    } else if (rdp > wrp){
+    } else  {
         space = rdp - wrp - 1;
-    } else {
-        ENV_BUG();
     }
 
     return space;
@@ -261,9 +259,9 @@ static uint64_t _get_free_space(struct octf_trace *trace, uint64_t rdp,
 {
     uint64_t space;
 
-    if (wrp > rdp) {
+    if (wrp >= rdp) {
         space = trace->ring_size - (wrp - rdp);
-    } else if (rdp >= wrp){
+    } else {
         space = rdp - wrp;
     }
 
@@ -321,7 +319,9 @@ static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
         return NULL;
     }
 
-    // Check if buffer has enough space for writing this event
+    // Check if ring buffer has enough space for writing this event (event
+    // header + event data)
+
     wrp = env_atomic64_read(&trace->phdr->wr_ptr);
     rdp = env_atomic64_read(&trace->chdr->rd_ptr);
 
@@ -402,7 +402,7 @@ int octf_trace_push(octf_trace_t trace, const void *event, const uint32_t size)
         return -ENOSPC;
     }
 
-    if (false == _integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
         // Inconsistent trace state, trying to access out of ring buffer
         // Invalidate trace and stop pushing and popping
         env_atomic64_set(&trace->phdr->magic, 0);
@@ -423,28 +423,9 @@ int octf_trace_push(octf_trace_t trace, const void *event, const uint32_t size)
 // POP
 //******************************************************************************
 
-bool _is_empty(struct octf_trace *trace, uint64_t rdp, uint64_t wrp)
+bool _is_empty(uint64_t rdp, uint64_t wrp)
 {
-    rdp++;
-    if (rdp == trace->ring_size) {
-        rdp = 0;
-    }
-
     return rdp == wrp;
-}
-
-static void *_rd_pos(struct octf_trace *trace)
-{
-    uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr) + 1;
-    void *pos;
-
-    if (ptr_rd == trace->ring_size) {
-        ptr_rd = 0;
-    }
-
-    pos = trace->ring_buffer + ptr_rd;
-
-    return pos;
 }
 
 static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace)
@@ -454,12 +435,18 @@ static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace)
     struct trace_event_hdr *hdr;
 
     // Check if trace is empty
-    if (_is_empty(trace, ptr_rd, ptr_wr)) {
+    if (_is_empty(ptr_rd, ptr_wr)) {
         // No event to be read
         return NULL;
     }
 
-    hdr = _rd_pos(trace);
+    if (!_integrity_check(trace, ptr_rd, sizeof(*hdr))) {
+        // Inconsistent trace state, trying to access out of ring buffer
+        ENV_BUG();
+        return NULL;
+    }
+
+    hdr = (struct trace_event_hdr *)(trace->ring_buffer + ptr_rd);
 
     if (!hdr->ready) {
         // Event not ready
@@ -474,7 +461,7 @@ static void _move_rd_ptr(struct octf_trace *trace,
 {
     // Move pointer to next event which will be read
     uint64_t rd_ptr = _move_ptr(trace, hdr->data_ptr,
-            TRACE_ALIGN(hdr->data_size) - 1);
+            TRACE_ALIGN(hdr->data_size));
 
     env_atomic64_set(&trace->chdr->rd_ptr, rd_ptr);
 }
@@ -532,7 +519,7 @@ int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size)
         goto END;
     }
 
-    if (false == _integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
         // Inconsistent trace state, trying to access out of ring buffer
         result = -EINVAL;
         ENV_BUG();
@@ -561,7 +548,7 @@ int octf_trace_is_empty(octf_trace_t trace)
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
 
-        if (_is_empty(trace, ptr_rd, ptr_wr)) {
+        if (_is_empty(ptr_rd, ptr_wr)) {
             return 1;
         } else {
             return 0;
