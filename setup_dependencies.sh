@@ -81,7 +81,7 @@ function setup_protocol_buffer
 
     git submodule update --init --recursive && \
         ./autogen.sh && \
-        ./configure && \
+        ./configure --prefix=/usr && \
         make -j$(nproc) && \
         make check -j$(nproc) && \
         make install -j$(nproc) && \
