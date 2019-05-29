@@ -6,6 +6,16 @@
 #ifndef SOURCE_OCTF_TRACE_IOTRACE_EVENT_H
 #define SOURCE_OCTF_TRACE_IOTRACE_EVENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __KERNEL__
+#include <linux/types.h>
+#else
+#include <stdint.h>
+#endif
+
 typedef uint64_t log_sid_t;
 
 #define IOTRACE_EVENT_VERSION_MAJOR 1
@@ -118,5 +128,9 @@ struct iotrace_event {
      * are summed (OR-ed) together. */
     uint32_t flags;
 } __attribute__((packed, aligned(8)));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SOURCE_OCTF_TRACE_IOTRACE_EVENT_H
