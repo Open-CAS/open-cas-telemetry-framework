@@ -25,7 +25,7 @@ target_include_directories(octf
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
-	)
+)
 # Specify libraries to link - specifies dependencies
 # and allows valid concurrent build
 target_link_libraries(octf PUBLIC pthread)
