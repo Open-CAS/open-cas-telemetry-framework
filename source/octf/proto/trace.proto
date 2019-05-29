@@ -65,6 +65,33 @@ message EventIo {
     bool fua = 7;
 }
 
+/**
+ * @brief IO trace event metadata (e.g. filesystem meta information)
+ *
+ * If an application works on top of a filesystem it may perform IO operations
+ * to files. This structure contains meta information about IO in domain of
+ * filesystem. For example it provides information about file size,
+ * file offset of IO, etc.
+ */
+message EventIoFilesystemMeta {
+    /**
+     * Event sequence ID reference to IO trace event associated with this event
+     */
+    uint64 refSid = 1;
+
+    /** File ID */
+    uint64 fileId = 2;
+
+    /** File parent ID */
+    uint64 fileParentId = 3;
+
+    /** File offset in sectors */
+    uint64 fileOffset = 4;
+
+    /** File size in sectors */
+    uint64 fileSize = 5;
+};
+
 message Event {
     /** Trace event header */
     EventHeader header = 1;
@@ -72,5 +99,6 @@ message Event {
     oneof EventType {
         EventIo io = 2;
         EventDeviceDescription deviceDescription = 3;
+        EventIoFilesystemMeta filesystemMeta = 4;
     }
 }
