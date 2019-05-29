@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 
 include(octf-version.cmake)
 project(octf VERSION ${OCTF_VERSION} LANGUAGES C CXX)
