@@ -25,7 +25,6 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
 
     m_protobufEvent->Clear();
     auto hdr = static_cast<const struct iotrace_event_hdr *>(trace);
-    trace::EventHeader *protobufHdr;
 
     switch (hdr->type) {
     case iotrace_event_type_device_desc: {
@@ -35,7 +34,6 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         auto event =
                 static_cast<const struct iotrace_event_device_desc *>(trace);
         auto protoDeviceDesc = m_protobufEvent->mutable_devicedescription();
-        protobufHdr = m_protobufEvent->mutable_header();
         protoDeviceDesc->set_id(event->id);
         protoDeviceDesc->set_name(event->device_name);
         protoDeviceDesc->set_size(event->device_size);
@@ -48,7 +46,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         }
         auto event = static_cast<const struct iotrace_event *>(trace);
         auto protoIo = m_protobufEvent->mutable_io();
-        protobufHdr = m_protobufEvent->mutable_header();
+
         switch (event->operation) {
         case iotrace_event_operation_rd:
             protoIo->set_operation(trace::IoType::Read);
@@ -71,10 +69,24 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         break;
     }
 
+    case iotrace_event_type_fs_meta: {
+        if (size != sizeof(struct iotrace_event_fs_meta)) {
+            return nullptr;
+        }
+        auto event = static_cast<const struct iotrace_event_fs_meta *>(trace);
+        auto protoFsMeta = m_protobufEvent->mutable_filesystemmeta();
+        protoFsMeta->set_refsid(event->ref_sid);
+        protoFsMeta->set_fileid(event->file_id);
+        protoFsMeta->set_fileoffset(event->file_offset);
+        protoFsMeta->set_filesize(event->file_size);
+        break;
+    }
+
     default:
         return nullptr;
     }
 
+    trace::EventHeader *protobufHdr = m_protobufEvent->mutable_header();
     protobufHdr->set_sid(hdr->sid);
     protobufHdr->set_timestamp(hdr->timestamp);
     return m_protobufEvent;

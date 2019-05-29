@@ -148,7 +148,10 @@ void TraceJob::serialize(const void *data, uint32_t size) {
     bool serialized = false;
     if (m_converter) {
         auto protoBuffer = m_converter->convertTrace(data, size);
-        serialized = m_serializer->serialize(protoBuffer);
+
+        if (protoBuffer) {
+            serialized = m_serializer->serialize(protoBuffer);
+        }
     } else {
         serialized = m_serializer->serialize(data, size);
     }
