@@ -6,6 +6,7 @@
 #include <octf/interface/internal/TraceJob.h>
 
 #include <mutex>
+#include <string>
 
 #include <octf/interface/internal/FileTraceSerializer.h>
 #include <octf/trace/iotrace_event.h>
@@ -202,8 +203,8 @@ void TraceJob::consumeTraces() {
             case -EBADF:
             case -ENOSPC:
             default:
-                throw Exception("Failed to retrieve trace data, error: " +
-                                result);
+                throw Exception("Failed to retrieve trace data, error: "
+                        + std::to_string(result));
             }
             if (circBufferNotAvailable) {
                 // We want to break (instead of continue in the switch), so that
