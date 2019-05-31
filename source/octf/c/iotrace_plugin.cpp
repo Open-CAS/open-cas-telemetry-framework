@@ -80,11 +80,11 @@ extern "C" void octf_iotrace_plugin_init_trace_header(
 }
 
 extern "C" void octf_iotrace_plugin_push_trace(octf_iotrace_plugin_t _plugin,
-                                               uint32_t queue,
+                                               uint32_t ioQueue,
                                                const void *trace,
                                                size_t size) {
     IOTracePlugin *plugin = static_cast<IOTracePlugin *>(_plugin);
     if (plugin) {
-        plugin->push(queue, trace, size);
+        plugin->push(ioQueue, trace, size);
     }
 }
