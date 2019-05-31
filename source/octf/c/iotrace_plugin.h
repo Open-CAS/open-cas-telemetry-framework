@@ -18,6 +18,54 @@ extern "C" {
  * @file
  *
  * C wrapper of IO tracer plug-in
+ *
+ * @example
+ * # Usage of C Wrapper IO tracer plug-in
+ *
+ *
+ * ## Initializing the plugin
+ *
+ * @code
+ *  octf_iotrace_plugin_t plugin;
+ *  struct octf_iotrace_plugin_cnfg cnfg = {
+ *          .id = "c-iotrace-example",
+ *          .io_queue_count = YOUR_IO_QUEUE_COUNT
+ *  };
+ *
+ *  if (octf_iotrace_plugin_create(&cnfg, &plugin)) {
+ *      // Error occurred
+ *      return -1;
+ *  }
+ * @endcode
+ *
+ *
+ * ## Pushing an IO trace event
+ *
+ * @code Pushing an IO event
+ *  // Define IO trace event
+ *  struct iotrace_event ev = {};
+ *
+ *  // Initialize trace header
+ *  octf_iotrace_plugin_init_trace_header(plugin, &ev.hdr,
+ *          iotrace_event_type_io, sizeof(ev));
+ *
+ *  // Fill IO trace
+ *  ev.lba = ...
+ *  ev.len = ...
+ *  ev.operation = ...
+ *  ...
+ *
+ *  // Push  IO trace
+ *  octf_iotrace_plugin_push_trace(plugin, queue_id, &ev, sizeof(ev));
+ * @endcode
+ *
+ *
+ * ## De-initializing the plugin
+ *
+ * @code
+ *  octf_iotrace_plugin_destroy(&plugin);
+ * @endcode
+ * <p/>
  */
 
 /**
@@ -48,7 +96,7 @@ struct octf_iotrace_plugin_cnfg {
  *
  * @return operation status
  * @retval 0 - operation successful
- * @retval Non zero - operation failure while creating IO tracer plug-in
+ * @retval Non-zero - operation failure while creating IO tracer plug-in
  */
 int octf_iotrace_plugin_create(const struct octf_iotrace_plugin_cnfg *cnfg,
                                octf_iotrace_plugin_t *plugin);
@@ -83,25 +131,6 @@ void octf_iotrace_plugin_init_trace_header(octf_iotrace_plugin_t plugin,
  * @param ioQueue IO queue id into which store event
  * @param trace Trace event to be stored
  * @param size Size of trace event to be stored
- *
- * @example Pushing an IO event
- * @code
- *  // Define IO trace event
- *  struct iotrace_event ev = {};
- *
- *  // Initialize trace header
- *  octf_iotrace_plugin_init_trace_header(plugin, &ev.hdr,
- * iotrace_event_type_io, sizeof(ev));
- *
- *  // Fill IO trace
- *  ev.lba = ...
- *  ev.len = ...
- *  ev.operation = ...
- *  ...
- *
- *  // Push  IO trace
- *  octf_iotrace_plugin_push_trace(plugin, queue_id, &ev, sizeof(ev));
- * @endcode
  */
 void octf_iotrace_plugin_push_trace(octf_iotrace_plugin_t plugin,
                                     uint32_t ioQueue,
