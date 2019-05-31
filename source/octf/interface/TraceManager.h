@@ -145,7 +145,7 @@ private:
     /**
      * @brief Node path to owner node
      */
-    const NodePath &m_ownerNodePath;
+    const NodePath m_ownerNodePath;
     /**
      * @brief Module implementing start/stop trace functions
      */
