@@ -70,6 +70,14 @@ add_custom_command(
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)
 
+if (${CMAKE_INSTALL_PREFIX} STREQUAL "/")
+    install(
+        CODE "execute_process(COMMAND ldconfig -n ${OCTF_LIBRARY_DIR})"
+        COMPONENT octf-install
+    )
+endif()
+
+
 # Install headers and proto files
 install(DIRECTORY octf ${CMAKE_CURRENT_BINARY_DIR}/octf
 	DESTINATION ${OCTF_INCLUDE_DIR}
