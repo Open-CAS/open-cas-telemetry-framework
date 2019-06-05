@@ -4,7 +4,6 @@
  */
 
 #include <octf/communication/internal/ConnectionContextDeleter.h>
-#include <atomic>
 
 using namespace std;
 
