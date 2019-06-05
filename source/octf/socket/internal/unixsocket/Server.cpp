@@ -60,7 +60,7 @@ bool Server::open() {
     // Prepare address path
     memset_s(&unaddr, sizeof(unaddr), 0);
     unaddr.sun_family = AF_UNIX;
-    strncpy(unaddr.sun_path, m_address.c_str(), sizeof(unaddr.sun_path) - 1);
+    strcpy_s(unaddr.sun_path, sizeof(unaddr.sun_path), m_address.c_str());
 
     // TODO (jstencel) Fix correct unlinking on server closing.
     // As for now, just unlink it here as to enable server

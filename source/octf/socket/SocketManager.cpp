@@ -6,6 +6,7 @@
 #include <octf/socket/SocketManager.h>
 
 #include <thread>
+#include <atomic>
 #include <octf/socket/ISocketListener.h>
 #include <octf/socket/internal/SocketManagerStateMachine.h>
 #include <octf/socket/internal/SocketManagerStateMachineClient.h>

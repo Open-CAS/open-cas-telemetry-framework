@@ -3,6 +3,8 @@
 #
 
 set(SAFESTRINGLIB_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/safestringlib/safeclib/safe_str_constraint.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/safestringlib/safeclib/strcpy_s.c
     ${CMAKE_CURRENT_SOURCE_DIR}/safestringlib/safeclib/memcpy_s.c
     ${CMAKE_CURRENT_SOURCE_DIR}/safestringlib/safeclib/memset_s.c
     ${CMAKE_CURRENT_SOURCE_DIR}/safestringlib/safeclib/mem_primitives_lib.c

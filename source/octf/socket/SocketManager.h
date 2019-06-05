@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <thread>
+#include <atomic>
 #include <octf/socket/SocketConfig.h>
 
 namespace octf {
@@ -73,7 +74,7 @@ private:
     /**
      * Boolean value controlling running of state machine
      */
-    bool m_active;
+    std::atomic<bool> m_active;
 };
 
 }  // namespace octf

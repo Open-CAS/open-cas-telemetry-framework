@@ -9,6 +9,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <atomic>
 
 #include <octf/communication/CommunicationManagerServer.h>
 #include <octf/communication/internal/ConnectionContext.h>
@@ -75,7 +76,7 @@ private:
     /**
      * Indicates that thread shall be run
      */
-    bool m_run;
+    std::atomic<bool> m_run;
 };
 
 }  // namespace octf
