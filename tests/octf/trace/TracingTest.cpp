@@ -71,24 +71,28 @@ public:
             : m_buffer(nullptr)
             , m_size(size) {
         m_buffer = new char[m_size];
-        memcpy(m_buffer, buffer, m_size);
+        memcpy_s(m_buffer, m_size, buffer, size);
     }
 
     Event(const Event &e)
             : m_buffer(nullptr)
             , m_size(e.m_size) {
         m_buffer = new char[m_size];
-        memcpy(m_buffer, e.m_buffer, m_size);
+        memcpy_s(m_buffer, m_size, e.m_buffer, e.m_size);
     }
 
     Event &operator=(const Event &e) {
+        if (this == &e) {
+            return *this;
+        }
+
         if (m_buffer) {
             delete[] m_buffer;
         }
 
         m_size = e.m_size;
         m_buffer = new char[m_size];
-        memcpy(m_buffer, e.m_buffer, m_size);
+        memcpy_s(m_buffer, m_size, e.m_buffer, e.m_size);
 
         return *this;
     }

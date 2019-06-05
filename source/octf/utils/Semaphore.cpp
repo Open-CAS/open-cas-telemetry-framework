@@ -4,6 +4,7 @@
  */
 
 #include <octf/utils/Semaphore.h>
+#include <atomic>
 
 namespace octf {
 

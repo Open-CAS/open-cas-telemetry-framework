@@ -40,7 +40,7 @@ SocketConnectionShRef Client::connect() {
 
     // Setup socket address and connect to the server
     srvAddr.sun_family = AF_UNIX;
-    strncpy(srvAddr.sun_path, m_address.c_str(), sizeof(srvAddr.sun_path) - 1);
+    strcpy_s(srvAddr.sun_path, sizeof(srvAddr.sun_path), m_address.c_str());
     srvAddrLen = sizeof(srvAddr);
     result = ::connect(clntfd, (struct sockaddr *) &srvAddr, srvAddrLen);
     if (result < 0) {

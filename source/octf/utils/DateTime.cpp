@@ -29,14 +29,18 @@ std::string getFormattedDateTime(
                                           (timePoint - steady_clock::now()));
 
     // Create a type which recognizes local time with respect to civil calendar
-    tm dateTime = *localtime(&time);
+    tm* dateTime = localtime(&time);
+
+    if (dateTime == nullptr) {
+        throw Exception("Error when calling localtime()");
+    }
 
     // Buffer for result
     char buffer[MAX_TIME_STRING_BUFFER + 1];
     buffer[MAX_TIME_STRING_BUFFER] = '\0';
 
     // Format date time
-    if (!strftime(buffer, MAX_TIME_STRING_BUFFER, format.c_str(), &dateTime)) {
+    if (!strftime(buffer, MAX_TIME_STRING_BUFFER, format.c_str(), dateTime)) {
         throw Exception("Error converting time.");
     }
 

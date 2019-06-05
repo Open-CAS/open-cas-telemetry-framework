@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_UTILS_SEMAPHORE_H
 
 #include <condition_variable>
+#include <atomic>
 #include <mutex>
 
 namespace octf {
@@ -43,7 +44,7 @@ public:
     bool waitFor(std::chrono::milliseconds timeout);
 
 private:
-    int32_t m_count;
+    std::atomic<int> m_count;
     std::mutex m_lock;
     std::condition_variable m_cv;
 };
