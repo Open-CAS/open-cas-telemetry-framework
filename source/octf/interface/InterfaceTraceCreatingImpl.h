@@ -61,7 +61,7 @@ private:
                                 const ::google::protobuf::Descriptor *);
 
     std::unique_ptr<TraceManager> m_traceManager;
-    const NodePath &m_ownerNodePath;
+    const NodePath m_ownerNodePath;
 };
 }  // namespace octf
 

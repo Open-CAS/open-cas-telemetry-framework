@@ -8,7 +8,7 @@
 #include <octf/trace/internal/trace_env_usr.h>
 #else
 #include "trace.h"
-#include "internal/trace_env_kernel.h"
+#include "trace_env_kernel.h"
 #endif
 
 #define TRACE_VER               1
