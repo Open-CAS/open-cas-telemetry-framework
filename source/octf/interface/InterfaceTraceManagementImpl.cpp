@@ -138,14 +138,22 @@ void InterfaceTraceManagementImpl::removeTraces(
     // Remove directories matching prefixes and having summary file
     for (const auto &dir : dirsToRemove) {
         if (!fsutils::removeFile(dir)) {
+            // Unexpected error, set fail and cancel
             failMessage += "Could not remove trace: " + dir;
+            controller->SetFailed("");
             break;
+
+        } else {
+            log::cout << "Removed '" << dir << "'" << std::endl;
         }
     }
 
     if (failMessage != "") {
-        controller->SetFailed(failMessage);
+        // Some files were skipped because they could be in RUNNING state.
+        // Print their paths and return successfully.
+        log::cerr << failMessage << std::endl;
     }
+
     done->Run();
 }
 void InterfaceTraceManagementImpl::getTraceSummary(
