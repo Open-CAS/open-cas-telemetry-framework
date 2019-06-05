@@ -17,6 +17,7 @@
 #include <octf/interface/TraceManager.h>
 #include <octf/proto/InterfaceTraceCreating.pb.h>
 #include <octf/trace/trace.h>
+#include <octf/utils/NonCopyable.h>
 
 namespace octf {
 
@@ -27,7 +28,7 @@ namespace octf {
  * Class receives a callback, puts traces into a circular buffer and serializes
  * them when ready
  */
-class TraceJob {
+class TraceJob : public NonCopyable {
 public:
     TraceJob(ITraceExecutor *executor,
              uint32_t maxDuration,

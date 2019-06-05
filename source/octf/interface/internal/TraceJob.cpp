@@ -22,7 +22,8 @@ TraceJob::TraceJob(ITraceExecutor *executor,
                    const std::string &outputFileName,
                    uint32_t memoryPoolSize,
                    SerializerType serializerType)
-        : m_thread()
+        : NonCopyable()
+        , m_thread()
         , m_state(TracingState::NOT_STARTED)
         , m_maxDuration(maxDuration)
         , m_traceConsumerHandle(0)
