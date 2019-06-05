@@ -26,16 +26,6 @@ Parameter::Parameter()
         , m_required(false)
         , m_hidden(false) {}
 
-Parameter::Parameter(const Parameter &param)
-        : m_shortKey(param.m_shortKey)
-        , m_longKey(param.m_longKey)
-        , m_desc(param.m_desc)
-        , m_what(param.m_desc)
-        , m_index(param.m_index)
-        , m_set(param.m_set)
-        , m_required(param.m_required)
-        , m_hidden(param.m_hidden) {}
-
 void Parameter::getHelp(stringstream &ss) const {
     if (isHidden()) {
         return;

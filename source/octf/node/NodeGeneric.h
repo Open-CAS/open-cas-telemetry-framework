@@ -94,7 +94,7 @@ public:
 
             return nullptr;
 
-        } catch (Exception &ex) {
+        } catch (Exception &) {
             return nullptr;
         }
     }
