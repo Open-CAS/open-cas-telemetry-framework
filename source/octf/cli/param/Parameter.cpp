@@ -17,6 +17,7 @@ namespace octf {
 
 Parameter::Parameter()
         : IParameter()
+        , NonCopyable()
         , m_shortKey("")
         , m_longKey("")
         , m_desc("")
