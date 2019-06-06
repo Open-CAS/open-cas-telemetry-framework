@@ -123,8 +123,8 @@ void SignalHandler::onSignal(int sig) {
     }
 }
 
-void SignalHandler::sendUserSignal() {
-    onSignal(SIGUSR1);
+void SignalHandler::sendSignal(int sig) {
+    onSignal(sig);
 }
 
 }  // namespace octf
