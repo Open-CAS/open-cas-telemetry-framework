@@ -52,12 +52,14 @@ TraceJob::TraceJob(ITraceExecutor *executor,
         break;
     default:
         octf_trace_close(&m_traceConsumerHandle);
+        m_traceConsumerHandle = nullptr;
         m_producer->deinitRing();
         throw Exception("Unknown trace serializer type.");
     }
 
     if (!m_serializer->open()) {
         octf_trace_close(&m_traceConsumerHandle);
+        m_traceConsumerHandle = nullptr;
         m_producer->deinitRing();
         throw Exception("Cannot open file '" + outputFileName + "'");
     }
@@ -66,10 +68,9 @@ TraceJob::TraceJob(ITraceExecutor *executor,
 TraceJob::~TraceJob() {
     stopJobThread();
     joinThread();
-    // TODO (kozlowsk) consider closing and clearing the memory pool on
-    // finishing the job - will need to set dropped trace count in a member
-    // field so it's accessible
-    octf_trace_close(&m_traceConsumerHandle);
+    if (m_traceConsumerHandle) {
+        octf_trace_close(&m_traceConsumerHandle);
+    }
     m_producer->deinitRing();
 }
 
