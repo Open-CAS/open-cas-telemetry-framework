@@ -106,8 +106,6 @@ void InterfaceTraceManagementImpl::removeTraces(
     fsutils::readDirectoryContentsRecursive(traceRootDir, traceDirs,
                                             fsutils::FileType::Directory);
 
-    std::string notRemovedPaths = "";
-    std::string failMessage = "";
     for (const auto &dir : traceDirs) {
         // Check if this trace path has this node's prefix
         // and if it matches cliPrefix
@@ -121,25 +119,21 @@ void InterfaceTraceManagementImpl::removeTraces(
                 if (summary.state() == proto::TraceState::COMPLETE ||
                     summary.state() == proto::TraceState::ERROR) {
                     dirsToRemove.push_back(traceRootDir + "/" + dir);
+
                 } else {
-                    notRemovedPaths += dir + "\n";
+                    log::cout
+                            << "Skipping trace, as it may still be running: "
+                            + dir << std::endl;
                 }
             }
         }
-    }
-
-    // There were some traces which were not removed
-    if (notRemovedPaths != "") {
-        failMessage +=
-                "Skipping following traces which may still be running:\n";
-        failMessage += notRemovedPaths;
     }
 
     // Remove directories matching prefixes and having summary file
     for (const auto &dir : dirsToRemove) {
 
         if (!fsutils::removeFile(dir)) {
-            failMessage += "Could not remove trace: " + dir + "\n";
+            log::cerr << "Could not remove trace: " + dir << std::endl;
 
         } else {
             // Add removed traces to response
@@ -151,12 +145,7 @@ void InterfaceTraceManagementImpl::removeTraces(
 
     // Set fail only when no traces were removed.
     if (response->trace_size() == 0) {
-        failMessage += "No traces were removed.\n";
-        controller->SetFailed(failMessage);
-
-    // Otherwise just print fail messages and return successfully
-    } else if (failMessage != "") {
-        log::cerr << failMessage << std::endl;
+        controller->SetFailed("No traces were removed.");
     }
 
     done->Run();
