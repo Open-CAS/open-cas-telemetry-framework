@@ -45,7 +45,7 @@ bool NodeGeneric::getChildrenIdList(NodesIdList &children) const {
             children.push_back(node->getNodeId());
         }
         return true;
-    } catch (Exception &ex) {
+    } catch (Exception &) {
         children.clear();
         return false;
     }
@@ -125,7 +125,7 @@ bool NodeGeneric::getInterfacesIdList(InterfacesIdList &interfaces) {
             interfaces.push_back(getInterfaceId(iter));
         }
         return true;
-    } catch (Exception &ex) {
+    } catch (Exception &) {
         interfaces.clear();
         return false;
     }
