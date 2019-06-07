@@ -40,7 +40,7 @@ service InterfaceTraceManagement {
     };
 
     // Removes specified traces.
-    rpc removeTraces(TracePathPrefix) returns (Void) {
+    rpc removeTraces(TracePathPrefix) returns (TraceList) {
         option (opts_command).cli = true;
 
         option (opts_command).cli_short_key = "R";
