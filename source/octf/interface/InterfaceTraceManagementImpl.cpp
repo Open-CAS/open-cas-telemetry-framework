@@ -80,7 +80,7 @@ void InterfaceTraceManagementImpl::listTraces(
 void InterfaceTraceManagementImpl::removeTraces(
         ::google::protobuf::RpcController *controller,
         const ::octf::proto::TracePathPrefix *request,
-        ::octf::proto::Void *response,
+        ::octf::proto::TraceList *response,
         ::google::protobuf::Closure *done) {
     (void) response;
     std::list<std::string> dirsToRemove;
@@ -137,20 +137,25 @@ void InterfaceTraceManagementImpl::removeTraces(
 
     // Remove directories matching prefixes and having summary file
     for (const auto &dir : dirsToRemove) {
+
         if (!fsutils::removeFile(dir)) {
-            // Unexpected error, set fail and cancel
-            failMessage += "Could not remove trace: " + dir;
-            controller->SetFailed("");
-            break;
+            failMessage += "Could not remove trace: " + dir + "\n";
 
         } else {
-            log::cout << "Removed '" << dir << "'" << std::endl;
+            // Add removed traces to response
+            auto trace = response->add_trace();
+            trace->set_tracepath(dir);
+            trace->set_state(summary.state());
         }
     }
 
-    if (failMessage != "") {
-        // Some files were skipped because they could be in RUNNING state.
-        // Print their paths and return successfully.
+    // Set fail only when no traces were removed.
+    if (response->trace_size() == 0) {
+        failMessage += "No traces were removed.\n";
+        controller->SetFailed(failMessage);
+
+    // Otherwise just print fail messages and return successfully
+    } else if (failMessage != "") {
         log::cerr << failMessage << std::endl;
     }
 
