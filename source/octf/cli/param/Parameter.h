@@ -8,14 +8,13 @@
 
 #include <octf/cli/param/IParameter.h>
 #include <octf/utils/Exception.h>
+#include <octf/utils/NonCopyable.h>
 
 namespace octf {
 
-class Parameter : public IParameter {
+class Parameter : public IParameter, public NonCopyable {
 public:
     Parameter();
-
-    Parameter(const Parameter &param);
 
     virtual ~Parameter() = default;
 

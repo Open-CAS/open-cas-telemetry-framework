@@ -58,7 +58,7 @@ public:
                 // Find interface, if already exists return it
                 return findInterface<T>();
             }
-        } catch (Exception &ex) {
+        } catch (Exception &) {
             return nullptr;
         }
     }
