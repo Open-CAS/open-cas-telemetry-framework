@@ -97,12 +97,20 @@ void TraceManager::initializeTraceDirectory() {
     std::string dateTime = datetime::getFormattedDateTime(
             std::chrono::steady_clock::now(), "%Y-%m-%d_%H:%M:%S");
 
+    using namespace fsutils;
+
+    const auto &traceDir = getFrameworkConfiguration().getTraceDir();
+    if (!checkPermissions(traceDir, PermissionType::Execute) ||
+        !checkPermissions(traceDir, PermissionType::ReadWrite)) {
+        throw Exception("No access to trace directory");
+    }
+
     directoryPathRelative =
             getFrameworkConfiguration().getNodePathBasename(m_ownerNodePath) +
             "/" + dateTime;
-    directoryPathAbsolute = getFrameworkConfiguration().getTraceDir() + "/" +
-                            directoryPathRelative;
-    if (!fsutils::createDirectory(directoryPathAbsolute)) {
+
+    directoryPathAbsolute = traceDir + "/" + directoryPathRelative;
+    if (!createDirectory(directoryPathAbsolute)) {
         throw Exception("Error creating trace directory " +
                         directoryPathAbsolute);
     }
