@@ -371,7 +371,7 @@ void CommandProtobuf::handleCall(CallGeneric &call,
         // Method call failed
         throw Exception(call.ErrorText());
     } else {
-        CLIUtils::printOutputMessage(outMessage);
+        cliUtils::printOutputMessage(outMessage);
     }
 }
 

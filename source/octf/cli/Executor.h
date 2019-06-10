@@ -8,6 +8,7 @@
 
 #include <map>
 #include <octf/cli/CLIList.h>
+#include <octf/cli/CLIProperties.h>
 #include <octf/cli/CLIUtils.h>
 #include <octf/cli/CommandSet.h>
 #include <octf/cli/GenericPluginShadow.h>
@@ -34,6 +35,13 @@ public:
      */
     Executor();
     virtual ~Executor() = default;
+
+    /**
+     * @brief Gets CLI Properties
+     *
+     * @return CLI Properties to be set
+     */
+    CLIProperties &getCliProperties();
 
     /**
      * @brief Add local module with key prefix
@@ -131,6 +139,7 @@ private:
     void setupOutputsForCommandsLogs() const;
 
 private:
+    CLIProperties m_cliProperties;
     CommandSet m_localCmdSet;
     CommandSet m_moduleCmdSet;
     std::map<std::string, Module> m_modules;

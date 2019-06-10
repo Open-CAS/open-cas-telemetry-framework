@@ -145,14 +145,14 @@ void Command::getHelp(stringstream &ss) const {
         if ("" != what) {
             longKey += (" " + what);
         }
-        CLIUtils::printKeys(ss, shortKey, longKey, desc);
+        cliUtils::printKeys(ss, shortKey, longKey, desc);
     }
 }
 
 void Command::getCommandUsage(stringstream &ss) const {
     bool optionalParams = false;
 
-    CLIUtils::printKeys(ss, "", getLongKey(), "", false);
+    cliUtils::printKeys(ss, "", getLongKey(), "", false);
 
     // Print all required options
     auto iter = m_params.begin();
@@ -163,7 +163,7 @@ void Command::getCommandUsage(stringstream &ss) const {
         }
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getWhat();
-        CLIUtils::printKeys(ss, "", longKey, desc, false);
+        cliUtils::printKeys(ss, "", longKey, desc, false);
     }
 
     // If there are any optional (not required) parameters, add general usage

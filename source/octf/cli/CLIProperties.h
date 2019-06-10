@@ -7,16 +7,19 @@
 #define SOURCE_OCTF_CLI_CLIPROPERTIES_H
 
 #include <string>
+#include <octf/utils/NonCopyable.h>
+
+namespace octf {
 
 /**
  * @brief Class managing properties of CLI
  */
 class CLIProperties {
 public:
-    /**
-     * @return static CLIProperties object
-     */
-    static CLIProperties &getCliProperties();
+    CLIProperties() = default;
+    virtual ~CLIProperties() = default;
+    CLIProperties(CLIProperties const &) = default;
+    CLIProperties &operator=(CLIProperties const &) = default;
 
     /**
      * @return Description of CLI
@@ -49,15 +52,11 @@ public:
     void setVersion(const std::string &version);
 
 private:
-    CLIProperties();
-    virtual ~CLIProperties();
-    CLIProperties &operator=(const CLIProperties &cliProperties);
-    CLIProperties(const CLIProperties &cliProperties);
-
-private:
     std::string m_description;
     std::string m_name;
     std::string m_version;
 };
+
+}  // namespace octf
 
 #endif  // SOURCE_OCTF_CLI_CLIPROPERTIES_H

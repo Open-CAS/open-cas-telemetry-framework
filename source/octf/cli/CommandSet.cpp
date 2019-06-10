@@ -54,7 +54,7 @@ void CommandSet::getHelp(stringstream &ss) const {
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getDesc();
 
-        CLIUtils::printKeys(ss, shortKey, longKey, desc);
+        cliUtils::printKeys(ss, shortKey, longKey, desc);
     }
 }
 
@@ -106,7 +106,7 @@ void CommandSet::updateHelp() {
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getDesc();
 
-        CLIUtils::printKeys(ss, shortKey, longKey, desc);
+        cliUtils::printKeys(ss, shortKey, longKey, desc);
     }
     m_helpCmd->setHelp(ss.str());
 }

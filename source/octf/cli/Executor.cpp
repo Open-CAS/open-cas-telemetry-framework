@@ -36,7 +36,8 @@ using std::stringstream;
 namespace octf {
 
 Executor::Executor()
-        : m_localCmdSet()
+        : m_cliProperties()
+        , m_localCmdSet()
         , m_moduleCmdSet()
         , m_modules()
         , m_module()
@@ -44,6 +45,10 @@ Executor::Executor()
         , m_nodePlugin() {
     // Get a list of available modules
     getModules();
+}
+
+CLIProperties &Executor::getCliProperties() {
+    return m_cliProperties;
 }
 
 void Executor::addLocalCommand(shared_ptr<ICommand> cmd) {
@@ -80,16 +85,16 @@ void Executor::loadModuleCommandSet() {
 }
 
 void Executor::printMainHelp(std::stringstream &ss) {
-    CLIUtils::printUsage(ss, nullptr, false, m_modules.size());
+    cliUtils::printUsage(ss, nullptr, m_cliProperties, false, m_modules.size());
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
         for (auto module : m_modules) {
-            CLIUtils::printModuleHelp(ss, &module.second, true);
+            cliUtils::printModuleHelp(ss, &module.second, true);
         }
     }
 
-    CLIUtils::printCmdSetHelp(ss, m_localCmdSet);
+    cliUtils::printCmdSetHelp(ss, m_localCmdSet);
 
     return;
 }
@@ -192,8 +197,8 @@ int Executor::execute(CLIList &cliList) {
         // download module's command set and show help
         loadModuleCommandSet();
         stringstream ss;
-        CLIUtils::printUsage(ss, &m_module, false);
-        CLIUtils::printCmdSetHelp(ss, m_moduleCmdSet);
+        cliUtils::printUsage(ss, &m_module, m_cliProperties, false);
+        cliUtils::printCmdSetHelp(ss, m_moduleCmdSet);
         log::cout << ss.str();
 
         return command == nullptr;
@@ -240,7 +245,7 @@ int Executor::execute(CLIList &cliList) {
                 ss << endl;
             }
 
-            CLIUtils::printCmdHelp(ss, command);
+            cliUtils::printCmdHelp(ss, command, m_cliProperties);
             log::cout << ss.str();
         }
 
@@ -371,12 +376,12 @@ void Executor::setProgress(double progress, std::ostream &out) {
 
     if (next != prev) {
         m_progress = progress;
-        CLIUtils::printProgressBar(m_progress, out);
+        cliUtils::printProgressBar(m_progress, out);
     }
 }
 
 void Executor::setupOutputsForCommandsLogs() const {
-    auto const &prefix = CLIProperties::getCliProperties().getName();
+    auto const &prefix = m_cliProperties.getName();
 
     if (nullptr != getenv("VERBOSE")) {
         log::verbose << log::enable << log::json << log::prefix << prefix;

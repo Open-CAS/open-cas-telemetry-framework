@@ -12,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <octf/cli/CLIProperties.h>
 #include <octf/cli/CommandSet.h>
 #include <octf/cli/Module.h>
 
@@ -38,19 +39,7 @@ typedef std::shared_ptr<google::protobuf::Message> MessageShRef;
  * Functionalities of this class are mostly helper methods,
  * useful for string conversion, file operations, and CLI printing
  */
-namespace CLIUtils {
-
-/**
- * @brief Converts value to string
- * @param t Value
- * @return String with Value
- */
-template <typename T>
-std::string toString(T t) {
-    std::stringstream ss;
-    ss << t;
-    return ss.str();
-}
+namespace cliUtils {
 
 /**
  * @brief Converts a given unsigned integer to string representing bytes.
@@ -115,9 +104,11 @@ void printKeys(std::stringstream &ss,
  * @param isList Format specifier. If true, format is adjusted to the list view,
  * especially there is a new line at the end.
  * @param hasPlugins Indicates that CLI can execute command on plugins
+ * @param cliProperties CLI Properties
  */
 void printUsage(std::stringstream &ss,
                 Module *module,
+                const CLIProperties &cliProperties,
                 bool isList = false,
                 bool hasPlugins = false);
 
@@ -144,10 +135,13 @@ void printCmdSetHelp(std::stringstream &ss, const CommandSet &cmdSet);
  * @brief Prints help for Command to the stringstream
  * @param ss Stringstream to print to
  * @param cmd Command to print help for
+ * @param cliProperties CLI Properties
  */
-void printCmdHelp(std::stringstream &ss, std::shared_ptr<ICommand> cmd);
-};  // namespace CLIUtils
+void printCmdHelp(std::stringstream &ss,
+                  std::shared_ptr<ICommand> cmd,
+                  const CLIProperties &cliProperties);
 
+}  // namespace cliUtils
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_CLI_CLIUTILS_H

@@ -11,8 +11,9 @@ using namespace std;
 
 namespace octf {
 
-CmdVersion::CmdVersion()
-        : Command() {
+CmdVersion::CmdVersion(const CLIProperties &properties)
+        : Command()
+        , m_cliProperties(properties) {
     setShortKey("V");
     setLongKey("version");
     setDesc("Print version");
@@ -20,10 +21,8 @@ CmdVersion::CmdVersion()
 }
 
 void CmdVersion::execute() {
-    log::cout << "Name: " << CLIProperties::getCliProperties().getName()
-              << endl;
-    log::cout << "Version: " << CLIProperties::getCliProperties().getVersion()
-              << endl;
+    log::cout << "Name: " << m_cliProperties.getName() << endl;
+    log::cout << "Version: " << m_cliProperties.getVersion() << endl;
 }
 
 }  // namespace octf

@@ -21,7 +21,7 @@ using namespace std;
 
 namespace octf {
 
-namespace CLIUtils {
+namespace cliUtils {
 
 string bytes2string(uint64_t bytes, uint64_t base) {
     stringstream ss;
@@ -174,16 +174,17 @@ void printOutputString(const std::string &output) {
 
 void printModuleHelp(stringstream &ss, Module *module, bool isList) {
     if (module) {
-        CLIUtils::printKeys(ss, module->getShortKey(), module->getLongKey(), "",
+        cliUtils::printKeys(ss, module->getShortKey(), module->getLongKey(), "",
                             isList);
     }
 }
 
 void printUsage(stringstream &ss,
                 Module *module,
+                const CLIProperties &cliProperties,
                 bool isList,
                 bool hasPlugins) {
-    ss << "Usage: " << CLIProperties::getCliProperties().getName() << " ";
+    ss << "Usage: " << cliProperties.getName() << " ";
     if (module) {
         // Specify keys supported by this module
         printModuleHelp(ss, module, isList);
@@ -202,18 +203,20 @@ void printCmdSetHelp(stringstream &ss, const CommandSet &cmdSet) {
     cmdSet.getHelp(ss);
 }
 
-void printCmdHelp(stringstream &ss, std::shared_ptr<ICommand> cmd) {
+void printCmdHelp(stringstream &ss,
+                  std::shared_ptr<ICommand> cmd,
+                  const CLIProperties &cliProperties) {
     ss << "Usage: ";
-    ss << CLIProperties::getCliProperties().getName() << " ";
+    ss << cliProperties.getName() << " ";
     cmd->getCommandUsage(ss);
     ss << "\n\n" << cmd->getDesc() << std::endl;
 
     ss << endl;
     ss << "Options that are valid with ";
-    CLIUtils::printKeys(ss, cmd->getShortKey(), cmd->getLongKey(), "", false);
+    cliUtils::printKeys(ss, cmd->getShortKey(), cmd->getLongKey(), "", false);
     ss << std::endl;
     cmd->getHelp(ss);
 }
 
-}  // namespace CLIUtils
+}  // namespace cliUtils
 }  // namespace octf

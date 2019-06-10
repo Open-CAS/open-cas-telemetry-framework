@@ -41,7 +41,7 @@ void Parameter::getHelp(stringstream &ss) const {
         longKey += (" " + what);
     }
 
-    CLIUtils::printKeys(ss, shortKey, longKey, desc, false);
+    cliUtils::printKeys(ss, shortKey, longKey, desc, false);
 
     return;
 }

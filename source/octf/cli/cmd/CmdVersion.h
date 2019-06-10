@@ -6,6 +6,7 @@
 #ifndef SOURCE_OCTF_CLI_CMD_CMDVERSION_H
 #define SOURCE_OCTF_CLI_CMD_CMDVERSION_H
 
+#include <octf/cli/CLIProperties.h>
 #include <octf/cli/cmd/Command.h>
 
 namespace octf {
@@ -18,7 +19,7 @@ public:
     /**
      * @brief Command constructor
      */
-    CmdVersion();
+    CmdVersion(const CLIProperties &properties);
 
     virtual ~CmdVersion() = default;
 
@@ -26,6 +27,9 @@ public:
      * @brief Executes command
      */
     void execute() override;
+
+private:
+    const CLIProperties m_cliProperties;
 };
 
 }  // namespace octf
