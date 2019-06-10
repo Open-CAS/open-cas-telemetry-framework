@@ -66,15 +66,12 @@ public:
             const int32_t index) = 0;
 
     /**
-     *  @brief Parse parameters' values from CLIList
+     * @brief Parse parameters' values from CLIList
      *
-     *  @return Status of parsing.
-     *  @retval True If parsing was successful
-     *  @retval False If parsing failed, e.g. required parameter
-     *  is missing.
+     * @throw Exception
+     * If parsing failed, e.g. required parameter is missing.
      */
-    // TODO (jstencel) consider if it shouldn't be moved outside the class
-    virtual bool parseParamValues(CLIList &cliList) = 0;
+    virtual void parseParamValues(CLIList &cliList) = 0;
 
     /**
      *  @brief Gets help for this command
@@ -96,9 +93,9 @@ public:
     /**
      * @brief Check if any of the required parameters are missing
      *
-     * @return Are any of the required options missing
+     * @throw CliException if a parameter is missing
      */
-    virtual bool isParamMissing() const = 0;
+    virtual void checkParamMissing() const = 0;
 
     /**
      * @param key Short key of the command

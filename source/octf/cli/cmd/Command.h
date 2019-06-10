@@ -40,7 +40,7 @@ public:
     virtual std::shared_ptr<IParameter> getParamByIndex(
             const int32_t index) override;
 
-    bool parseParamValues(CLIList &cliList) override;
+    void parseParamValues(CLIList &cliList) override;
 
     void getHelp(std::stringstream &ss) const override;
 
@@ -50,7 +50,7 @@ public:
 
     bool isLocal() const override;
 
-    bool isParamMissing() const override;
+    void checkParamMissing() const override;
 
     void setShortKey(const std::string &key) override;
 

@@ -67,8 +67,11 @@ public:
      * @param cmd Command name
      * @param cliList CLIList with parameters
      *
+     * @return Execution result
+     * @retval 0 Success
+     * @retval Non-zero Failure
      */
-    virtual void execute(CLIList &cliList);
+    virtual int execute(CLIList &cliList);
 
 private:
     virtual void addInterface(InterfaceShRef interface, CommandSet &commandSet);

@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
+#include <octf/cli/CLIException.h>
 #include <octf/cli/CLIList.h>
 #include <octf/cli/CLIProperties.h>
 #include <octf/cli/CLIUtils.h>
@@ -70,7 +71,7 @@ std::shared_ptr<IParameter> Command::getParam(const string &name) {
         }
     }
 
-    throw InvalidParameterException("Option '" + name + "' is unrecognized.");
+    throw CLIException("Option '" + name + "' is unrecognized.", true, true);
 }
 
 std::shared_ptr<IParameter> Command::getParamByIndex(const int32_t index) {
@@ -86,58 +87,51 @@ std::shared_ptr<IParameter> Command::getParamByIndex(const int32_t index) {
                                     "' is unrecognized.");
 }
 
-bool Command::parseParamValues(CLIList &cliList) {
-    try {
-        ParamHelp ph;
-        // Look for command parameters
-        while (cliList.hasNext()) {
-            // Get next parameter
+void Command::parseParamValues(CLIList &cliList) {
+    ParamHelp ph;
+    // Look for command parameters
+    while (cliList.hasNext()) {
+        // Get next parameter
 
-            // Get next element - a key is expected
-            CLIElement element = cliList.nextElement();
-            string name = element.getValidKeyName();
-            if (name.empty()) {
-                return false;
-            }
+        // Get next element - a key is expected
+        CLIElement element = cliList.nextElement();
+        string name = element.getValidKeyName();
+        if (name.empty()) {
+            throw CLIException("Invalid parameter format", true, true);
+        }
 
-            // Show third level help if the parameter is help
-            if (name == ph.getLongKey() || name == ph.getShortKey()) {
-                // Return false in order to not execute command and show help
-                return false;
-            }
+        // Show third level help if the parameter is help
+        if (name == ph.getLongKey() || name == ph.getShortKey()) {
+            // Throw exception in order to not execute command and show help
+            throw CLIException("", true, false);
+        }
 
-            // Find proper parameter
-            std::shared_ptr<IParameter> param = getParam(name);
+        // Find proper parameter
+        std::shared_ptr<IParameter> param = getParam(name);
 
-            // Parse input for given parameter
-            if (param->hasValue()) {
-                if (cliList.hasNext()) {
-                    // Get next element - a value (not a key) is expected
-                    param->setValue(cliList.next());
-                } else {
-                    throw InvalidParameterException("Value of option '" +
-                                                    param->getLongKey() +
-                                                    "' is missing.");
-                }
-
+        // Parse input for given parameter
+        if (param->hasValue()) {
+            if (cliList.hasNext()) {
+                // Get next element - a value (not a key) is expected
+                param->setValue(cliList.next());
             } else {
-                // Set flag parameter value to empty
-                param->setValue(CLIElement(""));
+                throw CLIException("Value of option '" + param->getLongKey() +
+                                           "' is missing.",
+                                   true, true);
             }
-        }
 
-        if (cliList.hasNext()) {
-            throw InvalidParameterException("Too much option(s).");
+        } else {
+            // Set flag parameter value to empty
+            param->setValue(CLIElement(""));
         }
-
-        // if parameter is missing
-        if (isParamMissing())
-            throw InvalidParameterException("Parameter is missing.");
-    } catch (Exception &e) {
-        log::cout << e.what() << std::endl;
-        return false;
     }
-    return true;
+
+    if (cliList.hasNext()) {
+        throw InvalidParameterException("Too much option(s).");
+    }
+
+    // if parameter is missing
+    checkParamMissing();
 }
 
 void Command::getHelp(stringstream &ss) const {
@@ -179,7 +173,7 @@ void Command::getCommandUsage(stringstream &ss) const {
     }
 }
 
-bool Command::isParamMissing() const {
+void Command::checkParamMissing() const {
     // Iterate over command's parameters
     auto iter = m_params.begin();
     for (; iter != m_params.end(); iter++) {
@@ -194,12 +188,12 @@ bool Command::isParamMissing() const {
         }
 
         // There is a required and not set parameter
-        throw InvalidParameterException(
-                "Option '" + iter->second->getLongKey() + "' is required.");
+        throw CLIException(
+                "Option '" + iter->second->getLongKey() + "' is required.",
+                true, true);
     }
 
     // All required parameters are set
-    return false;
 }
 
 const string &Command::getShortKey() const {

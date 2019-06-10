@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <octf/cli/CLIException.h>
 #include <octf/cli/CLIList.h>
 #include <octf/cli/CLIProperties.h>
 #include <octf/cli/CLIUtils.h>
@@ -183,7 +184,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
     }
 }
 
-void Executor::execute(CLIList &cliList) {
+int Executor::execute(CLIList &cliList) {
     shared_ptr<ICommand> command = validateCommand(cliList);
 
     if (command == nullptr || command == m_moduleCmdSet.getHelpCmd()) {
@@ -194,42 +195,59 @@ void Executor::execute(CLIList &cliList) {
         CLIUtils::printUsage(ss, &m_module, false);
         CLIUtils::printCmdSetHelp(ss, m_moduleCmdSet);
         log::cout << ss.str();
-        return;
 
-    } else if (command == m_localCmdSet.getHelpCmd()) {
+        return command == nullptr;
+    }
+
+    if (command == m_localCmdSet.getHelpCmd()) {
         // "First level" help (general for application)
         stringstream ss;
         printMainHelp(ss);
         log::cout << ss.str();
-    } else {
-        // Fill command's parameters
-        if (command->parseParamValues(cliList)) {
-            setupOutputsForCommandsLogs();
+        return 0;
+    }
 
-            if (command->isLocal()) {
-                // Execute command locally
-                command->execute();
+    try {
+        // Fill command's parameters
+        command->parseParamValues(cliList);
+        setupOutputsForCommandsLogs();
+
+        if (command->isLocal()) {
+            // Execute command locally
+            command->execute();
+        } else {
+            // Execute remotely
+            shared_ptr<CommandProtobuf> protoCmd =
+                    std::dynamic_pointer_cast<CommandProtobuf>(command);
+            if (protoCmd) {
+                executeRemote(protoCmd);
 
             } else {
-                // Execute remotely
-                shared_ptr<CommandProtobuf> protoCmd =
-                        std::dynamic_pointer_cast<CommandProtobuf>(command);
-                if (protoCmd) {
-                    executeRemote(protoCmd);
-
-                } else {
-                    // Dynamic cast failed
-                    throw InvalidParameterException("Unknown command type.");
-                }
+                // Dynamic cast failed
+                throw InvalidParameterException("Unknown command type.");
             }
-        } else {
+        }
+    } catch (CLIException &e) {
+        if ("" != e.getMessage()) {
+            log::cerr << e.getMessage() << endl;
+        }
+
+        if (e.isHelp()) {
             // Parse parameters failed, show third level (command's) help
             stringstream ss;
+
+            if ("" != e.getMessage()) {
+                ss << endl;
+            }
+
             CLIUtils::printCmdHelp(ss, command);
             log::cout << ss.str();
-            return;
         }
+
+        return e.isFailure();
     }
+
+    return 0;
 }
 
 bool Executor::isModuleExistent(std::string moduleName) const {
