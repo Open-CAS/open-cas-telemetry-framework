@@ -253,6 +253,8 @@ int Executor::execute(CLIList &cliList) {
 }
 
 int Executor::execute(int argc, char *argv[]) {
+    int result = 1;
+
     try {
         if (argc > 1) {
             // Parse application input
@@ -261,7 +263,7 @@ int Executor::execute(int argc, char *argv[]) {
             cliList.create(arguments);
 
             // Execute command
-            execute(cliList);
+            result = execute(cliList);
 
         } else {
             throw InvalidParameterException(
@@ -278,7 +280,7 @@ int Executor::execute(int argc, char *argv[]) {
         return -1;
     }
 
-    return 0;
+    return result;
 }
 
 bool Executor::isModuleExistent(std::string moduleName) const {
