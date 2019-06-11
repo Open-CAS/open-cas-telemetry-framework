@@ -52,7 +52,7 @@ void TraceManager::joinThread() {
 }
 
 void TraceManager::handleJobs() {
-    m_startTime = std::chrono::steady_clock::now();
+    m_endTime = m_startTime = std::chrono::steady_clock::now();
     auto endTime = m_startTime + std::chrono::seconds(m_maxDuration);
     try {
         setupJobs();
@@ -78,8 +78,6 @@ void TraceManager::handleJobs() {
         log::cerr << e.getMessage() << std::endl;
         setState(TracingState::ERROR);
     }
-
-    m_endTime = std::chrono::steady_clock::now();
 
     for (const auto &job : m_jobs) {
         job->stopJobThread();
@@ -290,7 +288,8 @@ int64_t TraceManager::getDuration(TracingState state) const {
     using std::chrono::steady_clock;
     using std::chrono::time_point;
 
-    if (state == TracingState::NOT_STARTED) {
+    if (state == TracingState::NOT_STARTED ||
+        state == TracingState::INITIALIZING) {
         return 0;
     }
 
@@ -353,6 +352,10 @@ void TraceManager::updateState() {
 }
 
 void TraceManager::setState(TracingState state) {
+    if (m_state == TracingState::RUNNING && state != TracingState::RUNNING) {
+        m_endTime = std::chrono::steady_clock::now();
+    }
+
     // Update state
     m_state = state;
 
