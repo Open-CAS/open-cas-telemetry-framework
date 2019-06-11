@@ -136,18 +136,18 @@ void InterfaceTraceManagementImpl::removeTraces(
 
     // Remove directories matching prefixes and having summary file
     for (int i = 0; i < tracesToRemove.trace_size(); i++) {
-        const auto &traceToRemoved = tracesToRemove.trace(i);
+        const auto &traceToRemove = tracesToRemove.trace(i);
         std::string absolutePath =
-                traceRootDir + "/" + traceToRemoved.tracepath();
+                traceRootDir + "/" + traceToRemove.tracepath();
 
         if (!fsutils::removeFile(absolutePath)) {
-            log::cerr << "Could not remove trace: " + traceToRemoved.tracepath()
+            log::cerr << "Could not remove trace: " + traceToRemove.tracepath()
                       << std::endl;
         } else {
             // Add removed traces to response
             auto removedTrace = response->add_trace();
-            removedTrace->set_tracepath(traceToRemoved.tracepath());
-            removedTrace->set_state(traceToRemoved.state());
+            removedTrace->set_tracepath(traceToRemove.tracepath());
+            removedTrace->set_state(traceToRemove.state());
         }
     }
 

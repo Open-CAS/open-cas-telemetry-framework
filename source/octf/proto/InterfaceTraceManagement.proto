@@ -32,7 +32,9 @@ message RemoveTracesRequest {
         (opts_param).cli_required = false,
         (opts_param).cli_long_key = "force",
         (opts_param).cli_short_key = "f",
-        (opts_param).cli_desc = "Enforce removing specified trace(s)"
+        (opts_param).cli_desc =
+            "Enforces removing specified traces in any state.
+            Without this flag only completed and failed traces can be removed."
     ];
 }
 
@@ -60,7 +62,7 @@ service InterfaceTraceManagement {
 
         option (opts_command).cli_short_key = "R";
 
-        option (opts_command).cli_long_key = "remove-trace";
+        option (opts_command).cli_long_key = "remove-traces";
 
         option (opts_command).cli_desc = "Removes specified trace(s)";
     };
