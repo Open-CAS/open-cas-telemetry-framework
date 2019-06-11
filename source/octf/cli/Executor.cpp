@@ -45,9 +45,6 @@ Executor::Executor()
         , m_progress(0.0)
         , m_nodePlugin() {
     addLocalCommand(make_shared<CmdVersion>(m_cliProperties));
-
-    // Get a list of available modules
-    getModules();
 }
 
 CLIProperties &Executor::getCliProperties() {
@@ -409,6 +406,17 @@ void Executor::setProgress(double progress, std::ostream &out) {
     if (next != prev) {
         m_progress = progress;
         cliUtils::printProgressBar(m_progress, out);
+    }
+}
+
+void Executor::addInterfaces(std::initializer_list<InterfaceShRef> interfaces) {
+    try {
+        for (auto &iface : interfaces) {
+            addLocalModule(iface);
+        }
+    } catch (Exception &e) {
+        // XXX
+        throw e;
     }
 }
 

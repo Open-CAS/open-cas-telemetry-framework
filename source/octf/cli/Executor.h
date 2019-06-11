@@ -6,6 +6,7 @@
 #ifndef SOURCE_OCTF_CLI_EXECUTOR_H
 #define SOURCE_OCTF_CLI_EXECUTOR_H
 
+#include <initializer_list>
 #include <map>
 #include <octf/cli/CLIList.h>
 #include <octf/cli/CLIProperties.h>
@@ -44,6 +45,26 @@ public:
     CLIProperties &getCliProperties();
 
     /**
+     * @brief Adds interface into this CLI executor
+     *
+     * @param interfaces Interfaces initializer list
+     */
+    void addInterfaces(std::initializer_list<InterfaceShRef> interfaces);
+
+    /**
+     * @brief Execute command
+     *
+     * @param argc Arguments count
+     * @param argv Arguments array
+     *
+     * @return Execution result
+     * @retval 0 Success
+     * @retval Non-zero Failure
+     */
+    int execute(int argc, char *argv[]);
+
+private:
+    /**
      * @brief Add local module with key prefix
      *
      * @param interface Interface which method will be added into local module
@@ -70,19 +91,6 @@ public:
      */
     void addLocalCommand(std::shared_ptr<ICommand> cmd);
 
-    /**
-     * @brief Execute command
-     *
-     * @param argc Arguments count
-     * @param argv Arguments array
-     *
-     * @return Execution result
-     * @retval 0 Success
-     * @retval Non-zero Failure
-     */
-    int execute(int argc, char *argv[]);
-
-private:
     /**
      * @brief Execute command
      * @param cliList CLIList with parameters
