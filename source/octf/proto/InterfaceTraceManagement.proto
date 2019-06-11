@@ -33,8 +33,9 @@ message RemoveTracesRequest {
         (opts_param).cli_long_key = "force",
         (opts_param).cli_short_key = "f",
         (opts_param).cli_desc =
-            "Enforces removing specified traces in any state.
-            Without this flag only completed and failed traces can be removed."
+            "Enforces removing specified traces in any state. "
+            "Without this flag only completed and failed traces can be "
+            "removed."
     ];
 }
 
