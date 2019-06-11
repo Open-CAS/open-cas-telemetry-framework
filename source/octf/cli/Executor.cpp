@@ -6,11 +6,11 @@
 #include <octf/cli/Executor.h>
 
 #include <google/protobuf/dynamic_message.h>
-#include <exception>
 #include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <octf/cli/CLIException.h>
 #include <octf/cli/CLIList.h>
 #include <octf/cli/CLIProperties.h>
@@ -32,6 +32,7 @@ using std::make_shared;
 using std::shared_ptr;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 namespace octf {
 
@@ -43,6 +44,8 @@ Executor::Executor()
         , m_module()
         , m_progress(0.0)
         , m_nodePlugin() {
+    addLocalCommand(make_shared<CmdVersion>(m_cliProperties));
+
     // Get a list of available modules
     getModules();
 }
@@ -250,6 +253,35 @@ int Executor::execute(CLIList &cliList) {
         }
 
         return e.isFailure();
+    }
+
+    return 0;
+}
+
+int Executor::execute(int argc, char *argv[]) {
+    try {
+        if (argc > 1) {
+            // Parse application input
+            vector<string> arguments(argv, argv + argc);
+            CLIList cliList;
+            cliList.create(arguments);
+
+            // Execute command
+            execute(cliList);
+
+        } else {
+            throw InvalidParameterException(
+                    "Specify module or command first. Use '" +
+                    m_cliProperties.getName() + " -H' for help.");
+        }
+
+    } catch (Exception &e) {
+        log::cerr << e.what() << endl;
+        return -1;
+    } catch (std::exception &e) {
+        log::critical << m_cliProperties.getName()
+                      << " execution interrupted: " << e.what() << endl;
+        return -1;
     }
 
     return 0;

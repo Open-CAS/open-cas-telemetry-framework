@@ -51,10 +51,10 @@ public:
      * @param desc Module description
      * @param shortKey Module short key
      */
-    virtual void addLocalModule(InterfaceShRef interface,
-                                const std::string &longKey,
-                                const std::string &desc,
-                                const std::string &shortKey = "");
+    void addLocalModule(InterfaceShRef interface,
+                        const std::string &longKey,
+                        const std::string &desc,
+                        const std::string &shortKey = "");
 
     /**
      * @brief Add local module
@@ -62,27 +62,38 @@ public:
      * @param interface Interface which methods will be add into local command
      * set
      */
-    virtual void addLocalModule(InterfaceShRef interface);
+    void addLocalModule(InterfaceShRef interface);
 
     /**
      * @brief Add local command to executor's command set
      * @param cmd Command to be added
      */
-    virtual void addLocalCommand(std::shared_ptr<ICommand> cmd);
+    void addLocalCommand(std::shared_ptr<ICommand> cmd);
 
     /**
      * @brief Execute command
-     * @param cmd Command name
+     *
+     * @param argc Arguments count
+     * @param argv Arguments array
+     *
+     * @return Execution result
+     * @retval 0 Success
+     * @retval Non-zero Failure
+     */
+    int execute(int argc, char *argv[]);
+
+private:
+    /**
+     * @brief Execute command
      * @param cliList CLIList with parameters
      *
      * @return Execution result
      * @retval 0 Success
      * @retval Non-zero Failure
      */
-    virtual int execute(CLIList &cliList);
+    int execute(CLIList &cliList);
 
-private:
-    virtual void addInterface(InterfaceShRef interface, CommandSet &commandSet);
+    void addInterface(InterfaceShRef interface, CommandSet &commandSet);
 
     /**
      * @brief Add a proto method which will be available as a local command
@@ -91,26 +102,26 @@ private:
      * @param interface Pointer to interface containing given method
      * @param commandSet Command set to contain this command
      */
-    virtual void addMethod(const ::google::protobuf::MethodDescriptor *method,
-                           InterfaceShRef interface,
-                           CommandSet &commandSet);
+    void addMethod(const ::google::protobuf::MethodDescriptor *method,
+                   InterfaceShRef interface,
+                   CommandSet &commandSet);
 
     /**
      * @return Help for executor's local commands and available plugins
      */
-    virtual void printMainHelp(std::stringstream &ss);
+    void printMainHelp(std::stringstream &ss);
 
     /**
      * @brief Get internally a set of available modules
      */
-    virtual void getModules();
+    void getModules();
 
     /**
      * @brief Set execution progress and print if changed
      * @param progress Progress of command as a fraction
      * @param out Output stream
      */
-    virtual void setProgress(double progress, std::ostream &out);
+    void setProgress(double progress, std::ostream &out);
 
     /**
      * @brief Load command set of given (remote) module
@@ -118,17 +129,17 @@ private:
      * This method may need to communicate with specified module
      * in order to load command set
      */
-    virtual void loadModuleCommandSet();
+    void loadModuleCommandSet();
 
-    virtual std::shared_ptr<ICommand> getCommandFromModule(std::string cmdName);
+    std::shared_ptr<ICommand> getCommandFromModule(std::string cmdName);
 
-    virtual bool isModuleExistent(std::string moduleName) const;
+    bool isModuleExistent(std::string moduleName) const;
 
-    virtual void setModule(std::string moduleName);
+    void setModule(std::string moduleName);
 
-    virtual std::shared_ptr<ICommand> validateCommand(CLIList &cliList);
+    std::shared_ptr<ICommand> validateCommand(CLIList &cliList);
 
-    virtual void executeRemote(std::shared_ptr<CommandProtobuf> cmd);
+    void executeRemote(std::shared_ptr<CommandProtobuf> cmd);
 
     /**
      * Prepares output to handle commands' logs
