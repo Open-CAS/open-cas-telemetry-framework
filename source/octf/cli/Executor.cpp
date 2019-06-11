@@ -3,18 +3,19 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <google/protobuf/dynamic_message.h>
-#include <octf/cli/CLIException.h>
-#include <octf/cli/CLIList.h>
-#include <octf/cli/CLIUtils.h>
-#include <octf/cli/CommandSet.h>
 #include <octf/cli/Executor.h>
-#include <octf/cli/GenericPluginShadow.h>
-#include <octf/cli/Module.h>
-#include <octf/cli/cmd/CmdHelp.h>
-#include <octf/cli/cmd/CmdVersion.h>
-#include <octf/cli/cmd/CommandProtobuf.h>
-#include <octf/cli/cmd/CommandProtobufLocal.h>
+
+#include <google/protobuf/dynamic_message.h>
+#include <octf/cli/internal/CLIException.h>
+#include <octf/cli/internal/CLIList.h>
+#include <octf/cli/internal/CLIUtils.h>
+#include <octf/cli/internal/CommandSet.h>
+#include <octf/cli/internal/GenericPluginShadow.h>
+#include <octf/cli/internal/Module.h>
+#include <octf/cli/internal/cmd/CmdHelp.h>
+#include <octf/cli/internal/cmd/CmdVersion.h>
+#include <octf/cli/internal/cmd/CommandProtobuf.h>
+#include <octf/cli/internal/cmd/CommandProtobufLocal.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/ModulesDiscover.h>

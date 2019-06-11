@@ -1,0 +1,19 @@
+add_subdirectory(cmd)
+add_subdirectory(param)
+target_sources(octf
+PRIVATE
+	${CMAKE_CURRENT_LIST_DIR}/CLIUtils.h
+	${CMAKE_CURRENT_LIST_DIR}/CommandSet.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CLIUtils.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CLIList.h
+	${CMAKE_CURRENT_LIST_DIR}/CLIElement.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CommandSet.h
+	${CMAKE_CURRENT_LIST_DIR}/GenericPluginShadow.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CLIElement.h
+	${CMAKE_CURRENT_LIST_DIR}/GenericPluginShadow.h
+	${CMAKE_CURRENT_LIST_DIR}/Module.h
+	${CMAKE_CURRENT_LIST_DIR}/Module.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ICommandSet.h
+	${CMAKE_CURRENT_LIST_DIR}/CLIList.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CLIException.h
+)
