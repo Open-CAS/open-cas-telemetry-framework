@@ -41,16 +41,22 @@ void NodeBase::deinitCommon() {
 
 bool NodeBase::readSettings() {
     if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.read(*m_config)) {
-            return true;
-        } else {
-            log::cerr << "Cannot read configuration for file "
-                      << rw.getFilePath() << std::endl;
+            if (rw.read(*m_config)) {
+                return true;
+            } else {
+                log::cerr << "Cannot read configuration for file "
+                          << rw.getFilePath() << std::endl;
 
+                return false;
+            }
+
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
             return false;
         }
     }
@@ -60,16 +66,21 @@ bool NodeBase::readSettings() {
 
 bool NodeBase::writeSettings() {
     if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.write(*m_config)) {
-            return true;
-        } else {
-            log::cerr << "Cannot write configuration for file "
-                      << rw.getFilePath() << std::endl;
+            if (rw.write(*m_config)) {
+                return true;
+            } else {
+                log::cerr << "Cannot write configuration for file "
+                          << rw.getFilePath() << std::endl;
 
+                return false;
+            }
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
             return false;
         }
     }
@@ -79,18 +90,23 @@ bool NodeBase::writeSettings() {
 
 bool NodeBase::removeSettings() {
     if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.isFileAvailable()) {
-            if (rw.remove()) {
-                return true;
+            if (rw.isFileAvailable()) {
+                if (rw.remove()) {
+                    return true;
+                }
+
+                log::cerr << "Cannot remove configuration for file "
+                          << rw.getFilePath() << std::endl;
+
+                return false;
             }
-
-            log::cerr << "Cannot remove configuration for file "
-                      << rw.getFilePath() << std::endl;
-
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
             return false;
         }
     }
@@ -100,11 +116,17 @@ bool NodeBase::removeSettings() {
 
 bool NodeBase::areSettingsAvailable() {
     if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        return rw.isFileAvailable();
+            return rw.isFileAvailable();
+
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
+            return false;
+        }
     }
 
     return false;
