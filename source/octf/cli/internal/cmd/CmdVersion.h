@@ -30,7 +30,7 @@ public:
     void execute() override;
 
 private:
-    const CLIProperties m_cliProperties;
+    const CLIProperties &m_cliProperties;
 };
 
 }  // namespace cli
