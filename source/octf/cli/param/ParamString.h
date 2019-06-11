@@ -15,6 +15,11 @@ namespace octf {
 constexpr int MAX_STRING_LENGTH = 4096;
 
 /**
+ * This value specifies delimiter for multiple value parameters
+ */
+constexpr char PARAMETER_VALUE_DELIMITER[] = ",";
+
+/**
  * @brief String parameter class
  */
 class ParamString : public Parameter {

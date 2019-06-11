@@ -3,29 +3,21 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/cli/Executor.h>
-
 #include <google/protobuf/dynamic_message.h>
-#include <iterator>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
 #include <octf/cli/CLIException.h>
 #include <octf/cli/CLIList.h>
-#include <octf/cli/CLIProperties.h>
 #include <octf/cli/CLIUtils.h>
 #include <octf/cli/CommandSet.h>
+#include <octf/cli/Executor.h>
+#include <octf/cli/GenericPluginShadow.h>
+#include <octf/cli/Module.h>
+#include <octf/cli/cmd/CmdHelp.h>
 #include <octf/cli/cmd/CmdVersion.h>
 #include <octf/cli/cmd/CommandProtobuf.h>
 #include <octf/cli/cmd/CommandProtobufLocal.h>
-#include <octf/node/INode.h>
-#include <octf/node/NodeClient.h>
-#include <octf/proto/InterfaceCLI.pb.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/ModulesDiscover.h>
-#include <octf/utils/OptionsValidation.h>
 
 using std::endl;
 using std::make_shared;
@@ -38,27 +30,29 @@ namespace octf {
 
 Executor::Executor()
         : m_cliProperties()
-        , m_localCmdSet()
-        , m_moduleCmdSet()
+        , m_localCmdSet(new CommandSet())
+        , m_moduleCmdSet(new CommandSet())
         , m_modules()
-        , m_module()
+        , m_module(new Module())
         , m_progress(0.0)
         , m_nodePlugin() {
     addLocalCommand(make_shared<CmdVersion>(m_cliProperties));
 }
+
+Executor::~Executor() {}
 
 CLIProperties &Executor::getCliProperties() {
     return m_cliProperties;
 }
 
 void Executor::addLocalCommand(shared_ptr<ICommand> cmd) {
-    m_localCmdSet.addCmd(cmd);
+    m_localCmdSet->addCmd(cmd);
 }
 
 void Executor::loadModuleCommandSet() {
-    if (m_module.isLocal()) {
+    if (m_module->isLocal()) {
         // Module is local, set the appropriate command set
-        m_moduleCmdSet = m_localModules[m_module.getLongKey()];
+        *m_moduleCmdSet = m_localModules[m_module->getLongKey()];
 
     } else {
         // Get description of this module's command set
@@ -78,7 +72,7 @@ void Executor::loadModuleCommandSet() {
             for (int i = 0; i < commandCount; i++) {
                 const proto::CliCommand &cmdDesc = cmdSetDesc->command(i);
                 auto cmd = make_shared<CommandProtobuf>(cmdDesc);
-                m_moduleCmdSet.addCmd(cmd);
+                m_moduleCmdSet->addCmd(cmd);
             }
         }
     }
@@ -94,7 +88,7 @@ void Executor::printMainHelp(std::stringstream &ss) {
         }
     }
 
-    cliUtils::printCmdSetHelp(ss, m_localCmdSet);
+    cliUtils::printCmdSetHelp(ss, *m_localCmdSet);
 
     return;
 }
@@ -149,13 +143,13 @@ shared_ptr<ICommand> Executor::validateCommand(CLIList &cliList) {
     shared_ptr<ICommand> commandToExecute;
     if (localCommand) {
         // Local command
-        commandToExecute = m_localCmdSet.getCmd(cmd);
+        commandToExecute = m_localCmdSet->getCmd(cmd);
 
     } else {
         // Module command
-        if (m_moduleCmdSet.hasCmd(cmd)) {
+        if (m_moduleCmdSet->hasCmd(cmd)) {
             // Module command set already loaded
-            commandToExecute = m_moduleCmdSet.getCmd(cmd);
+            commandToExecute = m_moduleCmdSet->getCmd(cmd);
         } else {
             // Module command set not loaded or command not existent
             commandToExecute = getCommandFromModule(cmd);
@@ -192,19 +186,19 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
 int Executor::execute(CLIList &cliList) {
     shared_ptr<ICommand> command = validateCommand(cliList);
 
-    if (command == nullptr || command == m_moduleCmdSet.getHelpCmd()) {
+    if (command == nullptr || command == m_moduleCmdSet->getHelpCmd()) {
         // No command for module specified or specified command is help
         // download module's command set and show help
         loadModuleCommandSet();
         stringstream ss;
-        cliUtils::printUsage(ss, &m_module, m_cliProperties, false);
-        cliUtils::printCmdSetHelp(ss, m_moduleCmdSet);
+        cliUtils::printUsage(ss, m_module.get(), m_cliProperties, false);
+        cliUtils::printCmdSetHelp(ss, *m_moduleCmdSet);
         log::cout << ss.str();
 
         return command == nullptr;
     }
 
-    if (command == m_localCmdSet.getHelpCmd()) {
+    if (command == m_localCmdSet->getHelpCmd()) {
         // "First level" help (general for application)
         stringstream ss;
         printMainHelp(ss);
@@ -295,20 +289,20 @@ bool Executor::isModuleExistent(std::string moduleName) const {
 }
 
 void Executor::setModule(std::string moduleName) {
-    for (const auto module : m_modules) {
+    for (const auto &module : m_modules) {
         if (module.second.getLongKey() == moduleName ||
             module.second.getShortKey() == moduleName) {
             // Remember which module was set
-            m_module = module.second;
+            *m_module = module.second;
 
-            if (m_module.isLocal()) {
+            if (m_module->isLocal()) {
                 // Set appropriate command set for local module
-                m_moduleCmdSet = m_localModules[moduleName];
+                *m_moduleCmdSet = m_localModules[moduleName];
 
             } else {
                 // Initialize node plugin if module is remote
                 m_nodePlugin.reset(
-                        new GenericPluginShadow(m_module.getLongKey()));
+                        new GenericPluginShadow(m_module->getLongKey()));
                 if (!m_nodePlugin->init()) {
                     throw Exception("Plugin unavailable.");
                 }
@@ -359,7 +353,7 @@ void Executor::addLocalModule(InterfaceShRef interface,
 }
 
 void Executor::addLocalModule(InterfaceShRef interface) {
-    addInterface(interface, m_localCmdSet);
+    addInterface(interface, *m_localCmdSet);
 }
 
 void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
@@ -410,13 +404,8 @@ void Executor::setProgress(double progress, std::ostream &out) {
 }
 
 void Executor::addInterfaces(std::initializer_list<InterfaceShRef> interfaces) {
-    try {
-        for (auto &iface : interfaces) {
-            addLocalModule(iface);
-        }
-    } catch (Exception &e) {
-        // XXX
-        throw e;
+    for (auto &iface : interfaces) {
+        addLocalModule(iface);
     }
 }
 

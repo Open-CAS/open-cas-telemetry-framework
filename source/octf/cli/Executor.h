@@ -8,23 +8,19 @@
 
 #include <initializer_list>
 #include <map>
-#include <octf/cli/CLIList.h>
+#include <memory>
 #include <octf/cli/CLIProperties.h>
-#include <octf/cli/CLIUtils.h>
-#include <octf/cli/CommandSet.h>
-#include <octf/cli/GenericPluginShadow.h>
-#include <octf/cli/Module.h>
-#include <octf/cli/cmd/CmdHelp.h>
-#include <octf/cli/cmd/CommandProtobuf.h>
 #include <octf/node/INode.h>
-#include <octf/utils/Log.h>
 
 namespace octf {
 
-// This value specifies delimiter for multiple value parameters
-constexpr char PARAMETER_VALUE_DELIMITER[] = ",";
-
 class Parameter;
+class CLIList;
+class ICommand;
+class CommandProtobuf;
+class CommandSet;
+class GenericPluginShadow;
+class Module;
 
 /**
  * @brief Class used for command execution
@@ -35,7 +31,7 @@ public:
      * @brief Default constructor
      */
     Executor();
-    virtual ~Executor() = default;
+    virtual ~Executor();
 
     /**
      * @brief Gets CLI Properties
@@ -159,10 +155,10 @@ private:
 
 private:
     CLIProperties m_cliProperties;
-    CommandSet m_localCmdSet;
-    CommandSet m_moduleCmdSet;
+    std::unique_ptr<CommandSet> m_localCmdSet;
+    std::unique_ptr<CommandSet> m_moduleCmdSet;
     std::map<std::string, Module> m_modules;
-    Module m_module;
+    std::unique_ptr<Module> m_module;
     double m_progress;
     std::unique_ptr<GenericPluginShadow> m_nodePlugin;
     std::map<std::string, CommandSet> m_localModules;
