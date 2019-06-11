@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_PARAMYESNO_H
-#define SOURCE_OCTF_CLI_PARAM_PARAMYESNO_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMYESNO_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMYESNO_H
 
 #include <octf/cli/internal/param/ParamEnum.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Yes/No parameter
@@ -28,6 +29,7 @@ public:
     virtual ~ParamYesNo() = default;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_PARAMYESNO_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMYESNO_H

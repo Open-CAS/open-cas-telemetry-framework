@@ -18,6 +18,7 @@ extern "C" {
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 ParamNumber::ParamNumber()
         : Parameter()
@@ -246,4 +247,5 @@ void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
     }
 }
 
+}  // namespace cli
 }  // namespace octf

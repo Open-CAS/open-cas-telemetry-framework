@@ -6,6 +6,7 @@
 #include <octf/cli/internal/param/ParamYesNo.h>
 
 namespace octf {
+namespace cli {
 
 ParamYesNo::ParamYesNo()
         : ParamEnum() {
@@ -13,4 +14,5 @@ ParamYesNo::ParamYesNo()
     addEnumVal(Yes, "yes", "");
 }
 
+}  // namespace cli
 }  // namespace octf

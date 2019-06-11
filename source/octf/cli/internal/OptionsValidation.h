@@ -18,7 +18,8 @@ constexpr char LONG_KEY_PREFIX[] = "--";
  * Can be used on server side when creating description of available interfaces
  * and on client side when parsing input from user
  */
-namespace cliUtils {
+namespace cli {
+namespace utils {
 
 /**
  * @brief Checks if specified argument is a valid short key.
@@ -80,7 +81,9 @@ bool isCommandValid(const proto::CliCommand &cmd);
  */
 bool isCommandSetValid(const proto::CliCommandSet &commandSet,
                        bool validCommandsAssured = false);
-}  // namespace cliUtils
+
+}  // namespace utils
+}  // namespace cli
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_UTILS_OPTIONSVALIDATION_H

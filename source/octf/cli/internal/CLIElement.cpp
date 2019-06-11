@@ -4,8 +4,10 @@
  */
 
 #include <octf/cli/internal/CLIElement.h>
+#include <octf/cli/internal/OptionsValidation.h>
 
 namespace octf {
+namespace cli {
 
 const std::string &CLIElement::getValue() const {
     return m_value;
@@ -60,9 +62,9 @@ bool CLIElement::isValidKey(std::string key, CliType keyType) {
     bool result = false;
 
     if (keyType == CliType::ShortKey) {
-        result = cliUtils::isShortKeyValid(key);
+        result = utils::isShortKeyValid(key);
     } else if (keyType == CliType::LongKey) {
-        result = cliUtils::isLongKeyValid(key);
+        result = utils::isLongKeyValid(key);
     }
 
     return result;
@@ -89,4 +91,5 @@ bool CLIElement::operator==(const std::string &value) const {
     }
 }
 
+}  // namespace cli
 }  // namespace octf

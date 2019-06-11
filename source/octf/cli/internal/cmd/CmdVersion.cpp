@@ -10,6 +10,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 CmdVersion::CmdVersion(const CLIProperties &properties)
         : Command()
@@ -25,4 +26,5 @@ void CmdVersion::execute() {
     log::cout << "Version: " << m_cliProperties.getVersion() << endl;
 }
 
+}  // namespace cli
 }  // namespace octf

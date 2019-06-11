@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CLILIST_H
-#define SOURCE_OCTF_CLI_CLILIST_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CLILIST_H
+#define SOURCE_OCTF_CLI_INTERNAL_CLILIST_H
 
 #include <list>
 #include <vector>
@@ -12,6 +12,7 @@
 #include <octf/cli/internal/CommandSet.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief List of CLIElements, excluding application name
@@ -70,6 +71,7 @@ private:
     std::list<CLIElement>::iterator m_iter;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CLILIST_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CLILIST_H

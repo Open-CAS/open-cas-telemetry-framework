@@ -8,8 +8,8 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <octf/cli/internal/CLIList.h>
 #include <octf/cli/CLIProperties.h>
+#include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/CommandSet.h>
 #include <octf/cli/internal/cmd/CmdHelp.h>
@@ -24,6 +24,7 @@ extern "C" {
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 CommandSet::CommandSet()
         : m_cmds()
@@ -54,7 +55,7 @@ void CommandSet::getHelp(stringstream &ss) const {
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getDesc();
 
-        cliUtils::printKeys(ss, shortKey, longKey, desc);
+        utils::printKeys(ss, shortKey, longKey, desc);
     }
 }
 
@@ -106,7 +107,7 @@ void CommandSet::updateHelp() {
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getDesc();
 
-        cliUtils::printKeys(ss, shortKey, longKey, desc);
+        utils::printKeys(ss, shortKey, longKey, desc);
     }
     m_helpCmd->setHelp(ss.str());
 }
@@ -115,4 +116,5 @@ std::shared_ptr<CmdHelp> CommandSet::getHelpCmd() const {
     return m_helpCmd;
 }
 
+}  // namespace cli
 }  // namespace octf

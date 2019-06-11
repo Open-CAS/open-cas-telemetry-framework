@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_PARAMENUM_H
-#define SOURCE_OCTF_CLI_PARAM_PARAMENUM_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMENUM_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMENUM_H
 
 #include <map>
 #include <string>
@@ -16,6 +16,7 @@ extern "C" {
 }
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Enum type parameter
@@ -181,6 +182,7 @@ private:
     std::string m_details;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_PARAMENUM_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMENUM_H

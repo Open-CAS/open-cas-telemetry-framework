@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CLIELEMENT_H
-#define SOURCE_OCTF_CLI_CLIELEMENT_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CLIELEMENT_H
+#define SOURCE_OCTF_CLI_INTERNAL_CLIELEMENT_H
 
 #include <string>
-#include <octf/utils/OptionsValidation.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @type Possible types of single CLI input element
@@ -82,6 +82,7 @@ private:
     CliType m_type;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CLIELEMENT_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CLIELEMENT_H

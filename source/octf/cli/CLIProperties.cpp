@@ -8,6 +8,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 const string &CLIProperties::getDescription() const {
     return m_description;
@@ -33,4 +34,5 @@ void CLIProperties::setVersion(const string &version) {
     m_version = version;
 }
 
+}  // namespace cli
 }  // namespace octf

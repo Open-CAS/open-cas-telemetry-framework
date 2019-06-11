@@ -10,6 +10,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 Module::Module()
         : m_shortKey("")
@@ -58,4 +59,5 @@ void Module::setLocal(bool isLocal) {
     this->m_isLocal = isLocal;
 }
 
+}  // namespace cli
 }  // namespace octf

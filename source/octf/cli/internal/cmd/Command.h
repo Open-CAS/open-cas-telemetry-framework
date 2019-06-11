@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CMD_COMMAND_H
-#define SOURCE_OCTF_CLI_CMD_COMMAND_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CMD_COMMAND_H
+#define SOURCE_OCTF_CLI_INTERNAL_CMD_COMMAND_H
 #include <map>
 #include <string>
 #include <octf/cli/internal/cmd/ICommand.h>
 #include <octf/cli/internal/param/IParameter.h>
 
 namespace octf {
+namespace cli {
 
 class CLIList;
 
@@ -73,6 +74,7 @@ private:
     bool m_local;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CMD_COMMAND_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CMD_COMMAND_H

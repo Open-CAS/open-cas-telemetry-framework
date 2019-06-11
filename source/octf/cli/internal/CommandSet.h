@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_COMMANDSET_H
-#define SOURCE_OCTF_CLI_COMMANDSET_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_COMMANDSET_H
+#define SOURCE_OCTF_CLI_INTERNAL_COMMANDSET_H
 
 #include <map>
 #include <memory>
@@ -13,6 +13,7 @@
 #include <octf/cli/internal/cmd/ICommand.h>
 
 namespace octf {
+namespace cli {
 
 class CmdHelp;
 
@@ -79,6 +80,7 @@ private:
     std::map<std::string, std::shared_ptr<ICommand>>::iterator m_iter;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_COMMANDSET_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_COMMANDSET_H

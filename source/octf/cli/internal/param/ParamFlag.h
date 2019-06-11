@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_PARAMFLAG_H
-#define SOURCE_OCTF_CLI_PARAM_PARAMFLAG_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMFLAG_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMFLAG_H
 
 #include <octf/cli/internal/param/Parameter.h>
 
 namespace octf {
+namespace cli {
 
 class CLIElement;
 
@@ -50,6 +51,7 @@ public:
     }
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_PARAMFLAG_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMFLAG_H

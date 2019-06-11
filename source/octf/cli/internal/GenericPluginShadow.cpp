@@ -8,6 +8,7 @@
 #include <octf/utils/Log.h>
 
 namespace octf {
+namespace cli {
 
 GenericPluginShadow::GenericPluginShadow(const std::string &name)
         : NodePluginShadow(name) {}
@@ -24,4 +25,5 @@ bool GenericPluginShadow::initCustom() {
 
 void GenericPluginShadow::deinitCustom() {}
 
+}  // namespace cli
 }  // namespace octf

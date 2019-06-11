@@ -7,6 +7,7 @@
 #include <octf/cli/internal/param/Parameter.h>
 
 namespace octf {
+namespace cli {
 
 ParamHelp::ParamHelp()
         : Parameter() {
@@ -26,4 +27,5 @@ bool ParamHelp::hasValue() const {
     return false;
 }
 
+}  // namespace cli
 }  // namespace octf

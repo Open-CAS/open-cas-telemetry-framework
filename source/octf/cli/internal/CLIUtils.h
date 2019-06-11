@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CLIUTILS_H
-#define SOURCE_OCTF_CLI_CLIUTILS_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CLIUTILS_H
+#define SOURCE_OCTF_CLI_INTERNAL_CLIUTILS_H
 
 #include <google/protobuf/descriptor.h>
 #include <cstdint>
@@ -30,6 +30,7 @@ constexpr int64_t TiB = (1024ULL * GiB);
 #define TOSTR(name) STR_VALUE(name)
 
 namespace octf {
+namespace cli {
 
 typedef std::shared_ptr<google::protobuf::Message> MessageShRef;
 
@@ -39,7 +40,7 @@ typedef std::shared_ptr<google::protobuf::Message> MessageShRef;
  * Functionalities of this class are mostly helper methods,
  * useful for string conversion, file operations, and CLI printing
  */
-namespace cliUtils {
+namespace utils {
 
 /**
  * @brief Converts a given unsigned integer to string representing bytes.
@@ -141,7 +142,8 @@ void printCmdHelp(std::stringstream &ss,
                   std::shared_ptr<ICommand> cmd,
                   const CLIProperties &cliProperties);
 
-}  // namespace cliUtils
+}  // namespace utils
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CLIUTILS_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CLIUTILS_H

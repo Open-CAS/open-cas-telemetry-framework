@@ -8,9 +8,9 @@
 #include <iomanip>
 #include <map>
 #include <sstream>
+#include <octf/cli/CLIProperties.h>
 #include <octf/cli/internal/CLIException.h>
 #include <octf/cli/internal/CLIList.h>
-#include <octf/cli/CLIProperties.h>
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/cmd/Command.h>
 #include <octf/cli/internal/param/ParamHelp.h>
@@ -23,6 +23,7 @@ extern "C" {
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 Command::Command()
         : m_shortKey("")
@@ -145,14 +146,14 @@ void Command::getHelp(stringstream &ss) const {
         if ("" != what) {
             longKey += (" " + what);
         }
-        cliUtils::printKeys(ss, shortKey, longKey, desc);
+        utils::printKeys(ss, shortKey, longKey, desc);
     }
 }
 
 void Command::getCommandUsage(stringstream &ss) const {
     bool optionalParams = false;
 
-    cliUtils::printKeys(ss, "", getLongKey(), "", false);
+    utils::printKeys(ss, "", getLongKey(), "", false);
 
     // Print all required options
     auto iter = m_params.begin();
@@ -163,7 +164,7 @@ void Command::getCommandUsage(stringstream &ss) const {
         }
         string longKey = iter->second->getLongKey();
         string desc = iter->second->getWhat();
-        cliUtils::printKeys(ss, "", longKey, desc, false);
+        utils::printKeys(ss, "", longKey, desc, false);
     }
 
     // If there are any optional (not required) parameters, add general usage
@@ -224,4 +225,5 @@ void Command::setLocal(bool local) {
     m_local = local;
 }
 
+}  // namespace cli
 }  // namespace octf

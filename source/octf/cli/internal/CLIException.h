@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CLIEXCEPTION_H
-#define SOURCE_OCTF_CLI_CLIEXCEPTION_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CLIEXCEPTION_H
+#define SOURCE_OCTF_CLI_INTERNAL_CLIEXCEPTION_H
 
 #include <string>
 #include <octf/utils/Exception.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief CLI execution failure
@@ -54,6 +55,7 @@ private:
     bool m_failure;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CLIEXCEPTION_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CLIEXCEPTION_H

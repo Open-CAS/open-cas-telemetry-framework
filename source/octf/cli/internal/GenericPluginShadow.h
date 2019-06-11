@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_GENERICPLUGINSHADOW_H
-#define SOURCE_OCTF_CLI_GENERICPLUGINSHADOW_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_GENERICPLUGINSHADOW_H
+#define SOURCE_OCTF_CLI_INTERNAL_GENERICPLUGINSHADOW_H
 
 #include <octf/plugin/NodePluginShadow.h>
 #include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Generic Plugin shadow for execution auto CLI commands
@@ -28,6 +29,7 @@ public:
     }
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_GENERICPLUGINSHADOW_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_GENERICPLUGINSHADOW_H

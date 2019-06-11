@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_ICOMMANDSET_H
-#define SOURCE_OCTF_CLI_ICOMMANDSET_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_ICOMMANDSET_H
+#define SOURCE_OCTF_CLI_INTERNAL_ICOMMANDSET_H
 
 #include <map>
 #include <memory>
@@ -12,6 +12,7 @@
 #include <octf/cli/internal/cmd/ICommand.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Set of available commands
@@ -55,6 +56,7 @@ public:
     virtual void addCmd(std::shared_ptr<ICommand> cmd) = 0;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_ICOMMANDSET_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_ICOMMANDSET_H

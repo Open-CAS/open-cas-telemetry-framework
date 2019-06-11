@@ -10,6 +10,7 @@
 #include <octf/utils/NonCopyable.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Class managing properties of CLI
@@ -57,6 +58,7 @@ private:
     std::string m_version;
 };
 
+}  // namespace cli
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_CLI_CLIPROPERTIES_H

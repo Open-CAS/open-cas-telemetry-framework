@@ -10,6 +10,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 CmdHelp::CmdHelp()
         : Command() {
@@ -28,4 +29,5 @@ void CmdHelp::setHelp(const std::string &help) {
     m_help = help;
 }
 
+}  // namespace cli
 }  // namespace octf

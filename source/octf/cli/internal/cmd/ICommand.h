@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CMD_ICOMMAND_H
-#define SOURCE_OCTF_CLI_CMD_ICOMMAND_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CMD_ICOMMAND_H
+#define SOURCE_OCTF_CLI_INTERNAL_CMD_ICOMMAND_H
 
 #include <cstdint>
 #include <map>
@@ -15,6 +15,7 @@
 #include <octf/utils/Log.h>
 
 namespace octf {
+namespace cli {
 
 class CLIList;
 
@@ -153,6 +154,7 @@ public:
     virtual void setHidden(bool hidden) = 0;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CMD_ICOMMAND_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CMD_ICOMMAND_H

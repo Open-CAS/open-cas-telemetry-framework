@@ -6,6 +6,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <octf/cli/CLIProperties.h>
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/CommandProtobufLocal.h>
 #include <octf/cli/internal/param/ParamEnum.h>
 #include <octf/cli/internal/param/ParamFlag.h>
@@ -16,6 +17,7 @@
 #include <octf/node/INode.h>
 
 namespace octf {
+namespace cli {
 
 namespace protobuf = ::google::protobuf;
 using namespace proto;
@@ -36,11 +38,11 @@ CommandProtobufLocal::CommandProtobufLocal(
     setShortKey(method->options().GetExtension(opts_command).cli_short_key());
 
     // Validate keys
-    if (!cliUtils::isLongKeyValid(getLongKey())) {
+    if (!utils::isLongKeyValid(getLongKey())) {
         throw Exception("Invalid long key for local protobuf command: " +
                         getLongKey());
     }
-    if (!cliUtils::isShortKeyValid(getShortKey())) {
+    if (!utils::isShortKeyValid(getShortKey())) {
         throw Exception("Invalid short key for local protobuf command: " +
                         getShortKey());
     }
@@ -83,4 +85,5 @@ void CommandProtobufLocal::execute() {
     handleCall(call, out_msg);
 }
 
+}  // namespace cli
 }  // namespace octf

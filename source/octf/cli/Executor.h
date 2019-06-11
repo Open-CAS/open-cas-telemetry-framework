@@ -13,6 +13,7 @@
 #include <octf/node/INode.h>
 
 namespace octf {
+namespace cli {
 
 class Parameter;
 class CLIList;
@@ -164,6 +165,7 @@ private:
     std::map<std::string, CommandSet> m_localModules;
 };
 
+}  // namespace cli
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_CLI_EXECUTOR_H

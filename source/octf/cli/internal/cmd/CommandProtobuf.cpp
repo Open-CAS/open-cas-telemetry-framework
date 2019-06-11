@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <octf/cli/internal/CLIUtils.h>
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/CommandProtobuf.h>
 #include <octf/cli/internal/param/ParamEnum.h>
 #include <octf/cli/internal/param/ParamFlag.h>
@@ -23,6 +24,7 @@ using google::protobuf::FieldDescriptor;
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 CommandProtobuf::CommandProtobuf(const proto::CliCommand &cmdDesc)
         : Command()
@@ -38,12 +40,12 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommand &cmdDesc)
     setDesc(cmdDesc.cmdops().cli_desc());
 
     // Validate short and long key for command
-    if (!cliUtils::isShortKeyValid(cmdDesc.cmdops().cli_short_key())) {
+    if (!utils::isShortKeyValid(cmdDesc.cmdops().cli_short_key())) {
         throw Exception("Invalid short key for command.");
     }
     setShortKey(cmdDesc.cmdops().cli_short_key());
 
-    if (!cliUtils::isLongKeyValid(cmdDesc.cmdops().cli_long_key())) {
+    if (!utils::isLongKeyValid(cmdDesc.cmdops().cli_long_key())) {
         throw Exception("Invalid long key for command.");
     }
     setLongKey(cmdDesc.cmdops().cli_long_key());
@@ -371,8 +373,9 @@ void CommandProtobuf::handleCall(CallGeneric &call,
         // Method call failed
         throw Exception(call.ErrorText());
     } else {
-        cliUtils::printOutputMessage(outMessage);
+        utils::printOutputMessage(outMessage);
     }
 }
 
+}  // namespace cli
 }  // namespace octf

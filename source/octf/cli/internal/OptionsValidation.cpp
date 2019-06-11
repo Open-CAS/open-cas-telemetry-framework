@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/utils/OptionsValidation.h>
+#include <octf/cli/internal/OptionsValidation.h>
 
 #include <ctype.h>
 
 namespace octf {
-namespace cliUtils {
+namespace cli {
+namespace utils {
 
 bool isShortKeyValid(const std::string &key) {
     // Valid short key is a single alphabetic char: [a-zA-Z] )
@@ -117,5 +118,6 @@ bool isCommandValid(const proto::CliCommand &cmd) {
     return result;
 }
 
-}  // namespace cliUtils
+}  // namespace utils
+}  // namespace cli
 }  // namespace octf

@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_IPARAMETER_H
-#define SOURCE_OCTF_CLI_PARAM_IPARAMETER_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_IPARAMETER_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_IPARAMETER_H
 
 #include <string>
 #include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
+namespace cli {
 
 class CLIElement;
 
@@ -166,6 +167,7 @@ protected:
     virtual void setValueSet() = 0;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_IPARAMETER_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_IPARAMETER_H

@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_PARAMETER_H
-#define SOURCE_OCTF_CLI_PARAM_PARAMETER_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMETER_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMETER_H
 
 #include <octf/cli/internal/param/IParameter.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/NonCopyable.h>
 
 namespace octf {
+namespace cli {
 
 class Parameter : public IParameter, public NonCopyable {
 public:
@@ -88,6 +89,7 @@ private:
     bool m_hidden;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_PARAMETER_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMETER_H

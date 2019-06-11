@@ -14,6 +14,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 Parameter::Parameter()
         : IParameter()
@@ -41,7 +42,7 @@ void Parameter::getHelp(stringstream &ss) const {
         longKey += (" " + what);
     }
 
-    cliUtils::printKeys(ss, shortKey, longKey, desc, false);
+    utils::printKeys(ss, shortKey, longKey, desc, false);
 
     return;
 }
@@ -137,4 +138,5 @@ bool Parameter::isMultipleValue() const {
 void Parameter::setMultipleValue(bool __attribute__((__unused__))
                                  multipleValue) {}
 
+}  // namespace cli
 }  // namespace octf

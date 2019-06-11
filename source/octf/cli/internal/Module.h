@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_MODULE_H
-#define SOURCE_OCTF_CLI_MODULE_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_MODULE_H
+#define SOURCE_OCTF_CLI_INTERNAL_MODULE_H
 
 #include <iomanip>
 #include <string>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Class describing module
@@ -77,6 +78,7 @@ private:
     bool m_isLocal;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_MODULE_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_MODULE_H

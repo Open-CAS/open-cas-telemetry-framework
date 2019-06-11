@@ -13,6 +13,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 CLIList::CLIList()
         : m_list()
@@ -84,4 +85,5 @@ CLIElement CLIList::nextElement() {
     }
 }
 
+}  // namespace cli
 }  // namespace octf

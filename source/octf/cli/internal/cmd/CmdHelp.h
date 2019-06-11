@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CMD_CMDHELP_H
-#define SOURCE_OCTF_CLI_CMD_CMDHELP_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CMD_CMDHELP_H
+#define SOURCE_OCTF_CLI_INTERNAL_CMD_CMDHELP_H
 
 #include <string>
 #include <octf/cli/internal/cmd/Command.h>
 namespace octf {
+namespace cli {
 
 /**
  * @brief Help command
@@ -32,6 +33,7 @@ private:
     std::string m_help;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CMD_CMDHELP_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CMD_CMDHELP_H

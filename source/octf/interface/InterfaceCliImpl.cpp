@@ -7,8 +7,8 @@
 
 #include <google/protobuf/descriptor.h>
 #include <exception>
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/utils/Exception.h>
-#include <octf/utils/OptionsValidation.h>
 #include <octf/utils/ProtoConverter.h>
 
 typedef google::protobuf::FieldDescriptor::CppType CppType;
@@ -65,7 +65,7 @@ void InterfaceCliImpl::getCliCommandSetDescription(
             }
             const octf::proto::CliCommandSet &cmdSet = *response;
             // Check validness of whole created command set
-            if (!cliUtils::isCommandSetValid(cmdSet, true)) {
+            if (!cli::utils::isCommandSetValid(cmdSet, true)) {
                 throw Exception("Not valid command set.");
             }
         }
@@ -217,13 +217,13 @@ bool InterfaceCliImpl::isValidMethod(
         return false;
     }
 
-    if (!cliUtils::isShortKeyValid(opsMethod.cli_short_key())) {
+    if (!cli::utils::isShortKeyValid(opsMethod.cli_short_key())) {
         return false;
     }
-    if (!cliUtils::isLongKeyValid(opsMethod.cli_long_key())) {
+    if (!cli::utils::isLongKeyValid(opsMethod.cli_long_key())) {
         return false;
     }
-    if (!cliUtils::isDescValid(opsMethod.cli_desc())) {
+    if (!cli::utils::isDescValid(opsMethod.cli_desc())) {
         return false;
     }
 
@@ -332,14 +332,14 @@ bool InterfaceCliImpl::setParamDescription(
 
     if (isInput) {
         // Check correctness of input parameter's options
-        if (!cliUtils::isDescValid(param->mutable_paramops()->cli_desc())) {
+        if (!cli::utils::isDescValid(param->mutable_paramops()->cli_desc())) {
             return false;
         }
-        if (!cliUtils::isShortKeyValid(
+        if (!cli::utils::isShortKeyValid(
                     param->mutable_paramops()->cli_short_key())) {
             return false;
         }
-        if (!cliUtils::isLongKeyValid(
+        if (!cli::utils::isLongKeyValid(
                     param->mutable_paramops()->cli_long_key())) {
             return false;
         }

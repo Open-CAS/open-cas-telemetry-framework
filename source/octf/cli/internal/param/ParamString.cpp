@@ -15,6 +15,7 @@ extern "C" {
 using namespace std;
 
 namespace octf {
+namespace cli {
 ParamString::ParamString()
         : Parameter()
         , m_values()
@@ -133,4 +134,5 @@ std::vector<std::string> ParamString::parseValuesToVector(
     return result;
 }
 
+}  // namespace cli
 }  // namespace octf

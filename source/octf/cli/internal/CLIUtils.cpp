@@ -13,15 +13,16 @@ using namespace std;
 #include <sstream>
 #include <octf/cli/CLIProperties.h>
 #include <octf/cli/internal/Module.h>
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/ICommand.h>
 #include <octf/utils/Exception.h>
-#include <octf/utils/OptionsValidation.h>
 
 using namespace std;
 
 namespace octf {
+namespace cli {
 
-namespace cliUtils {
+namespace utils {
 
 string bytes2string(uint64_t bytes, uint64_t base) {
     stringstream ss;
@@ -174,8 +175,8 @@ void printOutputString(const std::string &output) {
 
 void printModuleHelp(stringstream &ss, Module *module, bool isList) {
     if (module) {
-        cliUtils::printKeys(ss, module->getShortKey(), module->getLongKey(), "",
-                            isList);
+        utils::printKeys(ss, module->getShortKey(), module->getLongKey(), "",
+                         isList);
     }
 }
 
@@ -213,10 +214,11 @@ void printCmdHelp(stringstream &ss,
 
     ss << endl;
     ss << "Options that are valid with ";
-    cliUtils::printKeys(ss, cmd->getShortKey(), cmd->getLongKey(), "", false);
+    utils::printKeys(ss, cmd->getShortKey(), cmd->getLongKey(), "", false);
     ss << std::endl;
     cmd->getHelp(ss);
 }
 
-}  // namespace cliUtils
+}  // namespace utils
+}  // namespace cli
 }  // namespace octf

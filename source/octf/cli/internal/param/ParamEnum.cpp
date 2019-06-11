@@ -17,6 +17,7 @@
 using namespace std;
 
 namespace octf {
+namespace cli {
 
 ParamEnum::ParamEnum()
         : Parameter()
@@ -229,4 +230,5 @@ void ParamEnum::setOptions(const proto::CliParameter &paramDef) {
     }
 }
 
+}  // namespace cli
 }  // namespace octf

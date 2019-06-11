@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUF_H
-#define SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUF_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUF_H
+#define SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUF_H
 
 #include <google/protobuf/descriptor.h>
 #include <octf/cli/internal/CLIUtils.h>
@@ -14,6 +14,7 @@
 #include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Command related to Google Protobuf interfaces.
@@ -172,6 +173,7 @@ private:
     int m_methodId;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUF_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUF_H

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUFLOCAL_H
-#define SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUFLOCAL_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUFLOCAL_H
+#define SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUFLOCAL_H
 
 #include <string>
 #include <octf/cli/internal/cmd/Command.h>
@@ -12,6 +12,7 @@
 #include <octf/node/INode.h>
 
 namespace octf {
+namespace cli {
 
 /**
  * @brief Command for executing interfaces defined in .proto files locally
@@ -39,6 +40,7 @@ private:
     const ::google::protobuf::MethodDescriptor *m_method;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_CMD_COMMANDPROTOBUFLOCAL_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_CMD_COMMANDPROTOBUFLOCAL_H

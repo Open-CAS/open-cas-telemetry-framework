@@ -12,6 +12,7 @@
 #include <octf/cli/internal/CommandSet.h>
 #include <octf/cli/internal/GenericPluginShadow.h>
 #include <octf/cli/internal/Module.h>
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/CmdHelp.h>
 #include <octf/cli/internal/cmd/CmdVersion.h>
 #include <octf/cli/internal/cmd/CommandProtobuf.h>
@@ -28,6 +29,7 @@ using std::stringstream;
 using std::vector;
 
 namespace octf {
+namespace cli {
 
 Executor::Executor()
         : m_cliProperties()
@@ -68,7 +70,7 @@ void Executor::loadModuleCommandSet() {
         }
 
         auto cmdSetDesc = call.getOutput();
-        if (cliUtils::isCommandSetValid(*cmdSetDesc)) {
+        if (utils::isCommandSetValid(*cmdSetDesc)) {
             int commandCount = cmdSetDesc->command_size();
             for (int i = 0; i < commandCount; i++) {
                 const proto::CliCommand &cmdDesc = cmdSetDesc->command(i);
@@ -80,16 +82,16 @@ void Executor::loadModuleCommandSet() {
 }
 
 void Executor::printMainHelp(std::stringstream &ss) {
-    cliUtils::printUsage(ss, nullptr, m_cliProperties, false, m_modules.size());
+    utils::printUsage(ss, nullptr, m_cliProperties, false, m_modules.size());
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
         for (auto module : m_modules) {
-            cliUtils::printModuleHelp(ss, &module.second, true);
+            utils::printModuleHelp(ss, &module.second, true);
         }
     }
 
-    cliUtils::printCmdSetHelp(ss, *m_localCmdSet);
+    utils::printCmdSetHelp(ss, *m_localCmdSet);
 
     return;
 }
@@ -177,7 +179,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
     }
 
     const proto::CliCommand &cliCmd = *call.getOutput();
-    if (cliUtils::isCommandValid(cliCmd)) {
+    if (utils::isCommandValid(cliCmd)) {
         return make_shared<CommandProtobuf>(cliCmd);
     } else {
         return nullptr;
@@ -192,8 +194,8 @@ int Executor::execute(CLIList &cliList) {
         // download module's command set and show help
         loadModuleCommandSet();
         stringstream ss;
-        cliUtils::printUsage(ss, m_module.get(), m_cliProperties, false);
-        cliUtils::printCmdSetHelp(ss, *m_moduleCmdSet);
+        utils::printUsage(ss, m_module.get(), m_cliProperties, false);
+        utils::printCmdSetHelp(ss, *m_moduleCmdSet);
         log::cout << ss.str();
 
         return command == nullptr;
@@ -240,7 +242,7 @@ int Executor::execute(CLIList &cliList) {
                 ss << endl;
             }
 
-            cliUtils::printCmdHelp(ss, command, m_cliProperties);
+            utils::printCmdHelp(ss, command, m_cliProperties);
             log::cout << ss.str();
         }
 
@@ -400,7 +402,7 @@ void Executor::setProgress(double progress, std::ostream &out) {
 
     if (next != prev) {
         m_progress = progress;
-        cliUtils::printProgressBar(m_progress, out);
+        utils::printProgressBar(m_progress, out);
     }
 }
 
@@ -426,4 +428,5 @@ void Executor::setupOutputsForCommandsLogs() const {
     log::cout << log::enable << log::json << log::prefix << prefix;
 }
 
+}  // namespace cli
 }  // namespace octf

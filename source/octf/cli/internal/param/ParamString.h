@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_CLI_PARAM_PARAMSTRING_H
-#define SOURCE_OCTF_CLI_PARAM_PARAMSTRING_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMSTRING_H
+#define SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMSTRING_H
 
 #include <string>
 #include <octf/cli/internal/CLIElement.h>
 #include <octf/cli/internal/param/Parameter.h>
 
 namespace octf {
+namespace cli {
 
 constexpr int MAX_STRING_LENGTH = 4096;
 
@@ -94,6 +95,7 @@ private:
     bool m_multipleValue;
 };
 
+}  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_CLI_PARAM_PARAMSTRING_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_PARAM_PARAMSTRING_H
