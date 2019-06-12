@@ -8,6 +8,7 @@
 
 #include <google/protobuf/message.h>
 #include <octf/node/NodeId.h>
+#include <errno.h>
 
 namespace octf {
 
@@ -68,11 +69,17 @@ public:
         return m_filePath;
     }
 
+    /**
+     * @brief Sets permission flags on opened file to make it read only for
+     * user and group.
+     *
+     * @return Result of operation
+     */
+    bool makeReadOnly();
+
 private:
     /**
      * @brief This opens the file and returns a file descriptor.
-     *
-     * @return File descriptor of opened file.
      *
      * @note This function does not open symlinks, and throws an exception
      * upon doing so.
@@ -104,6 +111,8 @@ private:
      * File descriptor for writing
      */
     int m_writeFd;
+
+    std::string m_errnoMsg;
 };
 
 }  // namespace octf

@@ -24,7 +24,8 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         : m_filePath(filePath)
         , m_directoryPath("")
         , m_readFd(-1)
-        , m_writeFd(-1) {
+        , m_writeFd(-1)
+        , m_errnoMsg("") {
 
     std::size_t dirEndPos = filePath.rfind('/');
 
@@ -45,7 +46,7 @@ ProtobufReaderWriter::~ProtobufReaderWriter() {
 
 bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     if (m_readFd == -1) {
-        throw Exception("Bad file descriptor for file: " + m_filePath);
+        return false;
     }
 
     // Get file size by setting file offset to the end
@@ -82,6 +83,10 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
 
 bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     if (m_writeFd == -1) {
+        if (m_errnoMsg != "") {
+            log::cerr << "File could not be opened for writing: " << m_errnoMsg
+                    << std::endl;
+        }
         return false;
     }
 
@@ -109,12 +114,14 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
         return false;
     }
 
-    if (::write(m_writeFd, str.data(), str.size()) != 0) {
+    if (::write(m_writeFd, str.data(), str.size()) != str.size()) {
         return false;
     }
 
     // 3. Flush write to disk
-    ::fsync(m_writeFd);
+    if (::fsync(m_writeFd) != 0) {
+        return false;
+    }
 
     return true;
 }
@@ -183,17 +190,20 @@ void ProtobufReaderWriter::openFile() {
             , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     if (writeFd == -1) {
+        // Opening for write failed - save error message, continue readonly
+        m_errnoMsg = std::string(strerror(errno));
+
         if (errno == ELOOP) {
             throw Exception("Link files are not handled: " + m_filePath);
-        } else {
-            throw Exception("Could not open file: " + m_filePath);
         }
     }
 
     // File descriptor for reading
     m_readFd = ::open(m_filePath.c_str(),
             O_RDONLY | O_NOFOLLOW);
+
     if (m_readFd == -1) {
+        // We should have at least read access - otherwise throw Exception
         if (errno == ELOOP) {
             throw Exception("Link files are not handled: " + m_filePath);
         } else {
@@ -204,14 +214,38 @@ void ProtobufReaderWriter::openFile() {
 
 void ProtobufReaderWriter::closeFile() {
     if (m_readFd != -1) {
-        close(m_readFd);
+        if (::close(m_readFd) != 0) {
+            throw Exception("Error when closing file: "
+                    + std::string(strerror(errno)));
+        }
         m_readFd = -1;
     }
 
     if (m_writeFd != -1) {
-        close(m_writeFd);
+        if (::close(m_writeFd) != 0) {
+            throw Exception("Error when closing file: "
+                    + std::string(strerror(errno)));
+        }
         m_writeFd = -1;
     }
+}
+
+bool ProtobufReaderWriter::makeReadOnly() {
+    if (m_readFd == -1) {
+        return false;
+    }
+
+    if (::fchmod(m_readFd, S_IRUSR | S_IRGRP) != 0) {
+        return false;
+    }
+
+    // No write permissions now so we close descriptor for writing
+    if (m_writeFd != -1) {
+        ::close(m_writeFd);
+        m_writeFd = -1;
+    }
+
+    return true;
 }
 
 }  // namespace octf

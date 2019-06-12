@@ -57,7 +57,7 @@ bool NodeBase::readSettings() {
 
         } catch (Exception& ex) {
             log::cerr << ex.getMessage() << std::endl;
-            return false;
+            throw Exception("Could not read node settings.");
         }
     }
 
