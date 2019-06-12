@@ -408,12 +408,6 @@ void Executor::setProgress(double progress, std::ostream &out) {
     }
 }
 
-void Executor::addInterfaces(std::initializer_list<InterfaceShRef> interfaces) {
-    for (auto &iface : interfaces) {
-        addLocalModule(iface);
-    }
-}
-
 void Executor::setupOutputsForCommandsLogs() const {
     auto const &prefix = m_cliProperties.getName();
 

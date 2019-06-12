@@ -42,11 +42,33 @@ public:
     CLIProperties &getCliProperties();
 
     /**
-     * @brief Adds interface into this CLI executor
+     * Adds modules to this executor
      *
-     * @param interfaces Interfaces initializer list
+     * @note At the moment InterfaceShRef is supported
+     *
+     * @tparam Module One of supported module types
+     * @tparam Modules Ones of supported module types
+     *
+     * @param module Module to be added
+     * @param modules Other modules to be added
      */
-    void addInterfaces(std::initializer_list<InterfaceShRef> interfaces);
+    template <class Module, class... Modules>
+    void addModules(Module const &module, Modules const &... modules) {
+        addLocalModule(module);
+        addModules(modules...);
+    }
+
+    /**
+     * Adds module to this executor
+     *
+     * @tparam Module One of supported module type
+     *
+     * @param module Module to be added
+     */
+    template <class Module>
+    void addModules(Module const &module) {
+        addLocalModule(module);
+    }
 
     /**
      * @brief Execute command
