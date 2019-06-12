@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
+#include <cstdio>
+#include <fcntl.h>
+#include <errno.h>
 #include <dirent.h>
 #include <google/protobuf/util/json_util.h>
-#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fstream>
 #include <sstream>
 #include <string>
 #include <octf/utils/Exception.h>
@@ -21,7 +22,11 @@ namespace octf {
 
 ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         : m_filePath(filePath)
-        , m_directoryPath("") {
+        , m_directoryPath("")
+        , m_readFd(-1)
+        , m_writeFd(-1)
+        , m_errnoMsg("") {
+
     std::size_t dirEndPos = filePath.rfind('/');
 
     if (dirEndPos == 0) {
@@ -31,47 +36,61 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
     } else {
         m_directoryPath = ".";
     }
+
+    openFile();
+}
+
+ProtobufReaderWriter::~ProtobufReaderWriter() {
+    closeFile();
 }
 
 bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
-    // 1. Open and read file
-    std::ifstream file;
-    file.open(m_filePath);
-    if (!file.good()) {
-        // Cannot open file
+    if (m_readFd == -1) {
         return false;
     }
 
-    // 2. Read all file content
-    std::stringstream ss;
-    ss << file.rdbuf();
-
-    // 3. Check if read performed well
-    if (!file.good()) {
-        // cannot read file
-        file.close();
-        return false;
+    // Get file size by setting file offset to the end
+    off_t fileSize;
+    fileSize = ::lseek(m_readFd, 0, SEEK_END);
+    if (fileSize == -1) {
+        throw Exception("Could not seek the end of file: " + m_filePath);
+    }
+    // Reset file offset
+    if (::lseek(m_readFd, 0, SEEK_SET) == -1) {
+        throw Exception("Could not seek the start of file: " + m_filePath);
     }
 
-    // File no needed any more, close it
-    file.close();
+    // Create a string to hold file contents
+    std::string fileContent(fileSize, 0);
 
-    // 4. Parse JSON string into procol buffer message
+    // Read the file to string
+    if (::read(m_readFd, &fileContent[0], fileSize) != fileSize) {
+        throw Exception("I/O Error when reading file: " + m_filePath);
+    }
+
+    // Parse JSON string into protocol buffer message
     google::protobuf::util::Status status;
     google::protobuf::util::JsonParseOptions opts;
 
     // We want to have exact fields, when unknown one then we except error
     opts.ignore_unknown_fields = false;
 
-    status = google::protobuf::util::JsonStringToMessage(ss.str(), &message,
+    status = google::protobuf::util::JsonStringToMessage(fileContent, &message,
                                                          opts);
 
     return status.ok();
 }
 
 bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
-    // 1. First generate string with configuration
+    if (m_writeFd == -1) {
+        if (m_errnoMsg != "") {
+            log::cerr << "File could not be opened for writing: " << m_errnoMsg
+                    << std::endl;
+        }
+        return false;
+    }
 
+    // 1. First generate string with configuration
     google::protobuf::util::Status status;
     google::protobuf::util::JsonPrintOptions opts;
     std::string str;
@@ -90,30 +109,30 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     };
 
     // 2. Save configuration to the configuration file
-
-    std::ofstream file(m_filePath);
-
-    file << str;
-    if (!file.good()) {
-        // Cannot save the file
-        file.close();
+    // Truncate file first
+    if (::ftruncate(m_writeFd, 0) != 0) {
         return false;
     }
 
-    // 3. Make configuration file persistent
-
-    file.flush();
-    if (!file.good()) {
-        // Cannot synchronize the file
-        file.close();
+    if (::write(m_writeFd, str.data(), str.size()) != str.size()) {
         return false;
     }
 
-    file.close();
+    // 3. Flush write to disk
+    if (::fsync(m_writeFd) != 0) {
+        return false;
+    }
+
     return true;
 }
 
-bool ProtobufReaderWriter::isFileAvailable(std::fstream::openmode access) {
+bool ProtobufReaderWriter::isFileAvailable() {
+    if (m_readFd == -1) {
+        return false;
+    }
+
+    // First we check if parent directory is available
+    // If not - we throw an Exception as this is not expected
     struct stat _stat;
     DIR *dir = ::opendir(m_directoryPath.c_str());
     if (!dir) {
@@ -124,62 +143,109 @@ bool ProtobufReaderWriter::isFileAvailable(std::fstream::openmode access) {
 
         throw Exception(msg.str());
     }
+
     closedir(dir);
     dir = NULL;
 
-    // Use permission defines from dirent.h
-    int accessDirent = F_OK;
-    if (access & std::fstream::in) {
-        accessDirent = accessDirent | R_OK;
-    }
-    if (access & std::fstream::out) {
-        accessDirent = accessDirent | W_OK;
-    }
+    // Check file type
+    int result = ::fstat(m_readFd, &_stat);
 
-    int result = ::stat(m_filePath.c_str(), &_stat);
-    if (0 == result) {
-        if (S_ISREG(_stat.st_mode)) {
-            // Check there is read/write access to the file
-            result = ::access(m_filePath.c_str(), accessDirent);
-            if (result != 0) {
-                return false;
-            }
-
-            return true;
-
-        } else {
+    if (result == 0) {
+        if (!S_ISREG(_stat.st_mode)) {
             // We expect regular file but it's not
             throw Exception("Expecting regular file, but it's not, " +
                             m_filePath);
         }
+        return true;
+
     } else if (ENOENT == errno) {
         // File doesn't exist
         return false;
-    }
 
-    std::stringstream msg;
-    msg << "Cannot access file: " << m_filePath << "ERROR(" << errno << ") "
-        << strerror(errno);
-    throw Exception(msg.str());
+    } else {
+        // Other error
+        std::stringstream msg;
+        msg << "Cannot access file: " << m_filePath << "ERROR(" << errno << ") "
+            << strerror(errno);
+        throw Exception(msg.str());
+    }
+}
+
+bool ProtobufReaderWriter::remove() {
+    // remove() will remove a symlink/hardlink and not what it points to,
+    // so we don't have to worry about TOCTOU vulnerability.
+    bool result = ::remove(m_filePath.c_str());
+    if (result == 0) {
+        closeFile();
+        return true;
+    }
 
     return false;
 }
 
-bool ProtobufReaderWriter::remove() {
-    bool result;
-    try {
-        if (isFileAvailable()) {
-            result = ::remove(m_filePath.c_str());
-            return (result == 0);
-        } else {
-            return true;
+void ProtobufReaderWriter::openFile() {
+    // File descriptor for writing
+    m_writeFd = ::open(m_filePath.c_str(),
+            O_WRONLY | O_CREAT | O_NOFOLLOW
+            , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+    if (m_writeFd == -1) {
+        // Opening for write failed - save error message, continue readonly
+        m_errnoMsg = std::string(strerror(errno));
+
+        if (errno == ELOOP) {
+            throw Exception("Link files are not handled: " + m_filePath);
         }
-    } catch (Exception &e) {
-        // TODO log error
-        log::cerr << e.what();
     }
 
-    return false;
+    // File descriptor for reading
+    m_readFd = ::open(m_filePath.c_str(),
+            O_RDONLY | O_NOFOLLOW);
+
+    if (m_readFd == -1) {
+        // We should have at least read access - otherwise throw Exception
+        if (errno == ELOOP) {
+            throw Exception("Link files are not handled: " + m_filePath);
+        } else {
+            throw Exception("Could not open file: " + m_filePath);
+        }
+    }
+}
+
+void ProtobufReaderWriter::closeFile() {
+    if (m_readFd != -1) {
+        if (::close(m_readFd) != 0) {
+            throw Exception("Error when closing file: "
+                    + std::string(strerror(errno)));
+        }
+        m_readFd = -1;
+    }
+
+    if (m_writeFd != -1) {
+        if (::close(m_writeFd) != 0) {
+            throw Exception("Error when closing file: "
+                    + std::string(strerror(errno)));
+        }
+        m_writeFd = -1;
+    }
+}
+
+bool ProtobufReaderWriter::makeReadOnly() {
+    if (m_readFd == -1) {
+        return false;
+    }
+
+    if (::fchmod(m_readFd, S_IRUSR | S_IRGRP) != 0) {
+        return false;
+    }
+
+    // No write permissions now so we close descriptor for writing
+    if (m_writeFd != -1) {
+        ::close(m_writeFd);
+        m_writeFd = -1;
+    }
+
+    return true;
 }
 
 }  // namespace octf
