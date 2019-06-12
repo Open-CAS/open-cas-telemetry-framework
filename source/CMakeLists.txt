@@ -72,7 +72,7 @@ install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONE
 
 if (${CMAKE_INSTALL_PREFIX} STREQUAL "/")
     install(
-        CODE "execute_process(COMMAND ldconfig -n ${OCTF_LIBRARY_DIR})"
+        CODE "execute_process(COMMAND ldconfig)"
         COMPONENT octf-install
     )
 endif()
