@@ -185,11 +185,11 @@ bool ProtobufReaderWriter::remove() {
 
 void ProtobufReaderWriter::openFile() {
     // File descriptor for writing
-    int writeFd = ::open(m_filePath.c_str(),
+    m_writeFd = ::open(m_filePath.c_str(),
             O_WRONLY | O_CREAT | O_NOFOLLOW
             , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
-    if (writeFd == -1) {
+    if (m_writeFd == -1) {
         // Opening for write failed - save error message, continue readonly
         m_errnoMsg = std::string(strerror(errno));
 
