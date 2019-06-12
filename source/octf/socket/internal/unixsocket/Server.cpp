@@ -52,8 +52,8 @@ bool Server::open() {
 
     // Set permissions on socket (rw for user and group)
     if (fchmod(m_fd, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) {
-        m_fd = -1;
         ::close(m_fd);
+        m_fd = -1;
         return false;
     }
 

@@ -182,13 +182,15 @@ static bool _createDirectory(const std::string &childDirectory) {
         return true;
     }
 
-    // If a directory doesn't exist, strip everything after last / from the
-    // path and check parent directory
-    bool result = _createDirectory(
-            childDirectory.substr(0, childDirectory.rfind("/")));
-    if (!result) {
-        // Subdirectory creation error
-        return false;
+    auto pos = childDirectory.rfind("/");
+    if (pos != childDirectory.npos) {
+        // If a directory doesn't exist, strip everything after last / from the
+        // path and check parent directory
+        bool result = _createDirectory(childDirectory.substr(0, pos));
+        if (!result) {
+            // Subdirectory creation error
+            return false;
+        }
     }
 
     // If parent check was successful, create the missing directory

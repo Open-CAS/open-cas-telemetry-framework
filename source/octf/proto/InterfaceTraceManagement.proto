@@ -14,10 +14,28 @@ message TracePathPrefix {
     string prefix = 1 [
         (opts_param).cli_required = false,
         (opts_param).cli_long_key = "prefix",
+        (opts_param).cli_desc = "Prefix of trace path used as a complete trace "
+                                "path or as path prefix when ended with '*'"
+    ];
+}
+
+message RemoveTracesRequest {
+    string prefix = 1 [
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "prefix",
+        (opts_param).cli_short_key = "p",
+        (opts_param).cli_desc = "Prefix of trace path used as a complete trace "
+                                "path or as path prefix when ended with '*'"
+    ];
+
+    bool force = 2 [
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "force",
+        (opts_param).cli_short_key = "f",
         (opts_param).cli_desc =
-            "Prefix of trace path, used for specifying a set of traces. "
-            "Used as a complete trace path or as path prefix when ended with "
-            "'*'"
+            "Enforces removing specified traces in any state. "
+            "Without this flag only completed and failed traces can be "
+            "removed."
     ];
 }
 
@@ -40,12 +58,12 @@ service InterfaceTraceManagement {
     };
 
     // Removes specified traces.
-    rpc removeTraces(TracePathPrefix) returns (TraceList) {
+    rpc removeTraces(RemoveTracesRequest) returns (TraceList) {
         option (opts_command).cli = true;
 
         option (opts_command).cli_short_key = "R";
 
-        option (opts_command).cli_long_key = "remove-trace";
+        option (opts_command).cli_long_key = "remove-traces";
 
         option (opts_command).cli_desc = "Removes specified trace(s)";
     };

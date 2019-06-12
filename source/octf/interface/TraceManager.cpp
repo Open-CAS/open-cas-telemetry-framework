@@ -52,7 +52,7 @@ void TraceManager::joinThread() {
 }
 
 void TraceManager::handleJobs() {
-    m_startTime = std::chrono::steady_clock::now();
+    m_endTime = m_startTime = std::chrono::steady_clock::now();
     auto endTime = m_startTime + std::chrono::seconds(m_maxDuration);
     try {
         setupJobs();
@@ -79,8 +79,6 @@ void TraceManager::handleJobs() {
         setState(TracingState::ERROR);
     }
 
-    m_endTime = std::chrono::steady_clock::now();
-
     for (const auto &job : m_jobs) {
         job->stopJobThread();
     }
@@ -97,12 +95,20 @@ void TraceManager::initializeTraceDirectory() {
     std::string dateTime = datetime::getFormattedDateTime(
             std::chrono::steady_clock::now(), "%Y-%m-%d_%H:%M:%S");
 
+    using namespace fsutils;
+
+    const auto &traceDir = getFrameworkConfiguration().getTraceDir();
+    if (!checkPermissions(traceDir, PermissionType::Execute) ||
+        !checkPermissions(traceDir, PermissionType::ReadWrite)) {
+        throw Exception("No access to trace directory");
+    }
+
     directoryPathRelative =
             getFrameworkConfiguration().getNodePathBasename(m_ownerNodePath) +
             "/" + dateTime;
-    directoryPathAbsolute = getFrameworkConfiguration().getTraceDir() + "/" +
-                            directoryPathRelative;
-    if (!fsutils::createDirectory(directoryPathAbsolute)) {
+
+    directoryPathAbsolute = traceDir + "/" + directoryPathRelative;
+    if (!createDirectory(directoryPathAbsolute)) {
         throw Exception("Error creating trace directory " +
                         directoryPathAbsolute);
     }
@@ -282,7 +288,8 @@ int64_t TraceManager::getDuration(TracingState state) const {
     using std::chrono::steady_clock;
     using std::chrono::time_point;
 
-    if (state == TracingState::NOT_STARTED) {
+    if (state == TracingState::NOT_STARTED ||
+        state == TracingState::INITIALIZING) {
         return 0;
     }
 
@@ -345,6 +352,10 @@ void TraceManager::updateState() {
 }
 
 void TraceManager::setState(TracingState state) {
+    if (m_state == TracingState::RUNNING && state != TracingState::RUNNING) {
+        m_endTime = std::chrono::steady_clock::now();
+    }
+
     // Update state
     m_state = state;
 
