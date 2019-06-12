@@ -14,6 +14,7 @@ message TracePathPrefix {
     string prefix = 1 [
         (opts_param).cli_required = false,
         (opts_param).cli_long_key = "prefix",
+        (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Prefix of trace path used as a complete trace "
                                 "path or as path prefix when ended with '*'"
     ];
