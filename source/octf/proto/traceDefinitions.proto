@@ -51,6 +51,7 @@ message TracePath {
     string tracePath = 1 [
         (opts_param).cli_required = true,
         (opts_param).cli_long_key = "path",
+        (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Path specifying trace"
     ];
 }
