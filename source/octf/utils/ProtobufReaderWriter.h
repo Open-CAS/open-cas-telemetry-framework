@@ -7,31 +7,35 @@
 #define SOURCE_OCTF_UTILS_PROTOBUFREADERWRITER_H
 
 #include <google/protobuf/message.h>
-#include <fstream>
 #include <octf/node/NodeId.h>
+#include <errno.h>
 
 namespace octf {
 
 /**
  * @brief Protocol buffer message reader/writer from/to file
+ *
+ * @note This class is designed to avoid TOCTOU (Time Of Check, Time Of
+ *  Use) vulnerability.
  */
 class ProtobufReaderWriter {
 public:
     /**
      * @param filePath File location where protocol buffer message will be
      * written or read
+     *
+     * @note This constructor may throw an Exception
      */
     ProtobufReaderWriter(const std::string &filePath);
-    virtual ~ProtobufReaderWriter() = default;
+
+    virtual ~ProtobufReaderWriter();
 
     /**
-     * @brief Checks if file exists and checks for access rights
+     * @brief Checks if file exists and checks if is a regular file
      *
-     * @param access Access rights to check as unistd.h defines
      * @return Availability of file
      */
-    bool isFileAvailable(std::fstream::openmode access = std::fstream::in |
-                                                         std::fstream::out);
+    bool isFileAvailable();
 
     /**
      * @brief Deserialize a message from file
@@ -65,6 +69,28 @@ public:
         return m_filePath;
     }
 
+    /**
+     * @brief Sets permission flags on opened file to make it read only for
+     * user and group.
+     *
+     * @return Result of operation
+     */
+    bool makeReadOnly();
+
+private:
+    /**
+     * @brief This opens the file and returns a file descriptor.
+     *
+     * @note This function does not open symlinks, and throws an exception
+     * upon doing so.
+     */
+    void openFile();
+
+    /**
+     * @brief This closes the opened file. It is called upon destruction.
+     */
+    void closeFile();
+
 private:
     /**
      * File path
@@ -75,6 +101,18 @@ private:
      * Directory location with specified file
      */
     std::string m_directoryPath;
+
+    /**
+     * File descriptor for reading
+     */
+    int m_readFd;
+
+    /**
+     * File descriptor for writing
+     */
+    int m_writeFd;
+
+    std::string m_errnoMsg;
 };
 
 }  // namespace octf
