@@ -154,20 +154,13 @@ static bool removeDirectory(const std::string &path) {
 }
 
 bool checkPermissions(std::string file, PermissionType permission) {
-    struct stat stats;
-
-    int result = stat(file.c_str(), &stats);
-    if (result == SUCCESS) {
-        // Check if there is specified permission
-        result = ::access(file.c_str(), getUnistdPermissions(permission));
-        if (result != SUCCESS) {
-            return false;
-        }
-
-        return true;
-    } else {
+    // Check if there is specified permission
+    int result = ::access(file.c_str(), getUnistdPermissions(permission));
+    if (result != SUCCESS) {
         return false;
     }
+
+    return true;
 }
 
 static bool _createDirectory(const std::string &childDirectory) {
