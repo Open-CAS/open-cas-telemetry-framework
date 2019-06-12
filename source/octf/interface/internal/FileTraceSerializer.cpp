@@ -49,28 +49,25 @@ void FileTraceSerializer::moveDataPointer(uint64_t size) {
 
 bool FileTraceSerializer::close() {
     bool success = false;
+
     if (m_fd >= 0) {
-        int errorCode = ftruncate(m_fd, m_dataOffset);
-        success = !errorCode;
+        success = ::ftruncate(m_fd, m_dataOffset) == 0 ? true : false;
         if (m_addr) {
             munmap(m_addr, m_size);
             m_addr = nullptr;
         }
 
         // Change file permission to read only
-        errorCode = ::fchmod(m_fd, S_IRUSR | S_IRGRP);
-        success &= !errorCode;
+        success &= ::fchmod(m_fd, S_IRUSR | S_IRGRP) == 0 ? true : false;
 
         // Synchronize file to disk
-        errorCode = fsync(m_fd);
-        success &= !errorCode;
+        success &= ::fsync(m_fd) == 0 ? true : false;
 
         // Close file
-        errorCode = ::close(m_fd);
+        success &= ::close(m_fd) == 0 ? true : false;
         m_fd = -1;
-
-        success &= !errorCode;
     }
+
     return success;
 }
 
