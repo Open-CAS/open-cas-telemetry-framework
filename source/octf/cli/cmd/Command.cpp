@@ -133,8 +133,9 @@ bool Command::parseParamValues(CLIList &cliList) {
         // if parameter is missing
         if (isParamMissing())
             throw InvalidParameterException("Parameter is missing.");
+
     } catch (Exception &e) {
-        log::cout << e.what() << std::endl;
+        log::cerr << e.what() << std::endl;
         return false;
     }
     return true;

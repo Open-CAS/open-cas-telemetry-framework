@@ -68,7 +68,7 @@ public:
      * @param cliList CLIList with parameters
      *
      */
-    virtual void execute(CLIList &cliList);
+    virtual bool execute(CLIList &cliList);
 
 private:
     virtual void addInterface(InterfaceShRef interface, CommandSet &commandSet);

@@ -183,7 +183,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
     }
 }
 
-void Executor::execute(CLIList &cliList) {
+bool Executor::execute(CLIList &cliList) {
     shared_ptr<ICommand> command = validateCommand(cliList);
 
     if (command == nullptr || command == m_moduleCmdSet.getHelpCmd()) {
@@ -194,7 +194,7 @@ void Executor::execute(CLIList &cliList) {
         CLIUtils::printUsage(ss, &m_module, false);
         CLIUtils::printCmdSetHelp(ss, m_moduleCmdSet);
         log::cout << ss.str();
-        return;
+        return true;
 
     } else if (command == m_localCmdSet.getHelpCmd()) {
         // "First level" help (general for application)
@@ -227,9 +227,11 @@ void Executor::execute(CLIList &cliList) {
             stringstream ss;
             CLIUtils::printCmdHelp(ss, command);
             log::cout << ss.str();
-            return;
+            return false;
         }
     }
+
+    return true;
 }
 
 bool Executor::isModuleExistent(std::string moduleName) const {
