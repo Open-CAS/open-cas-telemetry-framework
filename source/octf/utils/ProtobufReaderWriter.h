@@ -6,9 +6,9 @@
 #ifndef SOURCE_OCTF_UTILS_PROTOBUFREADERWRITER_H
 #define SOURCE_OCTF_UTILS_PROTOBUFREADERWRITER_H
 
+#include <errno.h>
 #include <google/protobuf/message.h>
 #include <octf/node/NodeId.h>
-#include <errno.h>
 
 namespace octf {
 
@@ -79,12 +79,20 @@ public:
 
 private:
     /**
-     * @brief This opens the file and returns a file descriptor.
+     * @brief This opens the file and gets a file descriptor for reading.
      *
      * @note This function does not open symlinks, and throws an exception
      * upon doing so.
      */
-    void openFile();
+    void openFileToRead();
+
+    /**
+     * @brief This opens the file and gets a file descriptor for writing.
+     *
+     * @note This function does not open symlinks, and throws an exception
+     * upon doing so.
+     */
+    void openFileToWrite();
 
     /**
      * @brief This closes the opened file. It is called upon destruction.

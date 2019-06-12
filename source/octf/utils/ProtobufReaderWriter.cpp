@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <cstdio>
-#include <fcntl.h>
-#include <errno.h>
 #include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <google/protobuf/util/json_util.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include <octf/utils/Exception.h>
@@ -26,7 +26,6 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         , m_readFd(-1)
         , m_writeFd(-1)
         , m_errnoMsg("") {
-
     std::size_t dirEndPos = filePath.rfind('/');
 
     if (dirEndPos == 0) {
@@ -36,8 +35,6 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
     } else {
         m_directoryPath = ".";
     }
-
-    openFile();
 }
 
 ProtobufReaderWriter::~ProtobufReaderWriter() {
@@ -45,6 +42,8 @@ ProtobufReaderWriter::~ProtobufReaderWriter() {
 }
 
 bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
+    openFileToRead();
+
     if (m_readFd == -1) {
         return false;
     }
@@ -82,10 +81,12 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
 }
 
 bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
+    openFileToWrite();
+
     if (m_writeFd == -1) {
         if (m_errnoMsg != "") {
             log::cerr << "File could not be opened for writing: " << m_errnoMsg
-                    << std::endl;
+                      << std::endl;
         }
         return false;
     }
@@ -114,7 +115,11 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
         return false;
     }
 
-    if (::write(m_writeFd, str.data(), str.size()) != str.size()) {
+    int written = ::write(m_writeFd, str.data(), str.size());
+    if (written < 0) {
+        return false;
+    }
+    if (static_cast<unsigned>(written) != str.size()) {
         return false;
     }
 
@@ -127,10 +132,6 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
 }
 
 bool ProtobufReaderWriter::isFileAvailable() {
-    if (m_readFd == -1) {
-        return false;
-    }
-
     // First we check if parent directory is available
     // If not - we throw an Exception as this is not expected
     struct stat _stat;
@@ -146,6 +147,10 @@ bool ProtobufReaderWriter::isFileAvailable() {
 
     closedir(dir);
     dir = NULL;
+
+    if (m_readFd == -1) {
+        return false;
+    }
 
     // Check file type
     int result = ::fstat(m_readFd, &_stat);
@@ -183,11 +188,32 @@ bool ProtobufReaderWriter::remove() {
     return false;
 }
 
-void ProtobufReaderWriter::openFile() {
+void ProtobufReaderWriter::openFileToRead() {
+    if (m_readFd != -1) {
+        // already opened
+        return;
+    }
+
+    // File descriptor for reading
+    m_readFd = ::open(m_filePath.c_str(), O_RDONLY | O_NOFOLLOW);
+
+    if (m_readFd == -1) {
+        // We should have at least read access - otherwise throw Exception
+        if (errno == ELOOP) {
+            throw Exception("Link files are not handled: " + m_filePath);
+        }
+    }
+}
+
+void ProtobufReaderWriter::openFileToWrite() {
+    if (m_writeFd != -1) {
+        // already opened
+        return;
+    }
+
     // File descriptor for writing
-    m_writeFd = ::open(m_filePath.c_str(),
-            O_WRONLY | O_CREAT | O_NOFOLLOW
-            , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    m_writeFd = ::open(m_filePath.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW,
+                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     if (m_writeFd == -1) {
         // Opening for write failed - save error message, continue readonly
@@ -197,34 +223,21 @@ void ProtobufReaderWriter::openFile() {
             throw Exception("Link files are not handled: " + m_filePath);
         }
     }
-
-    // File descriptor for reading
-    m_readFd = ::open(m_filePath.c_str(),
-            O_RDONLY | O_NOFOLLOW);
-
-    if (m_readFd == -1) {
-        // We should have at least read access - otherwise throw Exception
-        if (errno == ELOOP) {
-            throw Exception("Link files are not handled: " + m_filePath);
-        } else {
-            throw Exception("Could not open file: " + m_filePath);
-        }
-    }
 }
 
 void ProtobufReaderWriter::closeFile() {
     if (m_readFd != -1) {
         if (::close(m_readFd) != 0) {
-            throw Exception("Error when closing file: "
-                    + std::string(strerror(errno)));
+            throw Exception("Error when closing file: " +
+                            std::string(strerror(errno)));
         }
         m_readFd = -1;
     }
 
     if (m_writeFd != -1) {
         if (::close(m_writeFd) != 0) {
-            throw Exception("Error when closing file: "
-                    + std::string(strerror(errno)));
+            throw Exception("Error when closing file: " +
+                            std::string(strerror(errno)));
         }
         m_writeFd = -1;
     }
