@@ -17,7 +17,7 @@ namespace octf {
 
 NodeBase::NodeBase(const NodeId &id)
         : NodeGeneric(id)
-        , m_config(nullptr) {}
+        , m_settings(nullptr) {}
 
 bool NodeBase::initCommon() {
     // Call common init of parent class
@@ -40,16 +40,16 @@ void NodeBase::deinitCommon() {
 }
 
 bool NodeBase::readSettings() {
-    if (m_config) {
+    if (m_settings) {
         try {
             ProtobufReaderWriter rw(
                     getFrameworkConfiguration().getNodeSettingsFilePath(
                             getNodePath()));
 
-            if (rw.read(*m_config)) {
+            if (rw.read(*m_settings)) {
                 return true;
             } else {
-                log::cerr << "Cannot read configuration for file "
+                log::cerr << "Cannot read settings - file: "
                           << rw.getFilePath() << std::endl;
 
                 return false;
@@ -65,16 +65,16 @@ bool NodeBase::readSettings() {
 }
 
 bool NodeBase::writeSettings() {
-    if (m_config) {
+    if (m_settings) {
         try {
             ProtobufReaderWriter rw(
                     getFrameworkConfiguration().getNodeSettingsFilePath(
                             getNodePath()));
 
-            if (rw.write(*m_config)) {
+            if (rw.write(*m_settings)) {
                 return true;
             } else {
-                log::cerr << "Cannot write configuration for file "
+                log::cerr << "Cannot write settings - file: "
                           << rw.getFilePath() << std::endl;
 
                 return false;
@@ -89,7 +89,7 @@ bool NodeBase::writeSettings() {
 }
 
 bool NodeBase::removeSettings() {
-    if (m_config) {
+    if (m_settings) {
         try {
             ProtobufReaderWriter rw(
                     getFrameworkConfiguration().getNodeSettingsFilePath(
@@ -100,8 +100,8 @@ bool NodeBase::removeSettings() {
                     return true;
                 }
 
-                log::cerr << "Cannot remove configuration for file "
-                          << rw.getFilePath() << std::endl;
+            log::cerr << "Cannot remove settings - file: "
+                      << rw.getFilePath() << std::endl;
 
                 return false;
             }
@@ -115,7 +115,7 @@ bool NodeBase::removeSettings() {
 }
 
 bool NodeBase::areSettingsAvailable() {
-    if (m_config) {
+    if (m_settings) {
         try {
             ProtobufReaderWriter rw(
                     getFrameworkConfiguration().getNodeSettingsFilePath(

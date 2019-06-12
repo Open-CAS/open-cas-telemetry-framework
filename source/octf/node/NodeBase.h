@@ -13,13 +13,13 @@
 namespace octf {
 
 /**
- * @brief Shared reference of node configuration
+ * @brief Shared reference of node settings
  *
  * It has to be protocol buffer message. The framework uses protocol buffer's
  * ability of parsing and serialization the message during reading and writing
- * configuration.
+ * settings.
  */
-typedef std::shared_ptr<google::protobuf::Message> NodeConfigurationShRef;
+typedef std::shared_ptr<google::protobuf::Message> NodeSettingsShRef;
 
 /**
  * @brief Base class for normal nodes (not shadow ones).
@@ -75,7 +75,7 @@ public:
      */
     template <typename T>
     bool initSettings() {
-        m_config = std::make_shared<T>();
+        m_settings = std::make_shared<T>();
 
         if (areSettingsAvailable()) {
             return readSettings();
@@ -85,15 +85,15 @@ public:
     }
 
     /**
-     * @brief Gets reference of node configuration
+     * @brief Gets reference of node settings
      *
-     * @typedef T Node configuration type
+     * @typedef T Node settings type
      *
-     * @return reference of node configuration
+     * @return reference of node settings
      */
     template <typename T>
-    std::shared_ptr<T> getConfiguration() {
-        return std::dynamic_pointer_cast<T>(m_config);
+    std::shared_ptr<T> getSettings() {
+        return std::dynamic_pointer_cast<T>(m_settings);
     }
 
     /**
@@ -140,9 +140,9 @@ public:
 
 private:
     /**
-     * Node configuration
+     * Node settings
      */
-    NodeConfigurationShRef m_config;
+    NodeSettingsShRef m_settings;
 };
 
 }  // namespace octf
