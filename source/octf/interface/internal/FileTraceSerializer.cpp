@@ -35,8 +35,7 @@ bool FileTraceSerializer::open() {
     if (m_fd < 0) {
         int flags = O_CREAT | O_RDWR;
 
-        m_fd = ::open(m_outputFileName.c_str(), flags,
-                      S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        m_fd = ::open(m_outputFileName.c_str(), flags, S_IRUSR | S_IWUSR);
         if (m_fd < 0) {
             return false;
         }
@@ -57,8 +56,19 @@ bool FileTraceSerializer::close() {
             munmap(m_addr, m_size);
             m_addr = nullptr;
         }
+
+        // Change file permission to read only
+        errorCode = ::fchmod(m_fd, S_IRUSR | S_IRGRP);
+        success &= !errorCode;
+
+        // Synchronize file to disk
+        errorCode = fsync(m_fd);
+        success &= !errorCode;
+
+        // Close file
         errorCode = ::close(m_fd);
         m_fd = -1;
+
         success &= !errorCode;
     }
     return success;
