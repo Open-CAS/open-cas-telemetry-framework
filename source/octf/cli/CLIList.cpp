@@ -8,6 +8,7 @@
 #include <octf/cli/CLIElement.h>
 #include <octf/cli/CLIList.h>
 #include <octf/cli/cmd/ICommand.h>
+#include <octf/cli/param/ParamHelp.h>
 #include <octf/utils/Log.h>
 
 using namespace std;
@@ -82,6 +83,20 @@ CLIElement CLIList::nextElement() {
         static const string empty;
         return CLIElement(empty);
     }
+}
+
+bool octf::CLIList::hasHelp() {
+    if (hasNext()) {
+        ParamHelp ph;
+
+        const auto key = m_iter->getValidKeyName();
+
+        if (key == ph.getLongKey() || key == ph.getShortKey()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 }  // namespace octf

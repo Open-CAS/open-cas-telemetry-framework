@@ -88,7 +88,6 @@ std::shared_ptr<IParameter> Command::getParamByIndex(const int32_t index) {
 
 bool Command::parseParamValues(CLIList &cliList) {
     try {
-        ParamHelp ph;
         // Look for command parameters
         while (cliList.hasNext()) {
             // Get next parameter
@@ -97,12 +96,6 @@ bool Command::parseParamValues(CLIList &cliList) {
             CLIElement element = cliList.nextElement();
             string name = element.getValidKeyName();
             if (name.empty()) {
-                return false;
-            }
-
-            // Show third level help if the parameter is help
-            if (name == ph.getLongKey() || name == ph.getShortKey()) {
-                // Return false in order to not execute command and show help
                 return false;
             }
 

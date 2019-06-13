@@ -202,8 +202,10 @@ bool Executor::execute(CLIList &cliList) {
         printMainHelp(ss);
         log::cout << ss.str();
     } else {
+        bool hasHelp = cliList.hasHelp();
+
         // Fill command's parameters
-        if (command->parseParamValues(cliList)) {
+        if (!hasHelp && command->parseParamValues(cliList)) {
             setupOutputsForCommandsLogs();
 
             if (command->isLocal()) {
@@ -227,7 +229,12 @@ bool Executor::execute(CLIList &cliList) {
             stringstream ss;
             CLIUtils::printCmdHelp(ss, command);
             log::cout << ss.str();
-            return false;
+
+            if (hasHelp) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
