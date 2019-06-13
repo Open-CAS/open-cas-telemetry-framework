@@ -58,6 +58,15 @@ public:
     bool hasNext();
 
     /**
+     * @brief Checks if the next parameter help is specified at the CLI
+     * arguments list
+     *
+     * @retval true Help switch specified at the list
+     * @retval false No help switch at the list
+     */
+    bool hasHelp();
+
+    /**
      * @brief Gets next CLIList element
      * @return CLI element as string
      */
