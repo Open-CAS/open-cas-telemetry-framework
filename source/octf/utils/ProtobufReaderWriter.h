@@ -119,8 +119,6 @@ private:
      * File descriptor for writing
      */
     int m_writeFd;
-
-    std::string m_errnoMsg;
 };
 
 }  // namespace octf

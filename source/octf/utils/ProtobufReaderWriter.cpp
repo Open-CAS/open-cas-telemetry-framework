@@ -24,8 +24,7 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         : m_filePath(filePath)
         , m_directoryPath("")
         , m_readFd(-1)
-        , m_writeFd(-1)
-        , m_errnoMsg("") {
+        , m_writeFd(-1) {
     std::size_t dirEndPos = filePath.rfind('/');
 
     if (dirEndPos == 0) {
@@ -45,6 +44,8 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     openFileToRead();
 
     if (m_readFd == -1) {
+        log::cerr << "Could not open file " << m_filePath << " for reading: "
+                  << std::string(strerror(errno));
         return false;
     }
 
@@ -84,10 +85,8 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     openFileToWrite();
 
     if (m_writeFd == -1) {
-        if (m_errnoMsg != "") {
-            log::cerr << "File could not be opened for writing: " << m_errnoMsg
-                      << std::endl;
-        }
+        log::cerr << "Could not open file " << m_filePath << " for writing: "
+                  << std::string(strerror(errno));
         return false;
     }
 
@@ -148,6 +147,7 @@ bool ProtobufReaderWriter::isFileAvailable() {
     closedir(dir);
     dir = NULL;
 
+    openFileToRead();
     if (m_readFd == -1) {
         return false;
     }
@@ -190,7 +190,7 @@ bool ProtobufReaderWriter::remove() {
 
 void ProtobufReaderWriter::openFileToRead() {
     if (m_readFd != -1) {
-        // already opened
+        // Already opened
         return;
     }
 
@@ -198,7 +198,6 @@ void ProtobufReaderWriter::openFileToRead() {
     m_readFd = ::open(m_filePath.c_str(), O_RDONLY | O_NOFOLLOW);
 
     if (m_readFd == -1) {
-        // We should have at least read access - otherwise throw Exception
         if (errno == ELOOP) {
             throw Exception("Link files are not handled: " + m_filePath);
         }
@@ -207,7 +206,7 @@ void ProtobufReaderWriter::openFileToRead() {
 
 void ProtobufReaderWriter::openFileToWrite() {
     if (m_writeFd != -1) {
-        // already opened
+        // Already opened
         return;
     }
 
@@ -216,9 +215,6 @@ void ProtobufReaderWriter::openFileToWrite() {
                        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
     if (m_writeFd == -1) {
-        // Opening for write failed - save error message, continue readonly
-        m_errnoMsg = std::string(strerror(errno));
-
         if (errno == ELOOP) {
             throw Exception("Link files are not handled: " + m_filePath);
         }
