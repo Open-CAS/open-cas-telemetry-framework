@@ -35,8 +35,7 @@ bool FileTraceSerializer::open() {
     if (m_fd < 0) {
         int flags = O_CREAT | O_RDWR;
 
-        m_fd = ::open(m_outputFileName.c_str(), flags,
-                      S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        m_fd = ::open(m_outputFileName.c_str(), flags, S_IRUSR | S_IWUSR);
         if (m_fd < 0) {
             return false;
         }
@@ -50,17 +49,25 @@ void FileTraceSerializer::moveDataPointer(uint64_t size) {
 
 bool FileTraceSerializer::close() {
     bool success = false;
+
     if (m_fd >= 0) {
-        int errorCode = ftruncate(m_fd, m_dataOffset);
-        success = !errorCode;
+        success = ::ftruncate(m_fd, m_dataOffset) == 0 ? true : false;
         if (m_addr) {
             munmap(m_addr, m_size);
             m_addr = nullptr;
         }
-        errorCode = ::close(m_fd);
+
+        // Change file permission to read only
+        success &= ::fchmod(m_fd, S_IRUSR | S_IRGRP) == 0 ? true : false;
+
+        // Synchronize file to disk
+        success &= ::fsync(m_fd) == 0 ? true : false;
+
+        // Close file
+        success &= ::close(m_fd) == 0 ? true : false;
         m_fd = -1;
-        success &= !errorCode;
     }
+
     return success;
 }
 

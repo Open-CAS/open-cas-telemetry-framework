@@ -369,8 +369,25 @@ void TraceManager::setState(TracingState state) {
 
         if (!rw.write(summary)) {
             m_state = TracingState::ERROR;
-            log::cerr << "Could not write summary file: " + filePath
+            log::cerr << "Could not write summary file: " << filePath
                       << std::endl;
+        }
+
+        // Tracing is finished, make trace summary read only
+        if (m_state == TracingState::ERROR ||
+            m_state == TracingState::COMPLETE) {
+            if (!rw.makeReadOnly()) {
+                log::cerr << "Could not make trace summary read only, file "
+                          << filePath << std::endl;
+
+                m_state = TracingState::ERROR;
+                fillTraceSummary(&summary, TracingState::ERROR);
+
+                if (!rw.write(summary)) {
+                    log::cerr << "Could not re-write summary file: " << filePath
+                              << std::endl;
+                }
+            }
         }
     }
 }
