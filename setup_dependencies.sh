@@ -100,6 +100,10 @@ function setup_rhel7 ()
     yum -y install epel-release
     check_result $? "Cannot Install EPEL repository"
 
+    info "Setup gtest"
+    yum -y install gtest gtest-devel
+    check_result $? "Cannot setup gtest"
+
     info "Setup cmake 3"
     yum -y install cmake3 && \
     alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
