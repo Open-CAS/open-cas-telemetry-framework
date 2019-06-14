@@ -240,11 +240,16 @@ void ProtobufReaderWriter::closeFile() {
 }
 
 bool ProtobufReaderWriter::makeReadOnly() {
-    if (m_readFd == -1) {
-        return false;
+    int fd;
+
+    if (m_writeFd) {
+        fd = m_writeFd;
+    } else {
+        openFileToRead();
+        fd = m_readFd;
     }
 
-    if (::fchmod(m_readFd, S_IRUSR | S_IRGRP) != 0) {
+    if (::fchmod(fd, S_IRUSR | S_IRGRP) != 0) {
         return false;
     }
 
