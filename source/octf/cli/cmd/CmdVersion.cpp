@@ -5,6 +5,7 @@
 
 #include <octf/cli/CLIProperties.h>
 #include <octf/cli/cmd/CmdVersion.h>
+#include <octf/utils/FrameworkConfiguration.h>
 #include <octf/utils/Log.h>
 
 using namespace std;
@@ -20,10 +21,15 @@ CmdVersion::CmdVersion()
 }
 
 void CmdVersion::execute() {
-    log::cout << "Name: " << CLIProperties::getCliProperties().getName()
-              << endl;
     log::cout << "Version: " << CLIProperties::getCliProperties().getVersion()
               << endl;
+
+    std::string oldPrefix = log::cout.getPrefix();
+
+    log::cout << log::prefix << "OCTF"
+              << getFrameworkConfiguration().getVersion() << endl;
+
+    log::cout << log::prefix << oldPrefix;
 }
 
 }  // namespace octf

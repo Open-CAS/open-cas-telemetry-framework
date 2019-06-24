@@ -132,6 +132,8 @@ public:
         return *this;
     }
 
+    const std::string &getPrefix();
+
 private:
     std::ostream &getOutputStream();
 
