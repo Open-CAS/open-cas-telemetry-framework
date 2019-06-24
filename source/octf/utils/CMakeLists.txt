@@ -1,4 +1,5 @@
 add_subdirectory(internal)
+add_subdirectory(container)
 target_sources(octf
 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.cpp
