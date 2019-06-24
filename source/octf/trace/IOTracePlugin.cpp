@@ -16,8 +16,7 @@ IOTracePlugin::IOTracePlugin(const std::string &pluginId, uint32_t queueCount)
         : NodePlugin(NodeId(pluginId))
         , ITraceExecutor()
         , m_tracing(nullptr)
-        , m_ioQueueCount(queueCount)
-        , m_refSid(0) {}
+        , m_ioQueueCount(queueCount) {}
 
 IOTracePlugin::~IOTracePlugin() {}
 

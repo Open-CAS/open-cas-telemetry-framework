@@ -6,8 +6,6 @@
 #ifndef SOURCE_OCTF_TRACE_IOTRACEPLUGIN_H
 #define SOURCE_OCTF_TRACE_IOTRACEPLUGIN_H
 
-#include <atomic>
-#include <chrono>
 #include <memory>
 #include <octf/interface/ITraceExecutor.h>
 #include <octf/plugin/NodePlugin.h>
@@ -43,36 +41,6 @@ public:
      */
     void push(uint32_t ioQueueId, const void *trace, size_t size);
 
-    /**
-     * @brief Gets next sequence ID
-     *
-     * @return Next sequence ID
-     */
-    inline log_sid_t getSid() {
-        return ++m_refSid;
-    }
-
-    /**
-     * @brief Initializes an event header to be traced
-     *
-     * @param hdr Trace event header to be initialized
-     * @param type Type of trace event
-     * @param size Size of trace event
-     */
-    inline void initTraceHeader(struct iotrace_event_hdr *hdr,
-                                iotrace_event_type type,
-                                uint32_t size) {
-        iotrace_event_init_hdr(hdr, type, getSid(), getTraceTimestamp(), size);
-    }
-
-private:
-    inline uint64_t getTraceTimestamp() const {
-        using namespace std::chrono;
-        auto timestamp = high_resolution_clock::now();
-
-        return timestamp.time_since_epoch().count();
-    }
-
 private:
     /**
      * @brief Object implementing trace collecting interface
@@ -84,11 +52,6 @@ private:
      * trace jobs
      */
     uint32_t m_ioQueueCount;
-
-    /**
-     * Reference SID
-     */
-    std::atomic<log_sid_t> m_refSid;
 };
 
 }  // namespace octf

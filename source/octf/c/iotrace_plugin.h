@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <octf/trace/iotrace_event.h>
@@ -71,7 +72,40 @@ extern "C" {
 /**
  * @brief IO trace plug-in handle
  */
-typedef void *octf_iotrace_plugin_t;
+struct octf_iotrace_plugin_context {
+    /**
+     * Flag indicating tracing is active
+     */
+    volatile bool tracing_active;
+
+    /**
+     * Reference of trace event SID for sequentialing them
+     */
+    volatile uint64_t ref_sid;
+
+    /**
+     * IO tracer plugin
+     */
+    void *plugin;
+};
+
+/**
+ * @brief IO trace plug-in handle
+ */
+typedef struct octf_iotrace_plugin_context *octf_iotrace_plugin_context_t;
+
+/**
+ * Checks if tracing is active
+ *
+ * @param plugin IO trace plugin handle
+ *
+ * @retval true tracing is active
+ * @retval false tracing is not active
+ */
+static inline bool octf_iotrace_plugin_is_tracing_active(
+        octf_iotrace_plugin_context_t plugin) {
+    return plugin->tracing_active;
+}
 
 /**
  * IO trace configuration plug-in
@@ -92,34 +126,35 @@ struct octf_iotrace_plugin_cnfg {
  * @brief Creates IO tracer plug-in
  *
  * @param cnfg IO tracer plug-in configuration
- * @param[out] plugin handle to IO trace plug-in
+ * @param[out] plugin_context context of IO trace plug-in
  *
  * @return operation status
  * @retval 0 - operation successful
  * @retval Non-zero - operation failure while creating IO tracer plug-in
  */
 int octf_iotrace_plugin_create(const struct octf_iotrace_plugin_cnfg *cnfg,
-                               octf_iotrace_plugin_t *plugin);
+                               octf_iotrace_plugin_context_t *plugin_context);
 
 /**
  * @brief Destroys IO tracer plug-in
  *
- * @param plugin IO tracer plug-in handle to be destroyed
+ * @param plugin IO tracer plug-in context to be destroyed
  */
-void octf_iotrace_plugin_destroy(octf_iotrace_plugin_t *plugin);
+void octf_iotrace_plugin_destroy(octf_iotrace_plugin_context_t *plugin_context);
 
 /**
  * @brief Initializes IO trace event header
  *
- * @param plugin IO tracer plug-in handle
+ * @param plugin IO tracer plug-in context
  * @param hdr IO trace header to be initialized
  * @param type IO trace event type
  * @param size entire Size of IO trace event including header
  */
-void octf_iotrace_plugin_init_trace_header(octf_iotrace_plugin_t plugin,
-                                           struct iotrace_event_hdr *hdr,
-                                           iotrace_event_type type,
-                                           uint32_t size);
+void octf_iotrace_plugin_init_trace_header(
+        octf_iotrace_plugin_context_t plugin_context,
+        struct iotrace_event_hdr *hdr,
+        iotrace_event_type type,
+        uint32_t size);
 /**
  * @brief Pushes IO trace event
  *
@@ -127,15 +162,16 @@ void octf_iotrace_plugin_init_trace_header(octf_iotrace_plugin_t plugin,
  * (struct iotrace_event_hdr).
  * @note Events defined in iotrace_event.h are serialized onlyt.
  *
- * @param plugin IO tracer plug-in handle
+ * @param plugin IO tracer plug-in context
  * @param ioQueue IO queue id into which store event
  * @param trace Trace event to be stored
  * @param size Size of trace event to be stored
  */
-void octf_iotrace_plugin_push_trace(octf_iotrace_plugin_t plugin,
-                                    uint32_t ioQueue,
-                                    const void *trace,
-                                    size_t size);
+void octf_iotrace_plugin_push_trace(
+        octf_iotrace_plugin_context_t plugin_context,
+        uint32_t ioQueue,
+        const void *trace,
+        size_t size);
 
 #ifdef __cplusplus
 }
