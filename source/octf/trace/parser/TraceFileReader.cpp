@@ -27,7 +27,8 @@ TraceFileReader::~TraceFileReader() {
 TraceFileReader::TraceFileReader(const std::string &filePath, uint32_t queue)
         : m_fd(-1)
         , m_size()
-        , m_addr()
+        , m_fileSize()
+        , m_addr(nullptr)
         , m_tracePath(filePath)
         , m_error(false)
         , m_queue(queue) {}
@@ -49,7 +50,11 @@ void TraceFileReader::init() {
             throw Exception("Could not get trace file status." + m_tracePath);
         }
 
-        m_size = fileStats.st_size;
+        m_fileSize = m_size = fileStats.st_size;
+        if (!m_size) {
+            // Empty trace
+            return;
+        }
 
         m_addr = (uint8_t *) mmap(NULL, m_size, proto, MAP_SHARED, m_fd, 0);
         if (MAP_FAILED == m_addr) {
@@ -62,8 +67,8 @@ void TraceFileReader::init() {
 
 void TraceFileReader::deinit() {
     if (m_fd >= 0) {
-        if (m_addr) {
-            munmap(m_addr, m_size);
+        if (m_addr && MAP_FAILED != m_addr) {
+            munmap(m_addr, m_fileSize);
             m_addr = nullptr;
         }
         close(m_fd);
@@ -87,7 +92,7 @@ void TraceFileReader::readTraceEvent(
             protoconverter::decodeVarint32(m_addr, m_size, messageLength);
     if (bytesRead <= 0 || bytesRead > m_size) {
         m_error = true;
-        throw Exception("Couldn't parse size of trace event size");
+        throw Exception("Couldn't parse size of trace event");
     }
     m_addr += bytesRead;
     m_size -= bytesRead;

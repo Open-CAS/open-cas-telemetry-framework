@@ -5,6 +5,15 @@
 
 #ifndef SOURCE_OCTF_TRACE_IOTRACE_EVENT_H
 #define SOURCE_OCTF_TRACE_IOTRACE_EVENT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __KERNEL__
+#include <linux/types.h>
+#else
+#include <stdint.h>
+#endif
 
 typedef uint64_t log_sid_t;
 
@@ -23,6 +32,9 @@ typedef enum {
 
     /** IO queue event */
     iotrace_event_type_io = 'Q',
+
+    /** IO queue event */
+    iotrace_event_type_fs_meta = 'F',
 } iotrace_event_type;
 
 /**
@@ -119,4 +131,37 @@ struct iotrace_event {
     uint32_t flags;
 } __attribute__((packed, aligned(8)));
 
+/**
+ * @brief IO trace event metadata (e.g. filesystem meta information)
+ *
+ * If an application works on top of a filesystem it may perform IO operations
+ * to files. This structure contains meta information about IO in domain of
+ * filesystem. For example it provides information about file size,
+ * file offset of IO, etc.
+ */
+struct iotrace_event_fs_meta {
+    /** Trace event header */
+    struct iotrace_event_hdr hdr;
+
+    /**
+     * Event sequence ID reference to IO trace event associated with this event
+     */
+    log_sid_t ref_sid;
+
+    /** File ID */
+    uint64_t file_id;
+
+    /** File parent ID */
+    uint64_t file_parent_id;
+
+    /** File offset in sectors */
+    uint64_t file_offset;
+
+    /** File size in sectors */
+    uint64_t file_size;
+} __attribute__((packed, aligned(8)));
+
+#ifdef __cplusplus
+}
+#endif
 #endif  // SOURCE_OCTF_TRACE_IOTRACE_EVENT_H

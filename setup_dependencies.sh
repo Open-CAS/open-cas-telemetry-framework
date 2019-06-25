@@ -81,7 +81,7 @@ function setup_protocol_buffer
 
     git submodule update --init --recursive && \
         ./autogen.sh && \
-        ./configure && \
+        ./configure --prefix=/usr && \
         make -j$(nproc) && \
         make check -j$(nproc) && \
         make install -j$(nproc) && \
@@ -99,6 +99,10 @@ function setup_rhel7 ()
     info "Install EPEL repository"
     yum -y install epel-release
     check_result $? "Cannot Install EPEL repository"
+
+    info "Setup gtest"
+    yum -y install gtest gtest-devel
+    check_result $? "Cannot setup gtest"
 
     info "Setup cmake 3"
     yum -y install cmake3 && \

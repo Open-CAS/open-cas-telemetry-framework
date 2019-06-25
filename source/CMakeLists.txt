@@ -23,7 +23,7 @@ target_include_directories(octf
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
-	)
+)
 # Specify libraries to link - specifies dependencies
 # and allows valid concurrent build
 target_link_libraries(octf PUBLIC pthread)
@@ -67,6 +67,14 @@ add_custom_command(
 
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)
+
+if (${CMAKE_INSTALL_PREFIX} STREQUAL "/")
+    install(
+        CODE "execute_process(COMMAND ldconfig)"
+        COMPONENT octf-install
+    )
+endif()
+
 
 # Install headers and proto files
 install(DIRECTORY octf ${CMAKE_CURRENT_BINARY_DIR}/octf

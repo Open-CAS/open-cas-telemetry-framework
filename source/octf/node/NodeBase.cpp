@@ -17,7 +17,7 @@ namespace octf {
 
 NodeBase::NodeBase(const NodeId &id)
         : NodeGeneric(id)
-        , m_config(nullptr) {}
+        , m_settings(nullptr) {}
 
 bool NodeBase::initCommon() {
     // Call common init of parent class
@@ -40,18 +40,24 @@ void NodeBase::deinitCommon() {
 }
 
 bool NodeBase::readSettings() {
-    if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+    if (m_settings) {
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.read(*m_config)) {
-            return true;
-        } else {
-            log::cerr << "Cannot read configuration for file "
-                      << rw.getFilePath() << std::endl;
+            if (rw.read(*m_settings)) {
+                return true;
+            } else {
+                log::cerr << "Cannot read settings - file: "
+                          << rw.getFilePath() << std::endl;
 
-            return false;
+                return false;
+            }
+
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
+            throw Exception("Could not read node settings.");
         }
     }
 
@@ -59,17 +65,22 @@ bool NodeBase::readSettings() {
 }
 
 bool NodeBase::writeSettings() {
-    if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+    if (m_settings) {
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.write(*m_config)) {
-            return true;
-        } else {
-            log::cerr << "Cannot write configuration for file "
-                      << rw.getFilePath() << std::endl;
+            if (rw.write(*m_settings)) {
+                return true;
+            } else {
+                log::cerr << "Cannot write settings - file: "
+                          << rw.getFilePath() << std::endl;
 
+                return false;
+            }
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
             return false;
         }
     }
@@ -78,19 +89,24 @@ bool NodeBase::writeSettings() {
 }
 
 bool NodeBase::removeSettings() {
-    if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+    if (m_settings) {
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        if (rw.isFileAvailable()) {
-            if (rw.remove()) {
-                return true;
-            }
+            if (rw.isFileAvailable()) {
+                if (rw.remove()) {
+                    return true;
+                }
 
-            log::cerr << "Cannot remove configuration for file "
+            log::cerr << "Cannot remove settings - file: "
                       << rw.getFilePath() << std::endl;
 
+                return false;
+            }
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
             return false;
         }
     }
@@ -99,12 +115,18 @@ bool NodeBase::removeSettings() {
 }
 
 bool NodeBase::areSettingsAvailable() {
-    if (m_config) {
-        ProtobufReaderWriter rw(
-                getFrameworkConfiguration().getNodeSettingsFilePath(
-                        getNodePath()));
+    if (m_settings) {
+        try {
+            ProtobufReaderWriter rw(
+                    getFrameworkConfiguration().getNodeSettingsFilePath(
+                            getNodePath()));
 
-        return rw.isFileAvailable();
+            return rw.isFileAvailable();
+
+        } catch (Exception& ex) {
+            log::cerr << ex.getMessage() << std::endl;
+            return false;
+        }
     }
 
     return false;

@@ -28,8 +28,8 @@ public:
                             ::google::protobuf::Closure *done) override;
 
     virtual void removeTraces(::google::protobuf::RpcController *controller,
-                              const ::octf::proto::TracePathPrefix *request,
-                              ::octf::proto::Void *response,
+                              const ::octf::proto::RemoveTracesRequest *request,
+                              ::octf::proto::TraceList *response,
                               ::google::protobuf::Closure *done) override;
 
     virtual void getTraceSummary(::google::protobuf::RpcController *controller,

@@ -4,7 +4,6 @@ set(DIRS
     OCTF_INCLUDE_DIR;
     OCTF_LIBRARY_DIR;
     OCTF_BIN_DIR;
-    OCTF_SYSTEMD_DIR;
     OCTF_CONFIG_DIR;
     OCTF_RUN_DIR;
     OCTF_WORK_DIR;
@@ -16,13 +15,6 @@ foreach(dir ${DIRS})
         message(FATAL_ERROR ${dir} " not defined!")
     endif()
 
-    # If custom installation path is set,
-    # prepend it to default paths
-    if(CMAKE_INSTALL_PREFIX STREQUAL "" OR CMAKE_INSTALL_PREFIX STREQUAL "/")
-        set(${dir} ${${dir}})
-    else()
-        set(${dir} ${CMAKE_INSTALL_PREFIX}/${${dir}})
-    endif()
     # Remove double backslashes etc.
     get_filename_component(${dir} ${${dir}} REALPATH)
 endforeach(dir)

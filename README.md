@@ -44,7 +44,7 @@ To build OCTF, the following tools are needed:
 * Google Protocol Buffers, version 3.6.1 or higher, please follow this link for
 [C++ Installation Instructions](https://github.com/google/protobuf/blob/master/src/README.md)
 * Google Tests for unit tests
-* CMake 3.1 or above
+* CMake 3.9 or above
 
 > **NOTE:**  You can use setup dependencies script to install above tools.
 > 

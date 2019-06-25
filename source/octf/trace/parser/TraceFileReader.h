@@ -53,9 +53,14 @@ private:
     int m_fd;
 
     /**
-     * @brief Input file size
+     * @brief Size of mapped buffer
      */
     off_t m_size;
+
+    /**
+     * @brief Input file size
+     */
+    off_t m_fileSize;
 
     /**
      * @brief Address of the mapped input file

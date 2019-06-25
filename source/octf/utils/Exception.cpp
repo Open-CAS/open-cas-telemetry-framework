@@ -4,7 +4,6 @@
  */
 
 #include "Exception.h"
-#include <system_error>
 
 namespace octf {
 

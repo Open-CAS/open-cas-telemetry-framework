@@ -79,11 +79,12 @@ void InterfaceTraceManagementImpl::listTraces(
 
 void InterfaceTraceManagementImpl::removeTraces(
         ::google::protobuf::RpcController *controller,
-        const ::octf::proto::TracePathPrefix *request,
-        ::octf::proto::Void *response,
+        const ::octf::proto::RemoveTracesRequest *request,
+        ::octf::proto::TraceList *response,
         ::google::protobuf::Closure *done) {
     (void) response;
-    std::list<std::string> dirsToRemove;
+
+    proto::TraceList tracesToRemove;
     const std::string &traceRootDir = getFrameworkConfiguration().getTraceDir();
     std::string cliPrefix = request->prefix();
     proto::TraceSummary summary;
@@ -106,8 +107,6 @@ void InterfaceTraceManagementImpl::removeTraces(
     fsutils::readDirectoryContentsRecursive(traceRootDir, traceDirs,
                                             fsutils::FileType::Directory);
 
-    std::string notRemovedPaths = "";
-    std::string failMessage = "";
     for (const auto &dir : traceDirs) {
         // Check if this trace path has this node's prefix
         // and if it matches cliPrefix
@@ -118,34 +117,45 @@ void InterfaceTraceManagementImpl::removeTraces(
             // Check if a valid summary exists in directory
             if (rw.read(summary)) {
                 // Remove only completed or traces with errors
-                if (summary.state() == proto::TraceState::COMPLETE ||
+                if (request->force() ||
+                    summary.state() == proto::TraceState::COMPLETE ||
                     summary.state() == proto::TraceState::ERROR) {
-                    dirsToRemove.push_back(traceRootDir + "/" + dir);
+                    auto trace = tracesToRemove.add_trace();
+                    trace->set_tracepath(dir);
+                    trace->set_state(summary.state());
+
                 } else {
-                    notRemovedPaths += dir + "\n";
+                    log::cout
+                            << "Skipping trace, as it may still be running: " +
+                                       dir
+                            << std::endl;
                 }
             }
         }
     }
 
-    // There were some traces which were not removed
-    if (notRemovedPaths != "") {
-        failMessage +=
-                "Skipping following traces which may still be running:\n";
-        failMessage += notRemovedPaths;
-    }
-
     // Remove directories matching prefixes and having summary file
-    for (const auto &dir : dirsToRemove) {
-        if (!fsutils::removeFile(dir)) {
-            failMessage += "Could not remove trace: " + dir;
-            break;
+    for (int i = 0; i < tracesToRemove.trace_size(); i++) {
+        const auto &traceToRemove = tracesToRemove.trace(i);
+        std::string absolutePath =
+                traceRootDir + "/" + traceToRemove.tracepath();
+
+        if (!fsutils::removeFile(absolutePath)) {
+            log::cerr << "Could not remove trace: " + traceToRemove.tracepath()
+                      << std::endl;
+        } else {
+            // Add removed traces to response
+            auto removedTrace = response->add_trace();
+            removedTrace->set_tracepath(traceToRemove.tracepath());
+            removedTrace->set_state(traceToRemove.state());
         }
     }
 
-    if (failMessage != "") {
-        controller->SetFailed(failMessage);
+    // Set fail only when no traces were removed.
+    if (response->trace_size() == 0) {
+        controller->SetFailed("No traces removed.");
     }
+
     done->Run();
 }
 void InterfaceTraceManagementImpl::getTraceSummary(

@@ -56,9 +56,9 @@ public:
      * to SignalHandler. The signal needs to be registered first
      * to have any effect
      *
-     * @note The signal sent is SIGUSR1.
+     * @param sig Signal to be sent
      */
-    void sendUserSignal();
+    void sendSignal(int sig);
 
 private:
     SignalHandler();

@@ -52,15 +52,15 @@ bool Server::open() {
 
     // Set permissions on socket (rw for user and group)
     if (fchmod(m_fd, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) {
-        m_fd = -1;
         ::close(m_fd);
+        m_fd = -1;
         return false;
     }
 
     // Prepare address path
     memset_s(&unaddr, sizeof(unaddr), 0);
     unaddr.sun_family = AF_UNIX;
-    strncpy(unaddr.sun_path, m_address.c_str(), sizeof(unaddr.sun_path) - 1);
+    strcpy_s(unaddr.sun_path, sizeof(unaddr.sun_path), m_address.c_str());
 
     // TODO (jstencel) Fix correct unlinking on server closing.
     // As for now, just unlink it here as to enable server
