@@ -39,7 +39,7 @@ public:
      * @param trace trace event to be stored
      * @param size size of trace event to be stored
      */
-    void push(uint32_t ioQueueId, const void *trace, size_t size);
+    virtual void push(uint32_t ioQueueId, const void *trace, size_t size);
 
 private:
     /**
