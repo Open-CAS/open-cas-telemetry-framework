@@ -5,7 +5,10 @@
 
 #include <octf/c/iotrace_plugin.h>
 
+#include <atomic>
 #include <chrono>
+#include <thread>
+#include <vector>
 #include <octf/trace/IOTracePlugin.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
@@ -13,12 +16,24 @@
 using namespace octf;
 
 class IOTracePluginC : public IOTracePlugin {
+private:
+    struct QueueContext {
+        std::atomic_bool traceStoping;
+        std::atomic_uint64_t tracingRefCounter;
+    };
+
 public:
     IOTracePluginC(octf_iotrace_plugin_context_t context,
                    const std::string &pluginId,
                    uint32_t queueCount)
             : IOTracePlugin(pluginId, queueCount)
-            , m_context(context) {}
+            , m_context(context)
+            , m_queueContext(queueCount) {
+        for (auto &queueContext : m_queueContext) {
+            queueContext.tracingRefCounter = 0;
+            queueContext.traceStoping = true;
+        }
+    }
 
     virtual ~IOTracePluginC() = default;
 
@@ -27,6 +42,9 @@ public:
 
         if (result) {
             m_context->tracing_active = true;
+            for (auto &queueContext : m_queueContext) {
+                queueContext.traceStoping = false;
+            }
         }
 
         return result;
@@ -34,11 +52,50 @@ public:
 
     bool stopTrace() override {
         m_context->tracing_active = false;
+
+        for (auto &queueContext : m_queueContext) {
+            queueContext.traceStoping = true;
+        }
+
+        // Poll for all ongoing traces completion
+        while (isTraceOngoing()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
         return IOTracePlugin::stopTrace();
+    }
+
+    void push(uint32_t ioQueueId, const void *trace, size_t size) override {
+        if (ioQueueId > getTraceQueueCount()) {
+            ioQueueId %= getTraceQueueCount();
+        }
+
+        auto &queueContext = m_queueContext[ioQueueId];
+
+        queueContext.tracingRefCounter++;
+        if (queueContext.traceStoping) {
+            // Tracing stop was requested
+            queueContext.tracingRefCounter--;
+            return;
+        }
+        IOTracePlugin::push(ioQueueId, trace, size);
+        queueContext.tracingRefCounter--;
+    }
+
+private:
+    inline bool isTraceOngoing() const {
+        for (const auto &queueContext : m_queueContext) {
+            if (queueContext.tracingRefCounter) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 private:
     octf_iotrace_plugin_context_t m_context;
+    std::vector<QueueContext> m_queueContext;
 };
 
 extern "C" int octf_iotrace_plugin_create(
