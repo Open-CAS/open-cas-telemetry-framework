@@ -16,60 +16,6 @@ extern "C" {
 #include <octf/trace/iotrace_event.h>
 
 /**
- * @file
- *
- * C wrapper of IO tracer plug-in
- *
- * @example
- * # Usage of C Wrapper IO tracer plug-in
- *
- *
- * ## Initializing the plugin
- *
- * @code
- *  octf_iotrace_plugin_t plugin;
- *  struct octf_iotrace_plugin_cnfg cnfg = {
- *          .id = "c-iotrace-example",
- *          .io_queue_count = YOUR_IO_QUEUE_COUNT
- *  };
- *
- *  if (octf_iotrace_plugin_create(&cnfg, &plugin)) {
- *      // Error occurred
- *      return -1;
- *  }
- * @endcode
- *
- *
- * ## Pushing an IO trace event
- *
- * @code Pushing an IO event
- *  // Define IO trace event
- *  struct iotrace_event ev = {};
- *
- *  // Initialize trace header
- *  octf_iotrace_plugin_init_trace_header(plugin, &ev.hdr,
- *          iotrace_event_type_io, sizeof(ev));
- *
- *  // Fill IO trace
- *  ev.lba = ...
- *  ev.len = ...
- *  ev.operation = ...
- *  ...
- *
- *  // Push  IO trace
- *  octf_iotrace_plugin_push_trace(plugin, queue_id, &ev, sizeof(ev));
- * @endcode
- *
- *
- * ## De-initializing the plugin
- *
- * @code
- *  octf_iotrace_plugin_destroy(&plugin);
- * @endcode
- * <p/>
- */
-
-/**
  * @brief IO trace plug-in handle
  */
 struct octf_iotrace_plugin_context {

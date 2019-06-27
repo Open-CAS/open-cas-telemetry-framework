@@ -34,7 +34,6 @@ static void trace_io(octf_iotrace_plugin_context_t context)
 
 int main() {
     int result = 0;
-    uint32_t i;
     octf_iotrace_plugin_context_t context;
 
     struct octf_iotrace_plugin_cnfg cnfg = {
