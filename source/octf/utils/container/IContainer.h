@@ -41,7 +41,7 @@ public:
 
     static_assert(std::is_base_of<IIteratorConst<type, const_iterator>,
                                   const_iterator>(),
-                  "iterator must inherit by IIterator");
+                  "const_iterator must inherit by IIteratorConst");
 
     IContainer() = default;
     virtual ~IContainer() = default;

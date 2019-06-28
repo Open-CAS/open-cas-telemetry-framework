@@ -6,9 +6,6 @@
 #ifndef SOURCE_OCTF_UTILS_CONTAINER_IITERABLE_H
 #define SOURCE_OCTF_UTILS_CONTAINER_IITERABLE_H
 
-#include <memory>
-#include <octf/utils/container/IIterator.h>
-
 namespace octf {
 
 /**

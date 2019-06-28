@@ -6,9 +6,6 @@
 #ifndef SOURCE_OCTF_UTILS_CONTAINER_IITERABLECONST_H
 #define SOURCE_OCTF_UTILS_CONTAINER_IITERABLECONST_H
 
-#include <memory>
-#include <octf/utils/container/IIteratorConst.h>
-
 namespace octf {
 
 /**

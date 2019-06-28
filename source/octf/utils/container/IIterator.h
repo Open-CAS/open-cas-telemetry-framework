@@ -14,7 +14,7 @@ namespace octf {
  * @ingroup Containers
  * @brief Basic iterator interface
  *
- * This interface defines required methods for const iterator which allows to\
+ * This interface defines required methods for const iterator which allows to
  * iterate over container
  *
  * @tparam type Type of container's element
@@ -29,30 +29,30 @@ public:
     virtual ~IIterator() = default;
 
     /**
-     * @brief Reference operator to contaier's element at current iterator
+     * @brief Reference operator to container's element at current iterator
      * position
      *
-     * @return Reference to contaier's element at current iterator
+     * @return Reference to container's element at current iterator
      */
     virtual type &operator*() const = 0;
 
     /**
-     * @brief Pointer operator to contaier's element at current iterator
+     * @brief Pointer operator to container's element at current iterator
      * position
      *
-     * @return Pointer to contaier's element at current iterator
+     * @return Pointer to container's element at current iterator
      */
     virtual type *operator->() const = 0;
 
     /**
-     * @brief Post-increment iterator operator
+     * @brief Pre-increment iterator operator
      *
      * @return Iterator at next position
      */
     virtual iterator &operator++() = 0;
 
     /**
-     * @brief Pre-increment iterator operator
+     * @brief Post-increment iterator operator
      *
      * Returns iterator at current position and increments to next one
      *
@@ -61,14 +61,14 @@ public:
     virtual iterator operator++(int) = 0;
 
     /**
-     * @brief Post-decrement iterator operator
+     * @brief Pre-decrement iterator operator
      *
      * @return Iterator at previous position
      */
     virtual iterator &operator--() = 0;
 
     /**
-     * @brief Pre-decrement iterator operator
+     * @brief Post-decrement iterator operator
      *
      * Returns iterator at current position and decrement to previous one
      *
