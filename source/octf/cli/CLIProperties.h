@@ -7,7 +7,6 @@
 #define SOURCE_OCTF_CLI_CLIPROPERTIES_H
 
 #include <string>
-#include <octf/utils/NonCopyable.h>
 
 namespace octf {
 namespace cli {

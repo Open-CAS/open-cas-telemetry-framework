@@ -131,7 +131,6 @@ void Command::parseParamValues(CLIList &cliList) {
         throw InvalidParameterException("Too much option(s).");
     }
 
-    // if parameter is missing
     checkParamMissing();
 }
 

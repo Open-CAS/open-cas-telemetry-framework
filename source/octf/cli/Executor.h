@@ -44,10 +44,11 @@ public:
     /**
      * Adds modules to this executor
      *
-     * @note At the moment InterfaceShRef is supported
+     * @note At the moment following module type's are supported:
+     * - InterfaceShRef
      *
-     * @tparam Module One of supported module types
-     * @tparam Modules Ones of supported module types
+     * @tparam Module One of supported modules
+     * @tparam Modules List of modules which are supported
      *
      * @param module Module to be added
      * @param modules Other modules to be added
@@ -61,7 +62,10 @@ public:
     /**
      * Adds module to this executor
      *
-     * @tparam Module One of supported module type
+     * @note At the moment following module type's are supported:
+     * - InterfaceShRef
+     *
+     * @tparam Module One of supported modules
      *
      * @param module Module to be added
      */

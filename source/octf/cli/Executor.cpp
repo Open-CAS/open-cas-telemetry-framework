@@ -234,7 +234,7 @@ int Executor::execute(CLIList &cliList) {
             log::cerr << e.getMessage() << endl;
         }
 
-        if (e.isHelp()) {
+        if (e.printHelp()) {
             // Parse parameters failed, show third level (command's) help
             stringstream ss;
 

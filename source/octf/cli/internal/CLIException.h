@@ -29,7 +29,7 @@ public:
      */
     CLIException(const std::string &message, bool help, bool failure)
             : Exception(message)
-            , m_help(help)
+            , m_printHelp(help)
             , m_failure(failure) {}
 
     virtual ~CLIException() = default;
@@ -42,16 +42,16 @@ public:
         m_failure = failure;
     }
 
-    bool isHelp() const {
-        return m_help;
+    bool printHelp() const {
+        return m_printHelp;
     }
 
-    void setHelp(bool help) {
-        m_help = help;
+    void setPrintHelp(bool help) {
+        m_printHelp = help;
     }
 
 private:
-    bool m_help;
+    bool m_printHelp;
     bool m_failure;
 };
 
