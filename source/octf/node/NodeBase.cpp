@@ -49,13 +49,13 @@ bool NodeBase::readSettings() {
             if (rw.read(*m_settings)) {
                 return true;
             } else {
-                log::cerr << "Cannot read settings - file: "
-                          << rw.getFilePath() << std::endl;
+                log::cerr << "Cannot read settings - file: " << rw.getFilePath()
+                          << std::endl;
 
                 return false;
             }
 
-        } catch (Exception& ex) {
+        } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             throw Exception("Could not read node settings.");
         }
@@ -79,7 +79,7 @@ bool NodeBase::writeSettings() {
 
                 return false;
             }
-        } catch (Exception& ex) {
+        } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             return false;
         }
@@ -100,12 +100,12 @@ bool NodeBase::removeSettings() {
                     return true;
                 }
 
-            log::cerr << "Cannot remove settings - file: "
-                      << rw.getFilePath() << std::endl;
+                log::cerr << "Cannot remove settings - file: "
+                          << rw.getFilePath() << std::endl;
 
                 return false;
             }
-        } catch (Exception& ex) {
+        } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             return false;
         }
@@ -123,7 +123,7 @@ bool NodeBase::areSettingsAvailable() {
 
             return rw.isFileAvailable();
 
-        } catch (Exception& ex) {
+        } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             return false;
         }

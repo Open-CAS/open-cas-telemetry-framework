@@ -44,8 +44,8 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     openFileToRead();
 
     if (m_readFd == -1) {
-        log::cerr << "Could not open file " << m_filePath << " for reading: "
-                  << std::string(strerror(errno));
+        log::cerr << "Could not open file " << m_filePath
+                  << " for reading: " << std::string(strerror(errno));
         return false;
     }
 
@@ -85,8 +85,8 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     openFileToWrite();
 
     if (m_writeFd == -1) {
-        log::cerr << "Could not open file " << m_filePath << " for writing: "
-                  << std::string(strerror(errno));
+        log::cerr << "Could not open file " << m_filePath
+                  << " for writing: " << std::string(strerror(errno));
         return false;
     }
 

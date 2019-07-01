@@ -3,7 +3,6 @@ add_subdirectory(container)
 target_sources(octf
 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.cpp
-	${CMAKE_CURRENT_LIST_DIR}/OptionsValidation.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.h
 	${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.cpp
 	${CMAKE_CURRENT_LIST_DIR}/SignalHandler.h
@@ -24,6 +23,5 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/DateTime.h
 	${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.cpp
 	${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.h
-	${CMAKE_CURRENT_LIST_DIR}/OptionsValidation.h
 	${CMAKE_CURRENT_LIST_DIR}/SizeConversion.h
 )

@@ -6,23 +6,22 @@
 #ifndef SOURCE_OCTF_CLI_EXECUTOR_H
 #define SOURCE_OCTF_CLI_EXECUTOR_H
 
+#include <initializer_list>
 #include <map>
-#include <octf/cli/CLIList.h>
-#include <octf/cli/CLIUtils.h>
-#include <octf/cli/CommandSet.h>
-#include <octf/cli/GenericPluginShadow.h>
-#include <octf/cli/Module.h>
-#include <octf/cli/cmd/CmdHelp.h>
-#include <octf/cli/cmd/CommandProtobuf.h>
+#include <memory>
+#include <octf/cli/CLIProperties.h>
 #include <octf/node/INode.h>
-#include <octf/utils/Log.h>
 
 namespace octf {
-
-// This value specifies delimiter for multiple value parameters
-constexpr char PARAMETER_VALUE_DELIMITER[] = ",";
+namespace cli {
 
 class Parameter;
+class CLIList;
+class ICommand;
+class CommandProtobuf;
+class CommandSet;
+class GenericPluginShadow;
+class Module;
 
 /**
  * @brief Class used for command execution
@@ -33,8 +32,61 @@ public:
      * @brief Default constructor
      */
     Executor();
-    virtual ~Executor() = default;
+    virtual ~Executor();
 
+    /**
+     * @brief Gets CLI Properties
+     *
+     * @return CLI Properties to be set
+     */
+    CLIProperties &getCliProperties();
+
+    /**
+     * Adds modules to this executor
+     *
+     * @note At the moment following module type's are supported:
+     * - InterfaceShRef
+     *
+     * @tparam Module One of supported modules
+     * @tparam Modules List of modules which are supported
+     *
+     * @param module Module to be added
+     * @param modules Other modules to be added
+     */
+    template <class Module, class... Modules>
+    void addModules(Module const &module, Modules const &... modules) {
+        addLocalModule(module);
+        addModules(modules...);
+    }
+
+    /**
+     * Adds module to this executor
+     *
+     * @note At the moment following module type's are supported:
+     * - InterfaceShRef
+     *
+     * @tparam Module One of supported modules
+     *
+     * @param module Module to be added
+     */
+    template <class Module>
+    void addModules(Module const &module) {
+        addLocalModule(module);
+    }
+
+    /**
+     * @brief Execute command
+     *
+     * @param argc Arguments count
+     * @param argv Arguments array
+     *
+     * @return Execution result
+     * @retval 0 Success
+     * @retval Non-zero Failure
+     */
+    int execute(int argc, char *argv[]);
+
+private:
     /**
      * @brief Add local module with key prefix
      *
@@ -43,10 +95,10 @@ public:
      * @param desc Module description
      * @param shortKey Module short key
      */
-    virtual void addLocalModule(InterfaceShRef interface,
-                                const std::string &longKey,
-                                const std::string &desc,
-                                const std::string &shortKey = "");
+    void addLocalModule(InterfaceShRef interface,
+                        const std::string &longKey,
+                        const std::string &desc,
+                        const std::string &shortKey = "");
 
     /**
      * @brief Add local module
@@ -54,24 +106,25 @@ public:
      * @param interface Interface which methods will be add into local command
      * set
      */
-    virtual void addLocalModule(InterfaceShRef interface);
+    void addLocalModule(InterfaceShRef interface);
 
     /**
      * @brief Add local command to executor's command set
      * @param cmd Command to be added
      */
-    virtual void addLocalCommand(std::shared_ptr<ICommand> cmd);
+    void addLocalCommand(std::shared_ptr<ICommand> cmd);
 
     /**
      * @brief Execute command
-     * @param cmd Command name
      * @param cliList CLIList with parameters
      *
+     * @return Execution result
+     * @retval 0 Success
+     * @retval Non-zero Failure
      */
-    virtual bool execute(CLIList &cliList);
+    int execute(CLIList &cliList);
 
-private:
-    virtual void addInterface(InterfaceShRef interface, CommandSet &commandSet);
+    void addInterface(InterfaceShRef interface, CommandSet &commandSet);
 
     /**
      * @brief Add a proto method which will be available as a local command
@@ -80,26 +133,26 @@ private:
      * @param interface Pointer to interface containing given method
      * @param commandSet Command set to contain this command
      */
-    virtual void addMethod(const ::google::protobuf::MethodDescriptor *method,
-                           InterfaceShRef interface,
-                           CommandSet &commandSet);
+    void addMethod(const ::google::protobuf::MethodDescriptor *method,
+                   InterfaceShRef interface,
+                   CommandSet &commandSet);
 
     /**
      * @return Help for executor's local commands and available plugins
      */
-    virtual void printMainHelp(std::stringstream &ss);
+    void printMainHelp(std::stringstream &ss);
 
     /**
      * @brief Get internally a set of available modules
      */
-    virtual void getModules();
+    void getModules();
 
     /**
      * @brief Set execution progress and print if changed
      * @param progress Progress of command as a fraction
      * @param out Output stream
      */
-    virtual void setProgress(double progress, std::ostream &out);
+    void setProgress(double progress, std::ostream &out);
 
     /**
      * @brief Load command set of given (remote) module
@@ -107,17 +160,17 @@ private:
      * This method may need to communicate with specified module
      * in order to load command set
      */
-    virtual void loadModuleCommandSet();
+    void loadModuleCommandSet();
 
-    virtual std::shared_ptr<ICommand> getCommandFromModule(std::string cmdName);
+    std::shared_ptr<ICommand> getCommandFromModule(std::string cmdName);
 
-    virtual bool isModuleExistent(std::string moduleName) const;
+    bool isModuleExistent(std::string moduleName) const;
 
-    virtual void setModule(std::string moduleName);
+    void setModule(std::string moduleName);
 
-    virtual std::shared_ptr<ICommand> validateCommand(CLIList &cliList);
+    std::shared_ptr<ICommand> validateCommand(CLIList &cliList);
 
-    virtual void executeRemote(std::shared_ptr<CommandProtobuf> cmd);
+    void executeRemote(std::shared_ptr<CommandProtobuf> cmd);
 
     /**
      * Prepares output to handle commands' logs
@@ -128,15 +181,17 @@ private:
     void setupOutputsForCommandsLogs() const;
 
 private:
-    CommandSet m_localCmdSet;
-    CommandSet m_moduleCmdSet;
+    CLIProperties m_cliProperties;
+    std::unique_ptr<CommandSet> m_localCmdSet;
+    std::unique_ptr<CommandSet> m_moduleCmdSet;
     std::map<std::string, Module> m_modules;
-    Module m_module;
+    std::unique_ptr<Module> m_module;
     double m_progress;
     std::unique_ptr<GenericPluginShadow> m_nodePlugin;
     std::map<std::string, CommandSet> m_localModules;
 };
 
+}  // namespace cli
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_CLI_EXECUTOR_H

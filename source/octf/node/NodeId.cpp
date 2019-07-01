@@ -4,8 +4,8 @@
  */
 #include <octf/node/NodeId.h>
 
+#include <octf/cli/internal/OptionsValidation.h>
 #include <octf/utils/Exception.h>
-#include <octf/utils/OptionsValidation.h>
 
 namespace octf {
 
@@ -55,7 +55,7 @@ bool NodeId::operator!=(const NodeId &id) const {
 }
 
 void NodeId::validate() {
-    if (!cliUtils::isLongKeyValid(m_id)) {
+    if (!cli::utils::isLongKeyValid(m_id)) {
         throw Exception("Invalid id of Node ID ");
     }
 }
