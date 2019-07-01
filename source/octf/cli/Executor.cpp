@@ -210,6 +210,7 @@ int Executor::execute(CLIList &cliList) {
 
     try {
         if (cliList.hasHelp()) {
+            // Help reqested, print it and return
             stringstream ss;
             utils::printCmdHelp(ss, command, m_cliProperties);
             log::cout << ss.str();
@@ -218,35 +219,38 @@ int Executor::execute(CLIList &cliList) {
 
         // Fill command's parameters
         command->parseParamValues(cliList);
-        setupOutputsForCommandsLogs();
 
-        if (command->isLocal()) {
-            // Execute command locally
-            command->execute();
-        } else {
-            // Execute remotely
-            shared_ptr<CommandProtobuf> protoCmd =
-                    std::dynamic_pointer_cast<CommandProtobuf>(command);
-            if (protoCmd) {
-                executeRemote(protoCmd);
-
-            } else {
-                // Dynamic cast failed
-                throw InvalidParameterException("Unknown command type.");
-            }
-        }
     } catch (Exception &e) {
+        // An error during parsing command, print it and then print help,
+        // and return
+
         if ("" != e.getMessage()) {
             log::cerr << e.getMessage() << endl;
         }
 
-        if (command) {
-            stringstream ss;
-            utils::printCmdHelp(ss, command, m_cliProperties);
-            log::cout << ss.str();
-        }
+        stringstream ss;
+        utils::printCmdHelp(ss, command, m_cliProperties);
+        log::cout << ss.str();
 
         return 1;
+    }
+
+    setupOutputsForCommandsLogs();
+
+    if (command->isLocal()) {
+        // Execute command locally
+        command->execute();
+    } else {
+        // Execute remotely
+        shared_ptr<CommandProtobuf> protoCmd =
+                std::dynamic_pointer_cast<CommandProtobuf>(command);
+        if (protoCmd) {
+            executeRemote(protoCmd);
+
+        } else {
+            // Dynamic cast failed
+            throw InvalidParameterException("Unknown command type.");
+        }
     }
 
     return 0;
