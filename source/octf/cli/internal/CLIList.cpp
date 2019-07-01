@@ -8,6 +8,7 @@
 #include <octf/cli/internal/CLIElement.h>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/cmd/ICommand.h>
+#include <octf/cli/internal/param/ParamHelp.h>
 #include <octf/utils/Log.h>
 
 using namespace std;
@@ -83,6 +84,20 @@ CLIElement CLIList::nextElement() {
         static const string empty;
         return CLIElement(empty);
     }
+}
+
+bool CLIList::hasHelp() {
+    if (hasNext()) {
+        ParamHelp ph;
+
+        const auto key = m_iter->getValidKeyName();
+
+        if (key == ph.getLongKey() || key == ph.getShortKey()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 }  // namespace cli

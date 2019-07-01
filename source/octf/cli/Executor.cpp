@@ -6,7 +6,6 @@
 #include <octf/cli/Executor.h>
 
 #include <google/protobuf/dynamic_message.h>
-#include <octf/cli/internal/CLIException.h>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/CommandSet.h>
@@ -210,6 +209,13 @@ int Executor::execute(CLIList &cliList) {
     }
 
     try {
+        if (cliList.hasHelp()) {
+            stringstream ss;
+            utils::printCmdHelp(ss, command, m_cliProperties);
+            log::cout << ss.str();
+            return 0;
+        }
+
         // Fill command's parameters
         command->parseParamValues(cliList);
         setupOutputsForCommandsLogs();
@@ -229,24 +235,18 @@ int Executor::execute(CLIList &cliList) {
                 throw InvalidParameterException("Unknown command type.");
             }
         }
-    } catch (CLIException &e) {
+    } catch (Exception &e) {
         if ("" != e.getMessage()) {
             log::cerr << e.getMessage() << endl;
         }
 
-        if (e.printHelp()) {
-            // Parse parameters failed, show third level (command's) help
+        if (command) {
             stringstream ss;
-
-            if ("" != e.getMessage()) {
-                ss << endl;
-            }
-
             utils::printCmdHelp(ss, command, m_cliProperties);
             log::cout << ss.str();
         }
 
-        return e.isFailure();
+        return -1;
     }
 
     return 0;

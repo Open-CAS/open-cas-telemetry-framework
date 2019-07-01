@@ -15,7 +15,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/Module.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ICommandSet.h
 	${CMAKE_CURRENT_LIST_DIR}/CLIList.cpp
-	${CMAKE_CURRENT_LIST_DIR}/CLIException.h
     ${CMAKE_CURRENT_LIST_DIR}/OptionsValidation.cpp
     ${CMAKE_CURRENT_LIST_DIR}/OptionsValidation.h
 )

@@ -9,7 +9,6 @@
 #include <map>
 #include <sstream>
 #include <octf/cli/CLIProperties.h>
-#include <octf/cli/internal/CLIException.h>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/cmd/Command.h>
@@ -72,7 +71,7 @@ std::shared_ptr<IParameter> Command::getParam(const string &name) {
         }
     }
 
-    throw CLIException("Option '" + name + "' is unrecognized.", true, true);
+    throw Exception("Option '" + name + "' is unrecognized.");
 }
 
 std::shared_ptr<IParameter> Command::getParamByIndex(const int32_t index) {
@@ -89,7 +88,6 @@ std::shared_ptr<IParameter> Command::getParamByIndex(const int32_t index) {
 }
 
 void Command::parseParamValues(CLIList &cliList) {
-    ParamHelp ph;
     // Look for command parameters
     while (cliList.hasNext()) {
         // Get next parameter
@@ -98,13 +96,7 @@ void Command::parseParamValues(CLIList &cliList) {
         CLIElement element = cliList.nextElement();
         string name = element.getValidKeyName();
         if (name.empty()) {
-            throw CLIException("Invalid parameter format", true, true);
-        }
-
-        // Show third level help if the parameter is help
-        if (name == ph.getLongKey() || name == ph.getShortKey()) {
-            // Throw exception in order to not execute command and show help
-            throw CLIException("", true, false);
+            throw Exception("Invalid parameter format");
         }
 
         // Find proper parameter
@@ -116,9 +108,8 @@ void Command::parseParamValues(CLIList &cliList) {
                 // Get next element - a value (not a key) is expected
                 param->setValue(cliList.next());
             } else {
-                throw CLIException("Value of option '" + param->getLongKey() +
-                                           "' is missing.",
-                                   true, true);
+                throw Exception("Value of option '" + param->getLongKey() +
+                                "' is missing.");
             }
 
         } else {
@@ -131,6 +122,7 @@ void Command::parseParamValues(CLIList &cliList) {
         throw InvalidParameterException("Too much option(s).");
     }
 
+    // if parameter is missing
     checkParamMissing();
 }
 
@@ -188,9 +180,8 @@ void Command::checkParamMissing() const {
         }
 
         // There is a required and not set parameter
-        throw CLIException(
-                "Option '" + iter->second->getLongKey() + "' is required.",
-                true, true);
+        throw Exception("Option '" + iter->second->getLongKey() +
+                        "' is required.");
     }
 
     // All required parameters are set
