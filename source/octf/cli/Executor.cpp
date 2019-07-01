@@ -246,7 +246,7 @@ int Executor::execute(CLIList &cliList) {
             log::cout << ss.str();
         }
 
-        return -1;
+        return 1;
     }
 
     return 0;
@@ -273,11 +273,11 @@ int Executor::execute(int argc, char *argv[]) {
 
     } catch (Exception &e) {
         log::cerr << e.what() << endl;
-        return -1;
+        return 1;
     } catch (std::exception &e) {
         log::critical << m_cliProperties.getName()
                       << " execution interrupted: " << e.what() << endl;
-        return -1;
+        return 1;
     }
 
     return result;
