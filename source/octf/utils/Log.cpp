@@ -166,5 +166,9 @@ std::ostream &OutputStream::getOutputStream() {
     return m_logger->getBuffer();
 }
 
+const std::string &octf::log::OutputStream::getPrefix() {
+    return m_logger->getPrefix();
+}
+
 }  // namespace log
 }  // namespace octf

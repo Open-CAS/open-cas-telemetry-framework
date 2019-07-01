@@ -132,6 +132,13 @@ public:
         return *this;
     }
 
+    /**
+     * @Gets stream prefix
+     *
+     * @return Stream prefix
+     */
+    const std::string &getPrefix();
+
 private:
     std::ostream &getOutputStream();
 

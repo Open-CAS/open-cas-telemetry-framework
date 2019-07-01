@@ -66,7 +66,9 @@ bool readDirectoryContentsRecursive(const std::string &path,
                                     FileType type);
 
 /**
- * @brief Checks given file for permissions
+ * @brief Checks given file for permissions using real user id
+ *
+ * @note When using this function make sure to avoid TOCTOU vulnerability
  *
  * @param file Absolute path to the file
  * @param permission Permission to check
@@ -79,6 +81,8 @@ bool checkPermissions(std::string file, PermissionType permission);
 /**
  * @brief Removes specified file. If it's a directory, it is removed with its
  * contents.
+ *
+ * @note When using this function make sure to avoid TOCTOU vulnerability
  *
  * @note In case of failure of removal of any of the contained files directory
  * contents may be partially removed.

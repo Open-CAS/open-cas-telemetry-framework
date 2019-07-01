@@ -34,7 +34,9 @@ std::string RpcControllerImpl::ErrorText() const {
 }
 
 void RpcControllerImpl::StartCancel() {
-    m_rpcProxy->cancelClientMethod(this);
+    if (m_rpcProxy) {
+        m_rpcProxy->cancelClientMethod(this);
+    }
     m_cancelled = true;
 }
 

@@ -10,6 +10,17 @@
 namespace octf {
 
 /**
+ * @defgroup Utilities Utilities
+ *
+ * Generic purpose utilities
+ * @{
+ *
+ * @defgroup Exceptions Exceptions
+ * Framework Exceptions
+ * @{
+ */
+
+/**q
  * @brief Exception class for iotrace framework. Base class for all other custom
  * exception types.
  *
@@ -70,6 +81,11 @@ public:
             : InvalidParameterException(message) {}
     virtual ~InvalidNodeIdException() = default;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 }  // namespace octf
 

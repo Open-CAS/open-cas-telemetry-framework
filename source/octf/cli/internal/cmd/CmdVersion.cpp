@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/cli/CLIProperties.h>
 #include <octf/cli/internal/cmd/CmdVersion.h>
+
+#include <octf/cli/CLIProperties.h>
+#include <octf/utils/FrameworkConfiguration.h>
 #include <octf/utils/Log.h>
 
 using namespace std;
@@ -22,8 +24,12 @@ CmdVersion::CmdVersion(const CLIProperties &properties)
 }
 
 void CmdVersion::execute() {
-    log::cout << "Name: " << m_cliProperties.getName() << endl;
-    log::cout << "Version: " << m_cliProperties.getVersion() << endl;
+    log::cout << m_cliProperties.getVersion() << endl;
+
+    std::string oldPrefix = log::cout.getPrefix();
+    log::cout << log::prefix << "OCTF"
+              << getFrameworkConfiguration().getVersion() << endl;
+    log::cout << log::prefix << oldPrefix;
 }
 
 }  // namespace cli

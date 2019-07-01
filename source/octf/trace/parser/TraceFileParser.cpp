@@ -115,8 +115,12 @@ bool TraceFileParser::isFinished() {
             return false;
         }
     }
-    // All readers have finished
-    return true;
+    // All readers have finished, but there still may be some events in set
+    if (m_events.empty()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }  // namespace octf

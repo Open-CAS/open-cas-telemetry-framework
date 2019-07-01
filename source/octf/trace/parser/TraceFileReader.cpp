@@ -92,7 +92,7 @@ void TraceFileReader::readTraceEvent(
             protoconverter::decodeVarint32(m_addr, m_size, messageLength);
     if (bytesRead <= 0 || bytesRead > m_size) {
         m_error = true;
-        throw Exception("Couldn't parse size of trace event size");
+        throw Exception("Couldn't parse size of trace event");
     }
     m_addr += bytesRead;
     m_size -= bytesRead;
