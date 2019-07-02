@@ -113,7 +113,8 @@ public:
      */
     void setDesc(const std::string &desc);
 
-    virtual void setOptions(const proto::CliParameter &paramDef) override;
+    //    virtual void setOptions(google::protobuf::FieldDescriptor* fieldDesc)
+    //    override;
 
     void parseToProtobuf(
             google::protobuf::Message *message,

@@ -75,7 +75,8 @@ public:
      */
     void setMaxLength(uint32_t maxLength);
 
-    virtual void setOptions(const proto::CliParameter &paramDef) override;
+    //    virtual void setOptions(google::protobuf::FieldDescriptor* fieldDesc)
+    //    override;
 
     virtual void setMultipleValue(bool multipleValue) override;
 

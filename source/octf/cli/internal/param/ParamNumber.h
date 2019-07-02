@@ -118,7 +118,7 @@ public:
      */
     std::string toString() const;
 
-    virtual void setOptions(const proto::CliParameter &paramDef);
+    // virtual void setOptions(google::protobuf::FieldDescriptor* fieldDesc);
 
     void parseToProtobuf(
             google::protobuf::Message *message,

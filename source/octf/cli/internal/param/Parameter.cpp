@@ -119,16 +119,19 @@ void Parameter::setValueSet() {
     m_set = true;
 }
 
-void Parameter::setOptions(const proto::CliParameter &paramDef) {
-    const proto::OptsParam &paramOps = paramDef.paramops();
-    setHidden(false);
-    setRequired(paramOps.cli_required());
-    setDesc(paramOps.cli_desc());
+void Parameter::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
+    const google::protobuf::FieldOptions &fieldOptions = fieldDesc->options();
+    if (fieldOptions.HasExtension(proto::opts_param)) {
+        setHidden(false);
+        setRequired(
+                fieldOptions.GetExtension(proto::opts_param).cli_required());
+        setDesc(fieldOptions.GetExtension(proto::opts_param).cli_desc());
+    }
 
     // TODO(trybicki): Check if long key is valid
-    setLongKey(paramOps.cli_long_key());
+    setLongKey(fieldOptions.GetExtension(proto::opts_param).cli_long_key());
     // TODO(trybicki): Check if short key is valid
-    setShortKey(paramOps.cli_short_key());
+    setShortKey(fieldOptions.GetExtension(proto::opts_param).cli_short_key());
 }
 
 bool Parameter::isMultipleValue() const {

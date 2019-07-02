@@ -200,52 +200,52 @@ void ParamNumber::setDesc(const std::string &desc) {
     details();
 }
 
-void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
-    using namespace google::protobuf;
-    const proto::OptsParam &paramOps = paramDef.paramops();
-
-    // Set options independent of type
-    Parameter::setOptions(paramDef);
-
-    if (paramOps.has_cli_num()) {
-        // If number-specific options are defined, set them
-        setDefault(paramOps.cli_num().default_value());
-        setMin(paramOps.cli_num().min());
-        setMax(paramOps.cli_num().max());
-
-    } else {
-        // No options defined, set default values
-        switch (paramDef.type()) {
-        case proto::CliParameter::Type::CliParameter_Type_INT32: {
-            std::numeric_limits<int32_t> limit;
-            setMin(limit.min());
-            setMax(limit.max());
-            setDefault(0);
-            break;
-        }
-
-        case proto::CliParameter::Type::CliParameter_Type_INT64: {
-            std::numeric_limits<int64_t> limit;
-            setMin(limit.min());
-            setMax(limit.max());
-            setDefault(0);
-            break;
-        }
-
-        case proto::CliParameter::Type::CliParameter_Type_UINT32: {
-            std::numeric_limits<uint32_t> limit;
-            setMin(limit.min());
-            setMax(limit.max());
-            setDefault(0);
-            break;
-        }
-
-        default:
-            throw InvalidParameterException("Unsupported numeric type.");
-            break;
-        }
-    }
-}
+// void ParamNumber::setOptions(google::protobuf::FieldDescriptor* fieldDesc) {
+//    using namespace google::protobuf;
+//    const proto::OptsParam &paramOps = paramDef.paramops();
+//
+//    // Set options independent of type
+//    Parameter::setOptions(paramDef);
+//
+//    if (paramOps.has_cli_num()) {
+//        // If number-specific options are defined, set them
+//        setDefault(paramOps.cli_num().default_value());
+//        setMin(paramOps.cli_num().min());
+//        setMax(paramOps.cli_num().max());
+//
+//    } else {
+//        // No options defined, set default values
+//        switch (paramDef.type()) {
+//        case proto::CliParameter::Type::CliParameter_Type_INT32: {
+//            std::numeric_limits<int32_t> limit;
+//            setMin(limit.min());
+//            setMax(limit.max());
+//            setDefault(0);
+//            break;
+//        }
+//
+//        case proto::CliParameter::Type::CliParameter_Type_INT64: {
+//            std::numeric_limits<int64_t> limit;
+//            setMin(limit.min());
+//            setMax(limit.max());
+//            setDefault(0);
+//            break;
+//        }
+//
+//        case proto::CliParameter::Type::CliParameter_Type_UINT32: {
+//            std::numeric_limits<uint32_t> limit;
+//            setMin(limit.min());
+//            setMax(limit.max());
+//            setDefault(0);
+//            break;
+//        }
+//
+//        default:
+//            throw InvalidParameterException("Unsupported numeric type.");
+//            break;
+//        }
+//    }
+//}
 
 }  // namespace cli
 }  // namespace octf

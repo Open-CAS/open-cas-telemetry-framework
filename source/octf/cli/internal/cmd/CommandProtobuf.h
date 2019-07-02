@@ -11,6 +11,7 @@
 #include <octf/cli/internal/cmd/Command.h>
 #include <octf/communication/Call.h>
 #include <octf/interface/InterfaceId.h>
+// TODO
 #include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
@@ -25,7 +26,7 @@ public:
      * @brief CommandProtobuf constructor using proto::CliCommand
      * @param cmdDesc Command description
      */
-    CommandProtobuf(const proto::CliCommand &cmdDesc);
+    CommandProtobuf(const proto::CliCommandDesc &cmdDesc);
 
     CommandProtobuf()
             : m_inDesc(nullptr)
@@ -100,39 +101,51 @@ public:
 
 protected:
     /**
-     * @brief Creates a parameter and adds it to this command.
+     * @brief Sets descriptor of input protobuf message for command
      *
-     * The parameter will be created based on supplied definition.
-     *
-     * @param paramDef Parameter definition as defined in .proto file
+     * @param desc Input message descriptor
      */
-    void createParameter(const proto::CliParameter &paramDef);
+    void setInputDesc(const google::protobuf::Descriptor *desc);
+
+    /**
+     * @brief Sets descriptor of output protobuf message for command
+     *
+     * @param desc Output message descriptor
+     */
+    void setOutputDesc(const google::protobuf::Descriptor *desc);
+
+    /**
+     * @brief Creates parameters and adds them to this command based on method
+     * input descriptor.
+     */
+    void createParameters();
 
 private:
-    /**
-     * @brief Returns FieldDescriptor::Type from CliParameter_Type
-     * @param type Type to be converted
-     * @return value as FieldDescriptor::Type
-     */
-    virtual google::protobuf::FieldDescriptor::Type getFieldDescriptorType(
-            proto::CliParameter_Type type);
-
-    void addParamDescProto(const std::string &name,
-                           google::protobuf::DescriptorProto *desc,
-                           const proto::CliParameter &param);
-
-    void addInputParamDescProto(google::protobuf::DescriptorProto *desc,
-                                const proto::CliParameter &param);
-
-    void addOutputParamDescProto(google::protobuf::DescriptorProto *desc,
-                                 const proto::CliParameter &param);
-
-    void addEnumParamDescProto(const std::string &name,
-                               const proto::OptsParam &paramOpts);
-
-    void addMessageParamDescProto(const std::string &messageName,
-                                  google::protobuf::DescriptorProto *desc,
-                                  const proto::CliParameter &param);
+    //    /**
+    //     * @brief Returns FieldDescriptor::Type from CliParameter_Type
+    //     * @param type Type to be converted
+    //     * @return value as FieldDescriptor::Type
+    //     */
+    //    virtual google::protobuf::FieldDescriptor::Type
+    //    getFieldDescriptorType(
+    //            proto::CliParameter_Type type);
+    //
+    //    void addParamDescProto(const std::string &name,
+    //                           google::protobuf::DescriptorProto *desc,
+    //                           const proto::CliParameter &param);
+    //
+    //    void addInputParamDescProto(google::protobuf::DescriptorProto *desc,
+    //                                const proto::CliParameter &param);
+    //
+    //    void addOutputParamDescProto(google::protobuf::DescriptorProto *desc,
+    //                                 const proto::CliParameter &param);
+    //
+    //    void addEnumParamDescProto(const std::string &name,
+    //                               const proto::OptsParam &paramOpts);
+    //
+    //    void addMessageParamDescProto(const std::string &messageName,
+    //                                  google::protobuf::DescriptorProto *desc,
+    //                                  const proto::CliParameter &param);
 
 private:
     /**

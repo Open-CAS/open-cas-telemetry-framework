@@ -64,7 +64,8 @@ public:
 
     virtual void setValueSet();
 
-    virtual void setOptions(const proto::CliParameter &paramDef) override;
+    virtual void setOptions(
+            const google::protobuf::FieldDescriptor *fieldDesc) override;
 
     virtual void parseToProtobuf(
             google::protobuf::Message *message,

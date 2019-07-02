@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_UTILS_OPTIONSVALIDATION_H
-#define SOURCE_OCTF_UTILS_OPTIONSVALIDATION_H
+#ifndef SOURCE_OCTF_CLI_INTERNAL_OPTIONSVALIDATION_H
+#define SOURCE_OCTF_CLI_INTERNAL_OPTIONSVALIDATION_H
 #include <string>
 #include <octf/proto/InterfaceCLI.pb.h>
 
@@ -67,7 +67,7 @@ bool isDescValid(const std::string &desc);
  * Has valid short key or no short key (as it is optional)
  * Has valid description
  */
-bool isCommandValid(const proto::CliCommand &cmd);
+bool isCommandValid(const proto::CliCommandDesc &cmd);
 
 /**
  * @brief Checks if command set is valid for CLI usage.
@@ -79,11 +79,11 @@ bool isCommandValid(const proto::CliCommand &cmd);
  * Uniqueness of long keys is assured
  * Uniqueness of short keys is assured
  */
-bool isCommandSetValid(const proto::CliCommandSet &commandSet,
+bool isCommandSetValid(const proto::CliCommandSetDesc &commandSet,
                        bool validCommandsAssured = false);
 
 }  // namespace utils
 }  // namespace cli
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_UTILS_OPTIONSVALIDATION_H
+#endif  // SOURCE_OCTF_CLI_INTERNAL_OPTIONSVALIDATION_H

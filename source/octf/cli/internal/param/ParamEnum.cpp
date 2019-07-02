@@ -200,35 +200,35 @@ void ParamEnum::setDesc(const std::string &desc) {
     details();
 }
 
-void ParamEnum::setOptions(const proto::CliParameter &paramDef) {
-    const proto::OptsParam &paramOps = paramDef.paramops();
-
-    // Set options independent of type
-    Parameter::setOptions(paramDef);
-
-    // If enum-specific options are present, set them
-    if (paramOps.has_cli_enum()) {
-        int enumCount = paramOps.cli_enum().enum_value_size();
-
-        for (int i = 0; i < enumCount; i++) {
-            const auto &enumValue = paramOps.cli_enum().enum_value(i);
-
-            // Add possible values of enum to enum parameter
-            // TODO(trybicki): Validate enum switch
-            addEnumVal(enumValue.value(), enumValue.cli_switch(),
-                       enumValue.cli_desc());
-        }
-
-        // Set default value if parameter is not required
-        if (!paramOps.cli_required()) {
-            setDefault(paramOps.cli_enum().default_value());
-        }
-    } else {
-        throw Exception(
-                "Enum: " + std::string(paramOps.cli_long_key()) +
-                " defined in .proto file doesn't contain cli_enum options");
-    }
-}
+// void ParamEnum::setOptions(google::protobuf::FieldDescriptor* fieldDesc) {
+//    const proto::OptsParam &paramOps = paramDef.paramops();
+//
+//    // Set options independent of type
+//    Parameter::setOptions(paramDef);
+//
+//    // If enum-specific options are present, set them
+//    if (paramOps.has_cli_enum()) {
+//        int enumCount = paramOps.cli_enum().enum_value_size();
+//
+//        for (int i = 0; i < enumCount; i++) {
+//            const auto &enumValue = paramOps.cli_enum().enum_value(i);
+//
+//            // Add possible values of enum to enum parameter
+//            // TODO(trybicki): Validate enum switch
+//            addEnumVal(enumValue.value(), enumValue.cli_switch(),
+//                       enumValue.cli_desc());
+//        }
+//
+//        // Set default value if parameter is not required
+//        if (!paramOps.cli_required()) {
+//            setDefault(paramOps.cli_enum().default_value());
+//        }
+//    } else {
+//        throw Exception(
+//                "Enum: " + std::string(paramOps.cli_long_key()) +
+//                " defined in .proto file doesn't contain cli_enum options");
+//    }
+//}
 
 }  // namespace cli
 }  // namespace octf

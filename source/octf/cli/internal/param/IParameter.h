@@ -151,7 +151,8 @@ public:
      * @param param Object holding definition of CLI parameter
      * specifying options (like short key, long key, default, etc...)
      */
-    virtual void setOptions(const proto::CliParameter &param) = 0;
+    virtual void setOptions(
+            const google::protobuf::FieldDescriptor *fieldDesc) = 0;
 
     /**
      * @param Parses value to protocol buffer message

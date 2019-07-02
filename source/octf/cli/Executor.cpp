@@ -58,7 +58,7 @@ void Executor::loadModuleCommandSet() {
 
     } else {
         // Get description of this module's command set
-        Call<proto::Void, proto::CliCommandSet> call(m_nodePlugin.get());
+        Call<proto::Void, proto::CliCommandSetDesc> call(m_nodePlugin.get());
         m_nodePlugin->getCliInterface()->getCliCommandSetDescription(
                 &call, call.getInput().get(), call.getOutput().get(), &call);
         call.wait();
@@ -72,7 +72,7 @@ void Executor::loadModuleCommandSet() {
         if (utils::isCommandSetValid(*cmdSetDesc)) {
             int commandCount = cmdSetDesc->command_size();
             for (int i = 0; i < commandCount; i++) {
-                const proto::CliCommand &cmdDesc = cmdSetDesc->command(i);
+                const proto::CliCommandDesc &cmdDesc = cmdSetDesc->command(i);
                 auto cmd = make_shared<CommandProtobuf>(cmdDesc);
                 m_moduleCmdSet->addCmd(cmd);
             }
@@ -165,7 +165,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
     if (!m_nodePlugin.get()) {
         return nullptr;
     }
-    Call<proto::CliCommandId, proto::CliCommand> call(m_nodePlugin.get());
+    Call<proto::CliCommandId, proto::CliCommandDesc> call(m_nodePlugin.get());
     call.getInput()->set_commandkey(cmdName);
 
     m_nodePlugin->getCliInterface()->getCliCommandDescription(
@@ -177,7 +177,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
                 "Cannot get command description, error: " + call.ErrorText());
     }
 
-    const proto::CliCommand &cliCmd = *call.getOutput();
+    const proto::CliCommandDesc &cliCmd = *call.getOutput();
     if (utils::isCommandValid(cliCmd)) {
         return make_shared<CommandProtobuf>(cliCmd);
     } else {
@@ -333,6 +333,7 @@ void Executor::addInterface(InterfaceShRef interface, CommandSet &commandSet) {
 void Executor::addMethod(const ::google::protobuf::MethodDescriptor *method,
                          InterfaceShRef interface,
                          CommandSet &commandSet) {
+    // TODO(trybicki): Don't create commands upfront for every interface method
     // Create local command and add it to command set
     std::shared_ptr<CommandProtobufLocal> cmd =
             make_shared<CommandProtobufLocal>(method, interface);

@@ -65,14 +65,14 @@ bool isDescValid(const std::string &desc) {
     return true;
 }
 
-bool isCommandSetValid(const proto::CliCommandSet &commandSet,
+bool isCommandSetValid(const proto::CliCommandSetDesc &commandSet,
                        bool validCommandsAssured) {
     // Local containers for keeping already used keys of methods;
     // used to check uniqueness in whole CommandSet
     std::set<std::string> longKeys;
     std::set<std::string> shortKeys;
     for (int i = 0; i < commandSet.command().size(); i++) {
-        const proto::CliCommand &cmd = commandSet.command(i);
+        const proto::CliCommandDesc &cmd = commandSet.command(i);
         auto const &longKey = cmd.cmdops().cli_long_key();
         auto const &shortKey = cmd.cmdops().cli_short_key();
 
@@ -106,7 +106,7 @@ bool isCommandSetValid(const proto::CliCommandSet &commandSet,
     return true;
 }
 
-bool isCommandValid(const proto::CliCommand &cmd) {
+bool isCommandValid(const proto::CliCommandDesc &cmd) {
     auto const &longKey = cmd.cmdops().cli_long_key();
     auto const &shortKey = cmd.cmdops().cli_short_key();
     auto const &desc = cmd.cmdops().cli_desc();
