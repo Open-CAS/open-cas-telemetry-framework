@@ -8,6 +8,8 @@
 
 #include <octf/utils/container/IIterable.h>
 #include <octf/utils/container/IIterableConst.h>
+#include <octf/utils/container/IIterator.h>
+#include <octf/utils/container/IIteratorConst.h>
 
 namespace octf {
 
