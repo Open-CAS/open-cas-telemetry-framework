@@ -14,6 +14,7 @@ namespace octf {
 TraceConverter::TraceConverter()
         : m_evDesc(std::make_shared<proto::trace::Event>())
         , m_evIO(std::make_shared<proto::trace::Event>())
+        , m_evIOCmpl(std::make_shared<proto::trace::Event>())
         , m_evFsMeta(std::make_shared<proto::trace::Event>()) {}
 
 std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
@@ -86,6 +87,27 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoIo->set_deviceid(event->dev_id);
 
         return m_evIO;
+    }
+
+    case iotrace_event_type_io_cmpl: {
+        if (size != sizeof(struct iotrace_event_completion)) {
+            return nullptr;
+        }
+
+        auto event =
+                static_cast<const struct iotrace_event_completion *>(trace);
+
+        protobufHdr = m_evIOCmpl->mutable_header();
+        protobufHdr->set_sid(hdr->sid);
+        protobufHdr->set_timestamp(hdr->timestamp);
+
+        auto protoIoCmpl = m_evIOCmpl->mutable_iocompletion();
+
+        protoIoCmpl->set_lba(event->lba);
+        protoIoCmpl->set_len(event->len);
+        protoIoCmpl->set_error(event->error);
+
+        return m_evIOCmpl;
     }
 
     case iotrace_event_type_fs_meta: {

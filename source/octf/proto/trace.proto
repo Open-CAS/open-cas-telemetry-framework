@@ -66,6 +66,20 @@ message EventIo {
 }
 
 /**
+ * @brief IO completion trace event
+ */
+message EventIoCompletion {
+    /** Address of completed IO in sectors */
+    uint64 lba = 1;
+
+    /** Size of completed IO in sectors */
+    uint32 len = 2;
+
+    /** Flags indicates if IO ended with an error */
+    bool error = 3;
+}
+
+/**
  * @brief IO trace event metadata (e.g. filesystem meta information)
  *
  * If an application works on top of a filesystem it may perform IO operations
@@ -100,5 +114,6 @@ message Event {
         EventIo io = 2;
         EventDeviceDescription deviceDescription = 3;
         EventIoFilesystemMeta filesystemMeta = 4;
+        EventIoCompletion ioCompletion = 5;
     }
 }
