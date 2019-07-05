@@ -6,14 +6,50 @@
 #ifndef SOURCE_OCTF_UTILS_PROTOCONVERTER_H
 #define SOURCE_OCTF_UTILS_PROTOCONVERTER_H
 
+#include <list>
 #include <octf/interface/InterfaceId.h>
 #include <octf/node/NodeId.h>
 
 namespace octf {
 namespace protoconverter {
 /**
- * @brief Protocol buffer to classes conversions
+ * @brief Utils for converting types related to Protocol Buffers
  */
+
+/**
+ * @brief This class allows to create a FileDescriptorSet object, which holds
+ * the definition of all supplied messages
+ */
+class FileDescriptorSetCreator {
+public:
+    FileDescriptorSetCreator() = default;
+    virtual ~FileDescriptorSetCreator() = default;
+
+    /**
+     * @brief Create a FileDescriptorSet from added message's descriptions
+     * @return FileDescriptorSet object
+     */
+    google::protobuf::FileDescriptorSet createFileDescriptorSet();
+
+    /**
+     * @brief Add a message description to FileDescriptorSet.
+     *
+     * Message from package "foo.bar" will be put in a FileDescriptor of name
+     * "foo.bar". Any message's field which are of type message or enum, will be
+     * also described in appropriate FileDescriptors. Each type is described
+     * only once in a FileDescriptorSet.
+     */
+    void addMessageDesc(const google::protobuf::Descriptor *msgDesc);
+
+    /**
+     * @brief Reset state (remove any added messages)
+     */
+    void reset();
+
+private:
+    std::list<std::string> m_knownTypes;
+    std::map<std::string, google::protobuf::FileDescriptorProto> m_fds;
+};
 
 /**
  * @brief Convert NodeId info proto::NodeId class

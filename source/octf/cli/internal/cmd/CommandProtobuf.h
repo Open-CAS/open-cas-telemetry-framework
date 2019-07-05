@@ -11,8 +11,6 @@
 #include <octf/cli/internal/cmd/Command.h>
 #include <octf/communication/Call.h>
 #include <octf/interface/InterfaceId.h>
-// TODO
-#include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
 namespace cli {
@@ -119,33 +117,6 @@ protected:
      * input descriptor.
      */
     void createParameters();
-
-private:
-    //    /**
-    //     * @brief Returns FieldDescriptor::Type from CliParameter_Type
-    //     * @param type Type to be converted
-    //     * @return value as FieldDescriptor::Type
-    //     */
-    //    virtual google::protobuf::FieldDescriptor::Type
-    //    getFieldDescriptorType(
-    //            proto::CliParameter_Type type);
-    //
-    //    void addParamDescProto(const std::string &name,
-    //                           google::protobuf::DescriptorProto *desc,
-    //                           const proto::CliParameter &param);
-    //
-    //    void addInputParamDescProto(google::protobuf::DescriptorProto *desc,
-    //                                const proto::CliParameter &param);
-    //
-    //    void addOutputParamDescProto(google::protobuf::DescriptorProto *desc,
-    //                                 const proto::CliParameter &param);
-    //
-    //    void addEnumParamDescProto(const std::string &name,
-    //                               const proto::OptsParam &paramOpts);
-    //
-    //    void addMessageParamDescProto(const std::string &messageName,
-    //                                  google::protobuf::DescriptorProto *desc,
-    //                                  const proto::CliParameter &param);
 
 private:
     /**

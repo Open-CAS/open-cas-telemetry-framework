@@ -113,14 +113,15 @@ public:
      */
     void setDesc(const std::string &desc);
 
-    //    virtual void setOptions(google::protobuf::FieldDescriptor* fieldDesc)
-    //    override;
+    virtual void setOptions(
+            const google::protobuf::FieldDescriptor *fieldDesc) override;
 
     void parseToProtobuf(
             google::protobuf::Message *message,
             const google::protobuf::FieldDescriptor *fieldDescriptor) override;
 
 private:
+    void setEnumOptions(const proto::OptsParam &paramOps);
     void details();
 
     class Item {

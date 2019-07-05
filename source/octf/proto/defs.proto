@@ -71,7 +71,6 @@ message LogTrace {
 }
 
 enum OutputFormat {
-    // TODO: validate working
     option (opts_enum_param).cli_enum.default_value = 0;
     option (opts_enum_param).cli_required = false;
     option (opts_enum_param).cli_short_key = "f";

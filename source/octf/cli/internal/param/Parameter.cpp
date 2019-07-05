@@ -126,12 +126,13 @@ void Parameter::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
         setRequired(
                 fieldOptions.GetExtension(proto::opts_param).cli_required());
         setDesc(fieldOptions.GetExtension(proto::opts_param).cli_desc());
-    }
 
-    // TODO(trybicki): Check if long key is valid
-    setLongKey(fieldOptions.GetExtension(proto::opts_param).cli_long_key());
-    // TODO(trybicki): Check if short key is valid
-    setShortKey(fieldOptions.GetExtension(proto::opts_param).cli_short_key());
+        // TODO(trybicki): Check if long key is valid
+        setLongKey(fieldOptions.GetExtension(proto::opts_param).cli_long_key());
+        // TODO(trybicki): Check if short key is valid
+        setShortKey(
+                fieldOptions.GetExtension(proto::opts_param).cli_short_key());
+    }
 }
 
 bool Parameter::isMultipleValue() const {

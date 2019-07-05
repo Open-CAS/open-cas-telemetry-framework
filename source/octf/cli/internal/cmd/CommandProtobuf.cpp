@@ -16,8 +16,6 @@
 #include <octf/cli/internal/param/ParamString.h>
 #include <octf/cli/internal/param/Parameter.h>
 #include <octf/communication/Call.h>
-// TODO
-//#include "proto/InterfaceCLI.pb.h"
 #include <octf/proto/InterfaceCLI.pb.h>
 #include <octf/utils/Exception.h>
 
@@ -36,10 +34,6 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
         , m_outDesc(nullptr)
         , m_interfaceId()
         , m_methodId(-1) {
-    std::cout << "CommandProtobuf Received inputDesc and outputDesc:"
-              << std::endl;
-    cmdDesc.inputdescriptor().PrintDebugString();
-    cmdDesc.outputdescriptor().PrintDebugString();
     // Create command for AutoCLI based on received command description
     setLocal(false);
     setHidden(false);
@@ -64,36 +58,34 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
     m_fd.set_name("cli");
 
     // Build file descriptor
-    auto fd = m_descPool.BuildFile(cmdDesc.inputdescriptor());
-    if (!fd) {
-        // cannot prepare file descriptor which is required
-        // for creation input and output types
-        throw InvalidParameterException(
-                "Cannot build input and output parameters descriptions.");
-    }
-    fd = m_descPool.BuildFile(cmdDesc.outputdescriptor());
-    if (!fd) {
-        // cannot prepare file descriptor which is required
-        // for creation input and output types
-        throw InvalidParameterException(
-                "Cannot build input and output parameters descriptions.");
+    for (int i = 0; i < cmdDesc.inputoutputdescription().file_size(); i++) {
+        const google::protobuf::FileDescriptorProto fd =
+                cmdDesc.inputoutputdescription().file(i);
+
+        auto createdFd = m_descPool.BuildFile(fd);
+        if (!createdFd) {
+            // Cannot prepare file descriptor which is required
+            // for creation input and output types
+            throw InvalidParameterException(
+                    "Cannot build input and output parameters descriptions.");
+        }
     }
 
-    // TODO: defines for these string literals?
-    m_inDesc = m_descPool.FindMessageTypeByName("input");
+    m_inDesc = m_descPool.FindMessageTypeByName(cmdDesc.inputmessagetypename());
     if (!m_inDesc) {
         throw InvalidParameterException(
-                "Cannot build input parameter description.");
+                "Cannot find message: " + cmdDesc.inputmessagetypename() +
+                " to build input message description");
     }
 
-    m_outDesc = m_descPool.FindMessageTypeByName("output");
+    m_outDesc =
+            m_descPool.FindMessageTypeByName(cmdDesc.outputmessagetypename());
     if (!m_outDesc) {
         throw InvalidParameterException(
                 "Cannot build output parameter description.");
     }
 
     // Add parameters for command based on received command description
-    // TODO: unify pointer/reference usage
     createParameters();
 }
 
@@ -109,111 +101,6 @@ void CommandProtobuf::parseToProtobuf(
     }
 }
 
-// void CommandProtobuf::addParamDescProto(const std::string &name,
-//                                        google::protobuf::DescriptorProto
-//                                        *desc, const proto::CliParameter
-//                                        &param) {
-//    // Allocate new field and set basic field features
-//    auto field = desc->add_field();
-//    field->set_name(name);
-//    field->set_number(param.fieldid());
-//
-//    if (param.paramops().is_repeated()) {
-//        field->set_label(
-//                google::protobuf::FieldDescriptorProto_Label_LABEL_REPEATED);
-//    }
-//
-//    switch (param.type()) {
-//    case proto::CliParameter_Type_INT32:
-//        field->set_type(google::protobuf::FieldDescriptorProto_Type_TYPE_INT32);
-//        break;
-//    case proto::CliParameter_Type_INT64:
-//        field->set_type(google::protobuf::FieldDescriptorProto_Type_TYPE_INT64);
-//        break;
-//    case proto::CliParameter_Type_UINT32:
-//        field->set_type(
-//                google::protobuf::FieldDescriptorProto_Type_TYPE_UINT32);
-//        break;
-//    case proto::CliParameter_Type_UINT64:
-//        field->set_type(
-//                google::protobuf::FieldDescriptorProto_Type_TYPE_UINT64);
-//        break;
-//    case proto::CliParameter_Type_STRING:
-//        field->set_type(
-//                google::protobuf::FieldDescriptorProto_Type_TYPE_STRING);
-//        break;
-//    case proto::CliParameter_Type_FLAG:
-//        field->set_type(google::protobuf::FieldDescriptorProto_Type_TYPE_BOOL);
-//        break;
-//    case proto::CliParameter_Type_ENUM: {
-//        field->set_type(google::protobuf::FieldDescriptorProto_Type_TYPE_ENUM);
-//
-//        if (!param.paramops().has_cli_enum()) {
-//            throw InvalidParameterException("Missing enumerator CLI
-//            options.");
-//        }
-//
-//        string enumTypeName = param.paramops().cli_enum().enum_name();
-//
-//        field->set_type_name(enumTypeName);
-//        addEnumParamDescProto(enumTypeName, param.paramops());
-//
-//        break;
-//    }
-//
-//    case proto::CliParameter_Type_MESSAGE: {
-//        field->set_type(
-//                google::protobuf::FieldDescriptorProto_Type_TYPE_MESSAGE);
-//
-//        if (!param.paramops().has_cli_msg()) {
-//            throw InvalidParameterException(
-//                    "Missing message's field CLI options.");
-//        }
-//
-//        const std::string &messageName =
-//                param.paramops().cli_msg().message_name();
-//        field->set_type_name(messageName);
-//        addMessageParamDescProto(messageName, desc, param);
-//        break;
-//    }
-//
-//    default:
-//        throw InvalidParameterException("Not supported field type.");
-//        break;
-//    }
-//}
-//
-// void CommandProtobuf::addMessageParamDescProto(
-//        const std::string &messageName,
-//        google::protobuf::DescriptorProto *desc,
-//        const proto::CliParameter &param) {
-//    // Check if type is already defined
-//    bool defined = false;
-//    for (int i = 0; i < desc->nested_type_size(); i++) {
-//        if (desc->nested_type(i).name() == messageName) {
-//            defined = true;
-//            break;
-//        }
-//    }
-//
-//    // Add message definition
-//    if (!defined) {
-//        auto messageType = desc->add_nested_type();
-//        messageType->set_name(messageName);
-//
-//        // Copy nested parameters of this parameter as fields of message
-//        int nestedCount = param.nestedparam_size();
-//        for (int i = 0; i < nestedCount; i++) {
-//            const auto &nestedParam = param.nestedparam(i);
-//
-//            // Recursively add nested message's fields
-//            addParamDescProto(nestedParam.paramops().field_name(),
-//            messageType,
-//                              nestedParam);
-//        }
-//    }
-//}
-//
 const google::protobuf::Descriptor *CommandProtobuf::getInputDesc() {
     return m_inDesc;
 }
@@ -229,62 +116,6 @@ void CommandProtobuf::setInputDesc(const google::protobuf::Descriptor *desc) {
 void CommandProtobuf::setOutputDesc(const google::protobuf::Descriptor *desc) {
     m_outDesc = desc;
 }
-
-//
-// void CommandProtobuf::addInputParamDescProto(
-//        google::protobuf::DescriptorProto *desc,
-//        const proto::CliParameter &param) {
-//    // Parameters in input message (fields in message for input type are
-//    // identified by long key)
-//
-//    const auto &key = param.paramops().cli_long_key();
-//    if (key.empty()) {
-//        throw InvalidParameterException("Empty short key.");
-//    }
-//
-//    addParamDescProto(key, desc, param);
-//}
-//
-// void CommandProtobuf::addOutputParamDescProto(
-//        google::protobuf::DescriptorProto *desc,
-//        const proto::CliParameter &param) {
-//    // In output parameter paramOps hold field name
-//    addParamDescProto(param.paramops().field_name(), desc, param);
-//}
-//
-// void CommandProtobuf::addEnumParamDescProto(const std::string &name,
-//                                            const proto::OptsParam &paramOpts)
-//                                            {
-//    // Check if enum type already added
-//    for (int i = 0; i < m_fd.enum_type_size(); i++) {
-//        const auto &enumDesc = m_fd.enum_type(i);
-//        if (enumDesc.name() == name) {
-//            // Enumerator already added, nothing to do
-//            return;
-//        }
-//    }
-//
-//    // Allocate new enumerator in file descriptor
-//    auto enumDesc = m_fd.add_enum_type();
-//    enumDesc->set_name(name);
-//
-//    // Add enumerator values
-//    for (int i = 0; i < paramOpts.cli_enum().enum_value_size(); i++) {
-//        const auto &eValueOpt = paramOpts.cli_enum().enum_value(i);
-//
-//        const auto &cli_switch = eValueOpt.cli_switch();
-//        if (cli_switch.empty()) {
-//            throw InvalidParameterException(
-//                    "Empty CLI switch for enumerator value.");
-//        }
-//
-//        // Allocate enumerator value and set its basic features
-//        auto eValueDesc = enumDesc->add_value();
-//
-//        eValueDesc->set_name(cli_switch);
-//        eValueDesc->set_number(eValueOpt.value());
-//    }
-//}
 
 void CommandProtobuf::createParameters() {
     for (int fieldId = 0; fieldId < m_inDesc->field_count(); fieldId++) {
@@ -336,44 +167,9 @@ void CommandProtobuf::createParameters() {
                     " values requested in .proto definition via 'repeated'.");
         }
 
-        std::cout << "Adding param: " << param->getLongKey() << std::endl;
         addParam(param);
     }
 }
-
-// google::protobuf::FieldDescriptor::Type
-// CommandProtobuf::getFieldDescriptorType(
-//        proto::CliParameter_Type type) {
-//    using namespace google::protobuf;
-//    switch (type) {
-//    case proto::CliParameter_Type::CliParameter_Type_UINT32:
-//        return FieldDescriptor::Type::TYPE_UINT32;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_INT64:
-//        return FieldDescriptor::Type::TYPE_INT64;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_INT32:
-//        return FieldDescriptor::Type::TYPE_INT32;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_STRING:
-//        return FieldDescriptor::Type::TYPE_STRING;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_FLAG:
-//        return FieldDescriptor::Type::TYPE_BOOL;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_ENUM:
-//        return FieldDescriptor::Type::TYPE_ENUM;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_UINT64:
-//        return FieldDescriptor::Type::TYPE_UINT64;
-//
-//    case proto::CliParameter_Type::CliParameter_Type_MESSAGE:
-//        return FieldDescriptor::Type::TYPE_MESSAGE;
-//
-//    default:
-//        return FieldDescriptor::Type::MAX_TYPE;
-//    }
-//}
 
 void CommandProtobuf::handleCall(CallGeneric &call,
                                  const MessageShRef outMessage) {

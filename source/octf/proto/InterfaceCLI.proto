@@ -60,11 +60,14 @@ message CliCommandDesc {
     // CLI commands option (like: short key, long key, description for help)
     OptsCommand cmdOps = 4;
 
-    // Descriptor of input type for this command
-    google.protobuf.FileDescriptorProto inputDescriptor = 5;
+    // Descriptors of input and output types for this command
+    google.protobuf.FileDescriptorSet inputOutputDescription = 5;
 
-    // Descriptor of input type for this command
-    google.protobuf.FileDescriptorProto outputDescriptor = 6;
+    // Type name of input message for this command
+    string inputMessageTypeName = 6;
+
+    // Type name of output message for this command
+    string outputMessageTypeName = 7;
 }
 
 // Set describing available commands

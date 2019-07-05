@@ -200,35 +200,64 @@ void ParamEnum::setDesc(const std::string &desc) {
     details();
 }
 
-// void ParamEnum::setOptions(google::protobuf::FieldDescriptor* fieldDesc) {
-//    const proto::OptsParam &paramOps = paramDef.paramops();
-//
-//    // Set options independent of type
-//    Parameter::setOptions(paramDef);
-//
-//    // If enum-specific options are present, set them
-//    if (paramOps.has_cli_enum()) {
-//        int enumCount = paramOps.cli_enum().enum_value_size();
-//
-//        for (int i = 0; i < enumCount; i++) {
-//            const auto &enumValue = paramOps.cli_enum().enum_value(i);
-//
-//            // Add possible values of enum to enum parameter
-//            // TODO(trybicki): Validate enum switch
-//            addEnumVal(enumValue.value(), enumValue.cli_switch(),
-//                       enumValue.cli_desc());
-//        }
-//
-//        // Set default value if parameter is not required
-//        if (!paramOps.cli_required()) {
-//            setDefault(paramOps.cli_enum().default_value());
-//        }
-//    } else {
-//        throw Exception(
-//                "Enum: " + std::string(paramOps.cli_long_key()) +
-//                " defined in .proto file doesn't contain cli_enum options");
-//    }
-//}
+void ParamEnum::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
+    int valueCount = fieldDesc->enum_type()->value_count();
+
+    for (int i = 0; i < valueCount; i++) {
+        const auto value = fieldDesc->enum_type()->value(i);
+
+        if (!(value->options().HasExtension(proto::opts_enumval))) {
+            throw Exception("Enum value has no opts_enumval options defined");
+        }
+
+        const auto valueOps =
+                value->options().GetExtension(proto::opts_enumval);
+
+        // Add possible values of enum to enum parameter
+        // TODO(trybicki): Validate enum switch
+        addEnumVal(value->index(), valueOps.cli_switch(), valueOps.cli_desc());
+    }
+    // First we set parameter options defined in enum type definition,
+    // then we set options defined in given enum field to override the first
+    // options if needed.
+    bool hasOps = false;
+    if (fieldDesc->enum_type()->options().HasExtension(
+                proto::opts_enum_param)) {
+        setEnumOptions(fieldDesc->enum_type()->options().GetExtension(
+                proto::opts_enum_param));
+        hasOps = true;
+    }
+
+    if (fieldDesc->options().HasExtension(proto::opts_param)) {
+        setEnumOptions(fieldDesc->options().GetExtension(proto::opts_param));
+        hasOps = true;
+    }
+
+    if (!hasOps) {
+        throw Exception("Enum " + fieldDesc->name() +
+                        " has no enum parameter options defined");
+    }
+}
+
+void ParamEnum::setEnumOptions(const proto::OptsParam &paramOps) {
+    if (!paramOps.cli_desc().empty()) {
+        Parameter::setDesc(paramOps.cli_desc());
+    }
+    if (!paramOps.cli_long_key().empty()) {
+        Parameter::setLongKey(paramOps.cli_long_key());
+    }
+    if (!paramOps.cli_short_key().empty()) {
+        Parameter::setShortKey(paramOps.cli_short_key());
+    }
+
+    // If enum-specific options are present, set them
+    if (paramOps.has_cli_enum()) {
+        // Set default value if parameter is not required
+        if (!paramOps.cli_required()) {
+            setDefault(paramOps.cli_enum().default_value());
+        }
+    }
+}
 
 }  // namespace cli
 }  // namespace octf
