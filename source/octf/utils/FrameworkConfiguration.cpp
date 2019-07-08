@@ -7,15 +7,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sstream>
+#include <octf/proto/configuration.pb.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/FrameworkConfiguration.h>
 #include <octf/utils/ProtobufReaderWriter.h>
+#include <octf/utils/internal/Configuration.h>
 
 namespace octf {
 
-#ifndef OCTF_CONFIG_FILE
-#error "OCTF_CONFIG_FILE not defined"
-#endif
+static proto::FrameworkConfiguration &getConfig() {
+    return proto::getFrameworkConfiguration();
+}
 
 #define STR_VALUE(val) #val
 #define TOSTR(name) STR_VALUE(name)
@@ -37,7 +39,7 @@ const std::string &octf::FrameworkConfiguration::getVersion() const {
 }
 
 const std::string &FrameworkConfiguration::getNodeSettingsDir() const {
-    return m_config.paths().settings();
+    return getConfig().paths().settings();
 }
 
 std::string FrameworkConfiguration::getNodeSettingsFilePath(
@@ -46,7 +48,7 @@ std::string FrameworkConfiguration::getNodeSettingsFilePath(
 }
 
 const std::string &FrameworkConfiguration::getUnixSocketDir() const {
-    return m_config.paths().unixsocket();
+    return getConfig().paths().unixsocket();
 }
 
 std::string FrameworkConfiguration::getUnixSocketFilePath(
@@ -55,7 +57,7 @@ std::string FrameworkConfiguration::getUnixSocketFilePath(
 }
 
 const std::string &FrameworkConfiguration::getTraceDir() const {
-    return m_config.paths().trace();
+    return getConfig().paths().trace();
 }
 
 std::string FrameworkConfiguration::getNodeTraceDirectoryPath(
@@ -88,7 +90,7 @@ std::string FrameworkConfiguration::getNodePathBasename(
 FrameworkConfiguration::FrameworkConfiguration() {
     ProtobufReaderWriter rw(OCTF_CONFIG_FILE);
 
-    if (false == rw.read(m_config)) {
+    if (false == rw.read(getConfig())) {
         throw Exception("Cannot read framework configuration");
     }
 }
