@@ -88,11 +88,8 @@ std::string FrameworkConfiguration::getNodePathBasename(
 }
 
 FrameworkConfiguration::FrameworkConfiguration() {
-    ProtobufReaderWriter rw(OCTF_CONFIG_FILE);
-
-    if (false == rw.read(getConfig())) {
-        throw Exception("Cannot read framework configuration");
-    }
+    // Get proto configuration, what will caused it reading
+    getConfig();
 }
 
 const FrameworkConfiguration &getFrameworkConfiguration() {
