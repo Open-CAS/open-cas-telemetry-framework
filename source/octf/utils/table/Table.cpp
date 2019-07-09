@@ -19,23 +19,23 @@ Table::Table()
 
 Table::~Table() {}
 
-Row &Table::operator[](size_t row) {
+Row &Table::operator[](index_t row) {
     return m_map->getRow(row);
 }
 
 Row &Table::operator[](const std::string &row) {
-    size_t index = m_map->getRowAssociation(row);
+    index_t index = m_map->getRowAssociation(row);
     return (*this)[index];
 }
 
-const Row &Table::operator[](size_t row) const {
+const Row &Table::operator[](index_t row) const {
     auto const &map = *m_map;
 
     return map.getRow(row);
 }
 
 const Row &Table::operator[](const std::string &row) const {
-    size_t index = m_map->getRowAssociation(row);
+    index_t index = m_map->getRowAssociation(row);
     return (*this)[index];
 }
 
@@ -63,7 +63,7 @@ void Table::clear() {
     m_map->clear();
 }
 
-size_t Table::size() const {
+index_t Table::size() const {
     auto const &map = *m_map;
     return map.size();
 }

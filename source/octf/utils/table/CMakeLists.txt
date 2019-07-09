@@ -3,7 +3,6 @@ target_sources(octf
     PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/Column.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Column.h
-    ${CMAKE_CURRENT_LIST_DIR}/Cell.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Cell.h
     ${CMAKE_CURRENT_LIST_DIR}/Table.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Table.h

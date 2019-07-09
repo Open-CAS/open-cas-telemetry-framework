@@ -11,18 +11,17 @@
 #include <octf/utils/container/IIterator.h>
 #include <octf/utils/table/Cell.h>
 #include <octf/utils/table/ISet.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
-
-class TableMap;
 
 class Set : public ISet {
 public:
     Set(TableMap &map);
     virtual ~Set();
 
-    Cell &operator[](size_t index) override;
+    Cell &operator[](index_t index) override;
 
     Cell &operator[](const std::string &index) override;
 

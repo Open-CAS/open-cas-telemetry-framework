@@ -10,49 +10,49 @@
 namespace octf {
 namespace table {
 
-Row::Row(size_t id, TableMap &map)
+Row::Row(index_t id, TableMap &map)
         : Set(map)
-        , m_id(id)
+        , m_rowIndex(id)
         , m_map(map) {}
 
 Row::~Row() {}
 
-Addr Row::getAddress(size_t index) {
-    Addr addr(m_id, index);
+Addr Row::getAddress(index_t columnIndex) {
+    Addr addr(m_rowIndex, columnIndex);
     return addr;
 }
 
-Addr Row::getAddress(const std::string &index) {
-    Addr addr(m_id, m_map.getColumnAssociation(index));
+Addr Row::getAddress(const std::string &columnIndex) {
+    Addr addr(m_rowIndex, m_map.getColumnAssociation(columnIndex));
     return addr;
 }
 
 CellIterator Row::begin() {
-    return m_map.beginCell(getId());
+    return m_map.beginCell(getIndex());
 }
 
 CellIterator Row::end() {
-    return m_map.endCell(getId());
+    return m_map.endCell(getIndex());
 }
 
 CellIteratorConst Row::begin() const {
     const auto &map = m_map;
-    return map.beginCell(getId());
+    return map.beginCell(getIndex());
 }
 
 CellIteratorConst Row::end() const {
     const auto &map = m_map;
-    return map.endCell(getId());
+    return map.endCell(getIndex());
 }
 
 void Row::clear() {
-    auto iter = m_map.beginCell(getId());
-    while (iter != m_map.endCell(getId())) {
+    auto iter = m_map.beginCell(getIndex());
+    while (iter != m_map.endCell(getIndex())) {
         iter = m_map.eraseCell(iter);
     }
 }
 
-size_t Row::size() const {
+index_t Row::size() const {
     return m_map.getColumnCount();
 }
 

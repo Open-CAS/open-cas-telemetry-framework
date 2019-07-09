@@ -17,7 +17,7 @@ Set::Set(TableMap &map)
 
 Set::~Set() {}
 
-Cell &Set::operator[](size_t index) {
+Cell &Set::operator[](index_t index) {
     return m_map[getAddress(index)];
 }
 

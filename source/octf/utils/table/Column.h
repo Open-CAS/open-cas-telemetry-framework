@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <octf/utils/table/Set.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
@@ -18,19 +19,19 @@ namespace table {
  */
 class Column : public Set {
 public:
-    Column(size_t id, TableMap &map);
+    Column(index_t id, TableMap &map);
     virtual ~Column();
 
-    Addr getAddress(size_t index) override;
+    Addr getAddress(index_t rowIndex) override;
 
-    Addr getAddress(const std::string &index) override;
+    Addr getAddress(const std::string &rowIndex) override;
 
-    size_t getId() const override {
-        return m_id;
+    index_t getIndex() const override {
+        return m_columnIndex;
     }
 
 private:
-    const size_t m_id;
+    const index_t m_columnIndex;
     TableMap &m_map;
 };
 

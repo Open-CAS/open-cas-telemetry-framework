@@ -11,6 +11,7 @@
 #include <octf/utils/container/IContainer.h>
 #include <octf/utils/table/Iterators.h>
 #include <octf/utils/table/Set.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
@@ -23,15 +24,15 @@ namespace table {
 class Row : public Set,
             public IContainer<Cell, CellIterator, CellIteratorConst> {
 public:
-    Row(size_t id, TableMap &map);
+    Row(index_t id, TableMap &map);
     virtual ~Row();
 
-    Addr getAddress(size_t index) override;
+    Addr getAddress(index_t columnIndex) override;
 
-    Addr getAddress(const std::string &index) override;
+    Addr getAddress(const std::string &columnIndex) override;
 
-    size_t getId() const override {
-        return m_id;
+    index_t getIndex() const override {
+        return m_rowIndex;
     }
 
     CellIterator begin() override;
@@ -44,12 +45,12 @@ public:
 
     void clear() override;
 
-    size_t size() const override;
+    index_t size() const override;
 
     bool empty() const override;
 
 private:
-    const size_t m_id;
+    const index_t m_rowIndex;
     TableMap &m_map;
 };
 

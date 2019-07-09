@@ -10,20 +10,20 @@
 namespace octf {
 namespace table {
 
-Column::Column(size_t id, TableMap &map)
+Column::Column(index_t id, TableMap &map)
         : Set(map)
-        , m_id(id)
+        , m_columnIndex(id)
         , m_map(map) {}
 
 Column::~Column() {}
 
-Addr Column::getAddress(size_t index) {
-    Addr addr(index, m_id);
+Addr Column::getAddress(index_t index) {
+    Addr addr(index, m_columnIndex);
     return addr;
 }
 
 Addr Column::getAddress(const std::string &index) {
-    Addr addr(m_map.getRowAssociation(index), m_id);
+    Addr addr(m_map.getRowAssociation(index), m_columnIndex);
     return addr;
 }
 

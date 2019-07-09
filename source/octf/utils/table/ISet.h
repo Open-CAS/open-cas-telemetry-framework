@@ -8,13 +8,11 @@
 
 #include <stddef.h>
 #include <string>
-#include <octf/utils/NonCopyable.h>
 #include <octf/utils/table/Addr.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
-
-class Cell;
 
 /**
  * @ingroup Table
@@ -33,7 +31,7 @@ public:
      * @param index Cell index
      * @return Cell
      */
-    virtual Cell &operator[](size_t index) = 0;
+    virtual Cell &operator[](index_t index) = 0;
 
     /**
      * @brief Get cell by name
@@ -47,7 +45,7 @@ public:
      * @param index Cell index
      * @return Cell address
      */
-    virtual Addr getAddress(size_t index) = 0;
+    virtual Addr getAddress(index_t index) = 0;
 
     /**
      * @brief Get cell address by cell name
@@ -57,10 +55,10 @@ public:
     virtual Addr getAddress(const std::string &index) = 0;
 
     /**
-     * @brief Gets id of set
+     * @brief Gets this set index
      * @return Id
      */
-    virtual size_t getId() const = 0;
+    virtual index_t getIndex() const = 0;
 };
 
 }  // namespace table

@@ -21,8 +21,8 @@ TableMap::TableMap()
 
 TableMap::~TableMap() {}
 
-size_t TableMap::getRowAssociation(const std::string &name) {
-    size_t index = m_rowsAssociation.size();
+index_t TableMap::getRowAssociation(const std::string &name) {
+    index_t index = m_rowsAssociation.size();
     auto iter = m_rowsAssociation.find(name);
 
     if (iter != m_rowsAssociation.end()) {
@@ -34,8 +34,8 @@ size_t TableMap::getRowAssociation(const std::string &name) {
     return index;
 }
 
-size_t TableMap::getColumnAssociation(const std::string &name) {
-    size_t index = m_columnsAssociation.size();
+index_t TableMap::getColumnAssociation(const std::string &name) {
+    index_t index = m_columnsAssociation.size();
     auto iter = m_columnsAssociation.find(name);
 
     if (iter != m_columnsAssociation.end()) {
@@ -59,7 +59,7 @@ Cell &TableMap::operator[](const Addr &addr) {
         }
 
         // Allocate Column
-        getColumn(addr.getColumn());
+        getColumn(addr.getColumnIndex());
 
         return result.first->second;
     } else {
@@ -80,7 +80,7 @@ const Cell &TableMap::operator[](const Addr &addr) const {
     }
 }
 
-Row &TableMap::getRow(size_t index) {
+Row &TableMap::getRow(index_t index) {
     auto iter = m_rows.find(index);
 
     if (iter == m_rows.end()) {
@@ -98,7 +98,7 @@ Row &TableMap::getRow(size_t index) {
     }
 }
 
-const Row &TableMap::getRow(size_t index) const {
+const Row &TableMap::getRow(index_t index) const {
     auto iter = m_rows.find(index);
 
     if (iter != m_rows.end()) {
@@ -108,7 +108,7 @@ const Row &TableMap::getRow(size_t index) const {
     }
 }
 
-Column &TableMap::getColumn(size_t index) {
+Column &TableMap::getColumn(index_t index) {
     auto iter = m_columns.find(index);
 
     if (iter == m_columns.end()) {
@@ -142,43 +142,43 @@ RowIteratorConst TableMap::endRow() const {
     return RowIteratorConst(m_rows.end());
 }
 
-CellIterator TableMap::beginCell(size_t id) {
+CellIterator TableMap::beginCell(index_t id) {
     return CellIterator(*this, m_columns.begin(), id);
 }
 
-CellIterator TableMap::endCell(size_t id) {
+CellIterator TableMap::endCell(index_t id) {
     return CellIterator(*this, m_columns.end(), id);
 }
 
 CellIterator octf::table::TableMap::eraseCell(CellIterator iter) {
-    if (iter.m_link != m_columns.end()) {
-        Addr addr(iter.m_id, iter.m_link->first);
+    if (iter.m_iter != m_columns.end()) {
+        Addr addr(iter.m_rowIndex, iter.m_iter->first);
         m_map.erase(addr);
 
-        iter.m_link++;
-        if (iter.m_link == m_columns.end()) {
+        iter.m_iter++;
+        if (iter.m_iter == m_columns.end()) {
             // Last cell removed, cleanup this row entirely
 
-            m_rows.erase(iter.m_id);
+            m_rows.erase(iter.m_rowIndex);
         }
     }
 
     return iter;
 }
 
-CellIteratorConst TableMap::beginCell(size_t id) const {
+CellIteratorConst TableMap::beginCell(index_t id) const {
     return CellIteratorConst(*this, m_columns.begin(), id);
 }
 
-CellIteratorConst TableMap::endCell(size_t id) const {
+CellIteratorConst TableMap::endCell(index_t id) const {
     return CellIteratorConst(*this, m_columns.end(), id);
 }
 
-size_t TableMap::getRowCount() const {
+index_t TableMap::getRowCount() const {
     return m_rows.size();
 }
 
-size_t TableMap::getColumnCount() const {
+index_t TableMap::getColumnCount() const {
     return m_rows.size();
 }
 
@@ -190,7 +190,7 @@ void octf::table::TableMap::clear() {
     m_map.clear();
 }
 
-size_t TableMap::size() const {
+index_t TableMap::size() const {
     return m_rows.size();
 }
 

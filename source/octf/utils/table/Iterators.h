@@ -9,14 +9,10 @@
 #include <map>
 #include <octf/utils/container/IIterator.h>
 #include <octf/utils/container/IIteratorConst.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
-
-class Row;
-class Column;
-class Cell;
-class TableMap;
 
 /**
  * @ingroup Table
@@ -37,9 +33,9 @@ public:
 
 private:
     friend class TableMap;
-    typedef std::map<size_t, Row>::iterator LinkType;
-    RowIterator(const LinkType &link);
-    LinkType m_link;
+    typedef std::map<index_t, Row>::iterator iter_t;
+    RowIterator(const iter_t &link);
+    iter_t m_iter;
 };
 
 /**
@@ -61,14 +57,14 @@ public:
 
 private:
     friend class TableMap;
-    typedef std::map<size_t, Row>::const_iterator LinkType;
-    RowIteratorConst(const LinkType &link);
-    LinkType m_link;
+    typedef std::map<index_t, Row>::const_iterator iter_t;
+    RowIteratorConst(const iter_t &link);
+    iter_t m_iter;
 };
 
 /**
  * @ingroup Table
- * @brief Cell iterator
+ * @brief Cell iterator of row
  */
 class CellIterator : public IIterator<Cell, CellIterator> {
 public:
@@ -85,16 +81,16 @@ public:
 
 private:
     friend class TableMap;
-    typedef std::map<size_t, Column>::iterator LinkType;
-    CellIterator(TableMap &map, LinkType link, size_t id);
+    typedef std::map<index_t, Column>::iterator iter_t;
+    CellIterator(TableMap &map, iter_t link, index_t rowIndex);
     TableMap &m_map;
-    LinkType m_link;
-    size_t m_id;
+    iter_t m_iter;
+    index_t m_rowIndex;
 };
 
 /**
  * @ingroup Table
- * @brief Const cell iterator
+ * @brief Const cell iterator of row
  */
 class CellIteratorConst : public IIteratorConst<Cell, CellIteratorConst> {
 public:
@@ -111,11 +107,11 @@ public:
 
 private:
     friend class TableMap;
-    typedef std::map<size_t, Column>::const_iterator LinkType;
-    CellIteratorConst(const TableMap &map, LinkType link, size_t id);
+    typedef std::map<index_t, Column>::const_iterator iter_t;
+    CellIteratorConst(const TableMap &map, iter_t link, index_t rowIndex);
     const TableMap &m_map;
-    LinkType m_link;
-    size_t m_id;
+    iter_t m_iter;
+    index_t m_rowIndex;
 };
 
 }  // namespace table

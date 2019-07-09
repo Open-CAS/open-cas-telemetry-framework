@@ -15,15 +15,14 @@
 #include <octf/utils/table/Column.h>
 #include <octf/utils/table/Iterators.h>
 #include <octf/utils/table/Row.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
 
-class TableMap;
-
 /**
  * @defgroup Table Table
- * The very flexible table assuring dynamic number or rows and columns
+ * A very flexible table assuring dynamic number or rows and columns
  *
  * @ingroup Utilities
  */
@@ -60,7 +59,7 @@ public:
      * @param row Row index
      * @return Row
      */
-    Row &operator[](size_t row);
+    Row &operator[](index_t row);
 
     /**
      * @brief Gets row by row name
@@ -74,7 +73,7 @@ public:
      * @param row Row index
      * @return Row
      */
-    const Row &operator[](size_t row) const;
+    const Row &operator[](index_t row) const;
 
     /**
      * @brief Gets row by row name
@@ -85,7 +84,7 @@ public:
 
     void clear() override;
 
-    size_t size() const override;
+    index_t size() const override;
 
     bool empty() const override;
 

@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_UTILS_TABLE_ADDR_H
 
 #include <stddef.h>
+#include <octf/utils/table/Types.h>
 
 namespace octf {
 namespace table {
@@ -21,7 +22,7 @@ public:
             : m_row(0)
             , m_column(0) {}
 
-    Addr(size_t row, size_t column)
+    Addr(index_t row, index_t column)
             : m_row(row)
             , m_column(column) {}
 
@@ -56,7 +57,7 @@ public:
      * @brief Gets column index
      * @return Column index
      */
-    size_t getColumn() const {
+    index_t getColumnIndex() const {
         return m_column;
     }
 
@@ -64,13 +65,13 @@ public:
      * @brief Gets row index
      * @return Row index
      */
-    size_t getRow() const {
+    index_t getRowIndex() const {
         return m_row;
     }
 
 private:
-    size_t m_row;
-    size_t m_column;
+    index_t m_row;
+    index_t m_column;
 };
 
 }  // namespace table
