@@ -20,6 +20,8 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/IRingTraceProducer.h
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceTraceManagementImpl.h
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceIdentificationImpl.h
+    ${CMAKE_CURRENT_LIST_DIR}/InterfaceConfigurationImpl.h
+    ${CMAKE_CURRENT_LIST_DIR}/InterfaceConfigurationImpl.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TraceProducerLocal.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TraceManager.h
 	${CMAKE_CURRENT_LIST_DIR}/TraceManager.cpp

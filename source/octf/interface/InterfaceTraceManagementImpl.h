@@ -20,7 +20,7 @@ public:
      * pass an empty string.
      */
     InterfaceTraceManagementImpl(std::string tracePrefix);
-    ~InterfaceTraceManagementImpl();
+    virtual ~InterfaceTraceManagementImpl();
 
     virtual void listTraces(::google::protobuf::RpcController *controller,
                             const ::octf::proto::TracePathPrefix *request,

@@ -4,7 +4,6 @@
  */
 syntax = "proto3";
 option cc_generic_services = true;
-import "google/protobuf/descriptor.proto";
 import "defs.proto";
 import "opts.proto";
 package octf.proto;
