@@ -88,7 +88,7 @@ std::string FrameworkConfiguration::getNodePathBasename(
 }
 
 FrameworkConfiguration::FrameworkConfiguration() {
-    // Get proto configuration, what will caused it reading
+    // Get configuration from file, which will cause reading it
     getConfig();
 }
 
