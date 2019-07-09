@@ -6,7 +6,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceServiceImpl.h
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceServiceImpl.cpp
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceTraceManagementImpl.cpp
-	${CMAKE_CURRENT_LIST_DIR}/IInterface.h
 	${CMAKE_CURRENT_LIST_DIR}/ITraceExecutor.h
 	${CMAKE_CURRENT_LIST_DIR}/InterfaceId.h
 	${CMAKE_CURRENT_LIST_DIR}/TraceProducerLocal.h
