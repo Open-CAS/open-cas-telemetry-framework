@@ -11,7 +11,7 @@
 #include <octf/utils/Exception.h>
 #include <octf/utils/FrameworkConfiguration.h>
 #include <octf/utils/ProtobufReaderWriter.h>
-#include <octf/utils/internal/Configuration.h>
+#include <octf/utils/internal/FrameworkConfigurationInternal.h>
 
 namespace octf {
 

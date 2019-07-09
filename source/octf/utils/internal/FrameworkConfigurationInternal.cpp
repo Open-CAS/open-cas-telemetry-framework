@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/utils/internal/Configuration.h>
+#include <octf/utils/internal/FrameworkConfigurationInternal.h>
 
 #include <mutex>
 #include <octf/utils/Exception.h>
@@ -13,23 +13,15 @@ namespace octf {
 namespace proto {
 
 FrameworkConfiguration &getFrameworkConfiguration() {
-    static std::mutex mutex;
     static FrameworkConfiguration config;
-    static bool loaded = false;
+    static std::once_flag once;
 
-    if (!loaded) {
-        std::lock_guard<std::mutex> lock(mutex);
-
-        if (!loaded) {
-            ProtobufReaderWriter rw(OCTF_CONFIG_FILE);
-
-            if (false == rw.read(config)) {
-                throw Exception("Cannot read framework configuration");
-            }
-
-            loaded = true;
+    std::call_once(once, [](){
+        ProtobufReaderWriter rw(OCTF_CONFIG_FILE);
+        if (false == rw.read(config)) {
+            throw Exception("Cannot read framework configuration");
         }
-    }
+    });
 
     return config;
 }
