@@ -6,6 +6,7 @@ syntax = "proto3";
 option cc_generic_services = true;
 import "defs.proto";
 import "opts.proto";
+import "google/protobuf/descriptor.proto";
 package octf.proto;
 
 // Message which identifies particular command by: path, interface, and command
