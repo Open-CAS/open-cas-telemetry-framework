@@ -7,6 +7,7 @@ set(protoList
 	InterfaceService.proto
 	InterfaceTraceCreating.proto
 	InterfaceTraceManagement.proto
+	InterfaceConfiguration.proto
 	opts.proto
 	packets.proto
 	trace.proto

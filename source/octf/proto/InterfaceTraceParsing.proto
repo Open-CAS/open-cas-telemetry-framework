@@ -7,7 +7,6 @@ syntax = "proto3";
 option cc_generic_services = true;
 import "defs.proto";
 import "opts.proto";
-import "traceDefinitions.proto";
 package octf.proto;
 
 message ParseTraceRequest {
