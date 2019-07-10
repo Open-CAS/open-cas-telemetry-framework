@@ -21,7 +21,8 @@ namespace table {
  * @brief Cells' Map for the magic table (Table)
  *
  * This class is the map of cells keyed by addresses [row, column]. In addition
- * it keeps association for rows and columns, returns Table iterators.
+ * it keeps an association of column/row names and their indexes, and returns
+ * Table iterators.
  */
 class TableMap : public NonCopyable {
 public:

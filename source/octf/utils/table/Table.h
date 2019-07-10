@@ -29,7 +29,7 @@ namespace table {
 
 /**
  * @ingroup Table
- * @brief The very flexible table
+ * @brief A very flexible table
  *
  * The table is capable to keep dynamically rows and columns. It provides double
  * array operator [][] for accessing cells. Cells may stores any type of value.
@@ -43,6 +43,9 @@ namespace table {
  * table[1][1] = -1;
  * table[2][2] = 3.14;
  * table[0][0] = table[2][2];
+ *
+ * // Use indexing table by strings
+ * table["Row Name"]["Column Name"] = 2.71;
  *
  * // Print table
  * octf::log << table << std::endl;
