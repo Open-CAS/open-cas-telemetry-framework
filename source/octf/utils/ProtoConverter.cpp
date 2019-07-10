@@ -100,11 +100,23 @@ int decodeVarint32(const uint8_t *buffer, uint64_t size, int &value) {
     return 0;
 }
 
+template <class ElementType>
+bool contains(const google::protobuf::RepeatedPtrField<ElementType> array,
+              ElementType value) {
+    for (int i = 0; i < array.size(); i++) {
+        if (array.Get(i) == value) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 google::protobuf::FileDescriptorSet
 FileDescriptorSetCreator::createFileDescriptorSet() {
     google::protobuf::FileDescriptorSet fdSet;
     for (auto &fd : m_fds) {
-        fdSet.add_file()->CopyFrom(fd.second);
+        fdSet.add_file()->CopyFrom(fd);
     }
 
     return fdSet;
@@ -121,8 +133,8 @@ void FileDescriptorSetCreator::addMessageDesc(
     // described, as otherwise they will be undefined.
     //
     // To handle packages, we create a separate FileDescriptorProto for
-    // each package. We keep them in a map indexed by package name.
-    FileDescriptorProto &fd = m_fds[msgDesc->file()->package()];
+    // each package. The name of the file is the package name.
+    FileDescriptorProto &fd = getFileDesc(msgDesc->file()->package());
     DescriptorProto *msgDescFd = fd.add_message_type();
 
     fd.set_name(msgDesc->file()->package());
@@ -138,6 +150,18 @@ void FileDescriptorSetCreator::addMessageDesc(
             // Verify we only describe each type once
             if (std::find(m_knownTypes.begin(), m_knownTypes.end(),
                           field->full_name()) == m_knownTypes.end()) {
+                // If we use a message type defined in different package, we
+                // need to add appropriate import to FileDescriptor.
+                std::string newTypePackage =
+                        field->message_type()->file()->package();
+                if (fd.package() != newTypePackage) {
+                    // If not already imported
+                    if (!contains<std::string>(fd.dependency(),
+                                               newTypePackage)) {
+                        fd.add_dependency(newTypePackage);
+                    }
+                }
+
                 // Recursively add field's (of type message) definitions
                 addMessageDesc(field->message_type());
                 m_knownTypes.push_back(field->full_name());
@@ -149,10 +173,25 @@ void FileDescriptorSetCreator::addMessageDesc(
             // Verify we only describe each type once
             if (std::find(m_knownTypes.begin(), m_knownTypes.end(),
                           field->full_name()) == m_knownTypes.end()) {
+                // If we use a enum type defined in different package, we
+                // need to add appropriate import to FileDescriptor.
+                std::string newTypePackage =
+                        field->enum_type()->file()->package();
+                if (fd.package() != newTypePackage) {
+                    // If not already imported
+                    if (!contains<std::string>(fd.dependency(),
+                                               newTypePackage)) {
+                        fd.add_dependency(newTypePackage);
+                    }
+                }
+
                 // Define enum
+                std::string package = field->enum_type()->file()->package();
                 EnumDescriptorProto *enumDesc =
-                        m_fds[field->enum_type()->file()->package()]
-                                .add_enum_type();
+                        getFileDesc(package).add_enum_type();
+                getFileDesc(package).set_package(package);
+                getFileDesc(package).set_name(package);
+
                 field->enum_type()->CopyTo(enumDesc);
 
                 m_knownTypes.push_back(field->full_name());
@@ -164,6 +203,29 @@ void FileDescriptorSetCreator::addMessageDesc(
 void FileDescriptorSetCreator::reset() {
     m_fds.clear();
     m_knownTypes.clear();
+}
+
+/**
+ * This function looks for a file descriptor with given package in a list m_fds
+ * If appropriate descriptor is not found, it is added. Reverse insertion order
+ * is preserved to later allow parsing FileDescriptor one after another without
+ * undefined types occurring.
+ */
+google::protobuf::FileDescriptorProto &FileDescriptorSetCreator::getFileDesc(
+        std::string package) {
+    for (auto &fd : m_fds) {
+        if (fd.package() == package) {
+            return fd;
+        }
+    }
+
+    // FileDesc not found, create a new one
+    google::protobuf::FileDescriptorProto newFd;
+    newFd.set_name(package);
+    newFd.set_package(package);
+
+    m_fds.emplace_front(newFd);
+    return *m_fds.begin();
 }
 
 }  // namespace protoconverter

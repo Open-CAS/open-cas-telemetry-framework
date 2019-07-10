@@ -24,7 +24,7 @@ public:
      * @brief CommandProtobuf constructor using proto::CliCommand
      * @param cmdDesc Command description
      */
-    CommandProtobuf(const proto::CliCommandDesc &cmdDesc);
+    explicit CommandProtobuf(const proto::CliCommandDesc &cmdDesc);
 
     CommandProtobuf()
             : m_inDesc(nullptr)
@@ -70,14 +70,14 @@ public:
      *
      * @return Input protocol buffer descriptor
      */
-    const google::protobuf::Descriptor *getInputDesc();
+    const google::protobuf::Descriptor *getInputDesc() const;
 
     /**
      * @brief Gets output protocol buffer descriptor
      *
      * @return Output protocol buffer descriptor
      */
-    const google::protobuf::Descriptor *getOutputDesc();
+    const google::protobuf::Descriptor *getOutputDesc() const;
 
     /**
      * @brief Parses values in command's parameters and fills message based on
@@ -125,12 +125,6 @@ private:
     void execute() override{};
 
 private:
-    /**
-     * Protocol buffer file descriptor which is used to create runtime file
-     * descriptor
-     */
-    google::protobuf::FileDescriptorProto m_fd;
-
     /**
      * Pool with descriptors of input and output messages
      */

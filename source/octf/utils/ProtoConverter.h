@@ -34,8 +34,8 @@ public:
     /**
      * @brief Add a message description to FileDescriptorSet.
      *
-     * Message from package "foo.bar" will be put in a FileDescriptor of name
-     * "foo.bar". Any message's field which are of type message or enum, will be
+     * Message from package foo.bar will be put in a FileDescriptor of name
+     * foo.bar. Any messages' fields which are of type message or enum, will be
      * also described in appropriate FileDescriptors. Each type is described
      * only once in a FileDescriptorSet.
      */
@@ -47,9 +47,27 @@ public:
     void reset();
 
 private:
+    google::protobuf::FileDescriptorProto &getFileDesc(std::string package);
+
+    /// Types which are already added to FileDescriptorSet
     std::list<std::string> m_knownTypes;
-    std::map<std::string, google::protobuf::FileDescriptorProto> m_fds;
+
+    /// List with file descriptors sorted in reverse insertion order
+    std::list<google::protobuf::FileDescriptorProto> m_fds;
 };
+
+/**
+ * @brief Check if protobuf RepeatedFieldPtr array contains value
+ *
+ * @tparam ElementType type which is stored in RepeatedPtrField
+ * @param array Protobuf array of elements
+ * @param value Value to be found in array
+ *
+ * @return Search result
+ */
+template <class ElementType>
+bool contains(const google::protobuf::RepeatedPtrField<ElementType> array,
+              ElementType value);
 
 /**
  * @brief Convert NodeId info proto::NodeId class

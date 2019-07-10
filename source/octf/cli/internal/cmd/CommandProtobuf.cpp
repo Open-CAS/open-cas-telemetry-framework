@@ -28,7 +28,6 @@ namespace cli {
 
 CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
         : Command()
-        , m_fd()
         , m_descPool()
         , m_inDesc(nullptr)
         , m_outDesc(nullptr)
@@ -54,9 +53,6 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
     m_interfaceId = cmdDesc.interface();
     m_methodId = cmdDesc.methodid();
 
-    // Set name of file descriptor
-    m_fd.set_name("cli");
-
     // Build file descriptor
     for (int i = 0; i < cmdDesc.inputoutputdescription().file_size(); i++) {
         const google::protobuf::FileDescriptorProto fd =
@@ -67,7 +63,7 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
             // Cannot prepare file descriptor which is required
             // for creation input and output types
             throw InvalidParameterException(
-                    "Cannot build input and output parameters descriptions.");
+                    "Cannot build input and output types descriptions.");
         }
     }
 
@@ -82,7 +78,8 @@ CommandProtobuf::CommandProtobuf(const proto::CliCommandDesc &cmdDesc)
             m_descPool.FindMessageTypeByName(cmdDesc.outputmessagetypename());
     if (!m_outDesc) {
         throw InvalidParameterException(
-                "Cannot build output parameter description.");
+                "Cannot find message: " + cmdDesc.outputmessagetypename() +
+                " to build output message description");
     }
 
     // Add parameters for command based on received command description
@@ -101,11 +98,11 @@ void CommandProtobuf::parseToProtobuf(
     }
 }
 
-const google::protobuf::Descriptor *CommandProtobuf::getInputDesc() {
+const google::protobuf::Descriptor *CommandProtobuf::getInputDesc() const {
     return m_inDesc;
 }
 
-const google::protobuf::Descriptor *CommandProtobuf::getOutputDesc() {
+const google::protobuf::Descriptor *CommandProtobuf::getOutputDesc() const {
     return m_outDesc;
 }
 

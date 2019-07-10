@@ -8,37 +8,6 @@ import "defs.proto";
 import "opts.proto";
 package octf.proto;
 
-//// CLI parameter description
-// message CliParameter {
-//    enum Type {
-//        UNKNOWN = 0;
-//
-//        INT32 = 1;
-//        INT64 = 2;
-//        UINT32 = 3;
-//        UINT64 = 4;
-//        STRING = 5;
-//        ENUM = 6;
-//        FLAG = 7;
-//        MESSAGE = 8;
-//    }
-//
-//    // CLI parameter type
-//    Type type = 1;
-//
-//    // Protocol buffer field ID within message
-//    int32 fieldId = 2;
-//
-//    // Parameter options
-//    OptsParam paramOps = 3;
-//
-//    // If type is message, this field describes message's fields
-//    repeated CliParameter nestedParam = 4;
-//
-//    // Can this parameter hold multiple values
-//    bool isMultipleValue = 5;
-//}
-
 // Message which identifies particular command by: path, interface, and command
 // key (long or short)
 message CliCommandId {
@@ -75,9 +44,6 @@ message CliCommandSetDesc {
     // Array of commands
     repeated CliCommandDesc command = 1;
 }
-
-// TODO: test new interface with messages from unkown .proto files, messages
-// from different packages or files
 
 // Auto CLI Interface definitions
 service InterfaceCli {

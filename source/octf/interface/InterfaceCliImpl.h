@@ -9,8 +9,6 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/service.h>
 #include <octf/node/INode.h>
-// TODO
-// #include "proto/InterfaceCLI.pb.h"
 #include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
@@ -33,19 +31,6 @@ public:
                                   ::octf::proto::CliCommandDesc *response,
                                   ::google::protobuf::Closure *done) override;
 
-    //    /**
-    //     * @brief Defines param options based on field descriptor
-    //     * @param param Parameter to be defined
-    //     * @param fieldDesc Field descriptor with source data
-    //     * @param isInput Is this parameter used for input, if yes it is
-    //     validated
-    //     * @return Result of operation
-    //     */
-    //    static bool setParamDescription(
-    //            proto::CliParameter *param,
-    //            const google::protobuf::FieldDescriptor *fieldDesc,
-    //            bool isInput = true);
-
 private:
     /**
      * @param[out] cmd
@@ -63,24 +48,6 @@ private:
             const google::protobuf::ServiceDescriptor *interfaceDesc);
 
     bool isValidMethod(const google::protobuf::MethodDescriptor *methodDesc);
-
-    //    bool setParamsDescription(
-    //            google::protobuf::RepeatedPtrField<proto::CliParameter>
-    //                    *mutableCliParam,
-    //            const google::protobuf::Descriptor *desc,
-    //            bool isInput = true);
-
-    //    static void setDefaultValues(
-    //            proto::CliParameter *param,
-    //            const google::protobuf::FieldDescriptor *fieldDesc,
-    //            proto::CliParameter_Type type);
-
-    //    static void setEnumOps(const google::protobuf::EnumDescriptor
-    //    *enumDesc,
-    //                           proto::CliParameter *param);
-
-    //    static proto::CliParameter_Type getTypeFromCppType(
-    //            google::protobuf::FieldDescriptor::CppType cppType);
 
     INode *m_owner;
 };
