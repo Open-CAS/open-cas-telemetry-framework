@@ -17,19 +17,20 @@ namespace protoconverter {
  */
 
 /**
- * @brief This class allows to create a FileDescriptorSet object, which holds
- * the definition of all supplied messages
+ * @brief This class allows to fill an empty FileDescriptorSet object,
+ * which holds the definition of all supplied messages.
  */
 class FileDescriptorSetCreator {
 public:
-    FileDescriptorSetCreator() = default;
-    virtual ~FileDescriptorSetCreator() = default;
-
     /**
-     * @brief Create a FileDescriptorSet from added message's descriptions
-     * @return FileDescriptorSet object
+     * @param fdSet empty File Descriptor Set to be filled
+     *
+     * @note Supplying non-empty FileDescriptorSet, or changing it in-between
+     * adding message definitions may cause undefined behavior.
      */
-    google::protobuf::FileDescriptorSet createFileDescriptorSet();
+    explicit FileDescriptorSetCreator(
+            google::protobuf::FileDescriptorSet &fdSet);
+    virtual ~FileDescriptorSetCreator() = default;
 
     /**
      * @brief Add a message description to FileDescriptorSet.
@@ -41,19 +42,16 @@ public:
      */
     void addMessageDesc(const google::protobuf::Descriptor *msgDesc);
 
-    /**
-     * @brief Reset state (remove any added messages)
-     */
-    void reset();
-
 private:
-    google::protobuf::FileDescriptorProto &getFileDesc(std::string package);
+    google::protobuf::FileDescriptorProto *getFileDesc(std::string package);
+    void addDependency(google::protobuf::FileDescriptorProto *fd,
+                       std::string package);
 
-    /// Types which are already added to FileDescriptorSet
+    /** Types which are already added to FileDescriptorSet */
     std::list<std::string> m_knownTypes;
 
-    /// List with file descriptors sorted in reverse insertion order
-    std::list<google::protobuf::FileDescriptorProto> m_fds;
+    /** Reference to supplied FileDescriptorSet object */
+    google::protobuf::FileDescriptorSet &m_fdSet;
 };
 
 /**
@@ -66,8 +64,9 @@ private:
  * @return Search result
  */
 template <class ElementType>
-bool contains(const google::protobuf::RepeatedPtrField<ElementType> array,
-              ElementType value);
+bool doesRepeatedPtrFieldContain(
+        const google::protobuf::RepeatedPtrField<ElementType> array,
+        ElementType value);
 
 /**
  * @brief Convert NodeId info proto::NodeId class

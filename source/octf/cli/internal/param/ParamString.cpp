@@ -132,7 +132,7 @@ std::vector<std::string> ParamString::parseValuesToVector(
     constexpr int DELIMITER_LENGTH = sizeof(PARAMETER_VALUE_DELIMITER) - 1;
 
     // Parse input for delimited multiple values
-    // TODO[trybicki]: Implement escaping of delimiter sign
+    // TODO (trybicki): Implement escaping of delimiter sign
     while ((pos = values.find(PARAMETER_VALUE_DELIMITER)) !=
            std::string::npos) {
         token = values.substr(0, pos);

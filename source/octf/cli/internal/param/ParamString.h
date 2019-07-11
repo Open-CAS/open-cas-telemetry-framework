@@ -25,7 +25,7 @@ constexpr char PARAMETER_VALUE_DELIMITER[] = ",";
  */
 class ParamString : public Parameter {
 public:
-    // TODO[trybicki]: Implement printing default value in help
+    // TODO(trybicki): Implement printing default value in help
     /**
      * @brief Parameter constructor
      */

@@ -177,12 +177,12 @@ bool InterfaceCliImpl::setCommandDescription(
     // We generate a Set of FileDescriptors which contain definitions of input
     // and output messages and all enums or messages used within. We also set
     // what message is to be used as input and which as output.
-    protoconverter::FileDescriptorSetCreator fdSetCreator;
+    google::protobuf::FileDescriptorSet fdSet;
+    protoconverter::FileDescriptorSetCreator fdSetCreator(fdSet);
     fdSetCreator.addMessageDesc(methodDesc->input_type());
     fdSetCreator.addMessageDesc(methodDesc->output_type());
 
-    cmd->mutable_inputoutputdescription()->CopyFrom(
-            fdSetCreator.createFileDescriptorSet());
+    cmd->mutable_inputoutputdescription()->CopyFrom(fdSet);
 
     cmd->set_inputmessagetypename(methodDesc->input_type()->full_name());
     cmd->set_outputmessagetypename(methodDesc->output_type()->full_name());

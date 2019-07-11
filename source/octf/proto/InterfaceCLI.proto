@@ -33,10 +33,10 @@ message CliCommandDesc {
     // Descriptors of input and output types for this command
     google.protobuf.FileDescriptorSet inputOutputDescription = 5;
 
-    // Type name of input message for this command
+    // Full name of input message type for this command
     string inputMessageTypeName = 6;
 
-    // Type name of output message for this command
+    // Full name of output message type for this command
     string outputMessageTypeName = 7;
 }
 

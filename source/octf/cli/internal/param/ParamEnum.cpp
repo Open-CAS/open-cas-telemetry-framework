@@ -217,9 +217,7 @@ void ParamEnum::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
         // TODO(trybicki): Validate enum switch
         addEnumVal(value->index(), valueOps.cli_switch(), valueOps.cli_desc());
     }
-    // First we set parameter options defined in enum type definition,
-    // then we set options defined in given enum field to override the first
-    // options if needed.
+    // First we set parameter options defined in enum type definition
     bool hasOps = false;
     if (fieldDesc->enum_type()->options().HasExtension(
                 proto::opts_enum_param)) {
@@ -228,6 +226,8 @@ void ParamEnum::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
         hasOps = true;
     }
 
+    // Then we set options defined in given enum field to override the first
+    // options if needed.
     if (fieldDesc->options().HasExtension(proto::opts_param)) {
         setEnumOptions(fieldDesc->options().GetExtension(proto::opts_param));
         hasOps = true;

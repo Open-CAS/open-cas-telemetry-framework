@@ -101,8 +101,9 @@ int decodeVarint32(const uint8_t *buffer, uint64_t size, int &value) {
 }
 
 template <class ElementType>
-bool contains(const google::protobuf::RepeatedPtrField<ElementType> array,
-              ElementType value) {
+bool doesRepeatedPtrFieldContain(
+        const google::protobuf::RepeatedPtrField<ElementType> array,
+        ElementType value) {
     for (int i = 0; i < array.size(); i++) {
         if (array.Get(i) == value) {
             return true;
@@ -110,16 +111,6 @@ bool contains(const google::protobuf::RepeatedPtrField<ElementType> array,
     }
 
     return false;
-}
-
-google::protobuf::FileDescriptorSet
-FileDescriptorSetCreator::createFileDescriptorSet() {
-    google::protobuf::FileDescriptorSet fdSet;
-    for (auto &fd : m_fds) {
-        fdSet.add_file()->CopyFrom(fd);
-    }
-
-    return fdSet;
 }
 
 void FileDescriptorSetCreator::addMessageDesc(
@@ -134,98 +125,106 @@ void FileDescriptorSetCreator::addMessageDesc(
     //
     // To handle packages, we create a separate FileDescriptorProto for
     // each package. The name of the file is the package name.
-    FileDescriptorProto &fd = getFileDesc(msgDesc->file()->package());
-    DescriptorProto *msgDescFd = fd.add_message_type();
 
-    fd.set_name(msgDesc->file()->package());
-    fd.set_package(msgDesc->file()->package());
+    // Verify we only describe each message type once
+    if (std::find(m_knownTypes.begin(), m_knownTypes.end(),
+                  msgDesc->full_name()) != m_knownTypes.end()) {
+        // Message already described
+        return;
+    }
+
+    FileDescriptorProto *fd = getFileDesc(msgDesc->file()->package());
+    DescriptorProto *msgDescFd = fd->add_message_type();
+
     msgDesc->CopyTo(msgDescFd);
+    m_knownTypes.push_back(msgDesc->full_name());
 
     // Describe field types of message or enum type
     for (int i = 0; i < msgDescFd->field_size(); i++) {
         const FieldDescriptor *field = msgDesc->field(i);
 
-        // Handle message type
+        // Handle field of message type
         if (field->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
-            // Verify we only describe each type once
+            // If we use a message type defined in different package, we
+            // need to add appropriate import to FileDescriptor.
+            const std::string &newTypePackage =
+                    field->message_type()->file()->package();
+            addDependency(fd, newTypePackage);
+
+            // Recursively add field's (of type message) definitions
+            addMessageDesc(field->message_type());
+
+            // Handle field of enum type
+        } else if (field->type() == FieldDescriptor::Type::TYPE_ENUM) {
+            // Verify we only describe each enum type once
             if (std::find(m_knownTypes.begin(), m_knownTypes.end(),
                           field->full_name()) == m_knownTypes.end()) {
-                // If we use a message type defined in different package, we
-                // need to add appropriate import to FileDescriptor.
-                std::string newTypePackage =
-                        field->message_type()->file()->package();
-                if (fd.package() != newTypePackage) {
-                    // If not already imported
-                    if (!contains<std::string>(fd.dependency(),
-                                               newTypePackage)) {
-                        fd.add_dependency(newTypePackage);
-                    }
-                }
-
-                // Recursively add field's (of type message) definitions
-                addMessageDesc(field->message_type());
-                m_knownTypes.push_back(field->full_name());
-            }
-        }
-
-        // Handle enum type
-        if (field->type() == FieldDescriptor::Type::TYPE_ENUM) {
-            // Verify we only describe each type once
-            if (std::find(m_knownTypes.begin(), m_knownTypes.end(),
-                          field->full_name()) == m_knownTypes.end()) {
-                // If we use a enum type defined in different package, we
-                // need to add appropriate import to FileDescriptor.
-                std::string newTypePackage =
+                const std::string &newTypePackage =
                         field->enum_type()->file()->package();
-                if (fd.package() != newTypePackage) {
-                    // If not already imported
-                    if (!contains<std::string>(fd.dependency(),
-                                               newTypePackage)) {
-                        fd.add_dependency(newTypePackage);
-                    }
-                }
+                // If we use an enum type defined in different package, we
+                // need to add appropriate import to FileDescriptor.
+                addDependency(fd, newTypePackage);
 
                 // Define enum
-                std::string package = field->enum_type()->file()->package();
                 EnumDescriptorProto *enumDesc =
-                        getFileDesc(package).add_enum_type();
-                getFileDesc(package).set_package(package);
-                getFileDesc(package).set_name(package);
+                        getFileDesc(newTypePackage)->add_enum_type();
 
                 field->enum_type()->CopyTo(enumDesc);
-
                 m_knownTypes.push_back(field->full_name());
             }
         }
     }
 }
 
-void FileDescriptorSetCreator::reset() {
-    m_fds.clear();
-    m_knownTypes.clear();
-}
+FileDescriptorSetCreator::FileDescriptorSetCreator(
+        google::protobuf::FileDescriptorSet &fdSet)
+        : m_knownTypes()
+        , m_fdSet(fdSet) {}
 
 /**
- * This function looks for a file descriptor with given package in a list m_fds
+ * This function looks for a file descriptor with given package in m_fdSet
  * If appropriate descriptor is not found, it is added. Reverse insertion order
  * is preserved to later allow parsing FileDescriptor one after another without
  * undefined types occurring.
  */
-google::protobuf::FileDescriptorProto &FileDescriptorSetCreator::getFileDesc(
+google::protobuf::FileDescriptorProto *FileDescriptorSetCreator::getFileDesc(
         std::string package) {
-    for (auto &fd : m_fds) {
-        if (fd.package() == package) {
-            return fd;
+    for (int i = 0; i < m_fdSet.file_size(); i++) {
+        if (m_fdSet.file(i).package() == package) {
+            return m_fdSet.mutable_file(i);
         }
     }
 
     // FileDesc not found, create a new one
-    google::protobuf::FileDescriptorProto newFd;
-    newFd.set_name(package);
-    newFd.set_package(package);
+    google::protobuf::FileDescriptorProto *newFd = m_fdSet.add_file();
+    newFd->set_name(package);
+    newFd->set_package(package);
 
-    m_fds.emplace_front(newFd);
-    return *m_fds.begin();
+    // Rearrange items afer inserting so that this element is added at the
+    // beginning
+    auto fds = m_fdSet.mutable_file();
+    for (int i = m_fdSet.file_size() - 1; i > 0; i--) {
+        fds->SwapElements(i, i - 1);
+    }
+
+    return newFd;
+}
+
+/**
+ * Adds a 'package' dependency to 'fd'. Performs checks for existing dependency
+ * and self-dependency
+ */
+void FileDescriptorSetCreator::addDependency(
+        google::protobuf::FileDescriptorProto *fd,
+        std::string package) {
+    // Check if package is different than the current fd package
+    if (fd->package() != package) {
+        // If not already imported
+        if (!doesRepeatedPtrFieldContain<std::string>(fd->dependency(),
+                                                      package)) {
+            fd->add_dependency(package);
+        }
+    }
 }
 
 }  // namespace protoconverter
