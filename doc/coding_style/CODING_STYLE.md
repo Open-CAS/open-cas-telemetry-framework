@@ -196,12 +196,12 @@ PrettyDerivedClass::~PrettyDerivedClass() {}
 ~~~
 
 - [M] Pattern to be used for marking to-do tasks:
-[TODO] (Who) Provide explanation about todo.
+TODO (Who) Provide explanation about todo.
 
 ~~~{.cpp}
 
 int PrettyDerivedClass::magicInternalFormula(int number) {
-    // [TODO] (JanKowalski) Provide explanation about computation.
+    // TODO (JanKowalski) Provide explanation about computation.
     number = number + 3;
 
     return number;
