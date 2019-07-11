@@ -65,8 +65,8 @@ private:
  */
 template <class ElementType>
 bool doesRepeatedPtrFieldContain(
-        const google::protobuf::RepeatedPtrField<ElementType> array,
-        ElementType value);
+        const google::protobuf::RepeatedPtrField<ElementType> &array,
+        const ElementType &value);
 
 /**
  * @brief Convert NodeId info proto::NodeId class

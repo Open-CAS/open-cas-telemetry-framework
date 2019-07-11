@@ -102,8 +102,8 @@ int decodeVarint32(const uint8_t *buffer, uint64_t size, int &value) {
 
 template <class ElementType>
 bool doesRepeatedPtrFieldContain(
-        const google::protobuf::RepeatedPtrField<ElementType> array,
-        ElementType value) {
+        const google::protobuf::RepeatedPtrField<ElementType> &array,
+        const ElementType &value) {
     for (int i = 0; i < array.size(); i++) {
         if (array.Get(i) == value) {
             return true;
