@@ -200,12 +200,21 @@ void ParamNumber::setDesc(const std::string &desc) {
     details();
 }
 
-void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
+void ParamNumber::setOptions(
+        const google::protobuf::FieldDescriptor *fieldDesc) {
     using namespace google::protobuf;
-    const proto::OptsParam &paramOps = paramDef.paramops();
+
+    const google::protobuf::FieldOptions &fieldOptions = fieldDesc->options();
+
+    if (!fieldOptions.HasExtension(proto::opts_param)) {
+        throw Exception("Input message's field: " + fieldDesc->name() +
+                        " does not have parameter options");
+    }
+    const proto::OptsParam &paramOps =
+            fieldOptions.GetExtension(proto::opts_param);
 
     // Set options independent of type
-    Parameter::setOptions(paramDef);
+    Parameter::setOptions(fieldDesc);
 
     if (paramOps.has_cli_num()) {
         // If number-specific options are defined, set them
@@ -215,8 +224,8 @@ void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
 
     } else {
         // No options defined, set default values
-        switch (paramDef.type()) {
-        case proto::CliParameter::Type::CliParameter_Type_INT32: {
+        switch (fieldDesc->type()) {
+        case FieldDescriptor::Type::TYPE_INT32: {
             std::numeric_limits<int32_t> limit;
             setMin(limit.min());
             setMax(limit.max());
@@ -224,7 +233,7 @@ void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
             break;
         }
 
-        case proto::CliParameter::Type::CliParameter_Type_INT64: {
+        case FieldDescriptor::Type::TYPE_INT64: {
             std::numeric_limits<int64_t> limit;
             setMin(limit.min());
             setMax(limit.max());
@@ -232,7 +241,7 @@ void ParamNumber::setOptions(const proto::CliParameter &paramDef) {
             break;
         }
 
-        case proto::CliParameter::Type::CliParameter_Type_UINT32: {
+        case FieldDescriptor::Type::TYPE_UINT32: {
             std::numeric_limits<uint32_t> limit;
             setMin(limit.min());
             setMax(limit.max());

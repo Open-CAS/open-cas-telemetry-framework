@@ -6,14 +6,67 @@
 #ifndef SOURCE_OCTF_UTILS_PROTOCONVERTER_H
 #define SOURCE_OCTF_UTILS_PROTOCONVERTER_H
 
+#include <list>
 #include <octf/interface/InterfaceId.h>
 #include <octf/node/NodeId.h>
 
 namespace octf {
 namespace protoconverter {
 /**
- * @brief Protocol buffer to classes conversions
+ * @brief Utils for converting types related to Protocol Buffers
  */
+
+/**
+ * @brief This class allows to fill an empty FileDescriptorSet object,
+ * which holds the definition of all supplied messages.
+ */
+class FileDescriptorSetCreator {
+public:
+    /**
+     * @param fdSet empty File Descriptor Set to be filled
+     *
+     * @note Supplying non-empty FileDescriptorSet, or changing it in-between
+     * adding message definitions may cause undefined behavior.
+     */
+    explicit FileDescriptorSetCreator(
+            google::protobuf::FileDescriptorSet &fdSet);
+    virtual ~FileDescriptorSetCreator() = default;
+
+    /**
+     * @brief Add a message description to FileDescriptorSet.
+     *
+     * Message from package foo.bar will be put in a FileDescriptor of name
+     * foo.bar. Any messages' fields which are of type message or enum, will be
+     * also described in appropriate FileDescriptors. Each type is described
+     * only once in a FileDescriptorSet.
+     */
+    void addMessageDesc(const google::protobuf::Descriptor *msgDesc);
+
+private:
+    google::protobuf::FileDescriptorProto *getFileDesc(std::string package);
+    void addDependency(google::protobuf::FileDescriptorProto *fd,
+                       std::string package);
+
+    /** Types which are already added to FileDescriptorSet */
+    std::list<std::string> m_knownTypes;
+
+    /** Reference to supplied FileDescriptorSet object */
+    google::protobuf::FileDescriptorSet &m_fdSet;
+};
+
+/**
+ * @brief Check if protobuf RepeatedFieldPtr array contains value
+ *
+ * @tparam ElementType type which is stored in RepeatedPtrField
+ * @param array Protobuf array of elements
+ * @param value Value to be found in array
+ *
+ * @return Search result
+ */
+template <class ElementType>
+bool doesRepeatedPtrFieldContain(
+        const google::protobuf::RepeatedPtrField<ElementType> &array,
+        const ElementType &value);
 
 /**
  * @brief Convert NodeId info proto::NodeId class

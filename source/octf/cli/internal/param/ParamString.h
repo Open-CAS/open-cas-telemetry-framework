@@ -25,6 +25,7 @@ constexpr char PARAMETER_VALUE_DELIMITER[] = ",";
  */
 class ParamString : public Parameter {
 public:
+    // TODO(trybicki): Implement printing default value in help
     /**
      * @brief Parameter constructor
      */
@@ -75,7 +76,8 @@ public:
      */
     void setMaxLength(uint32_t maxLength);
 
-    virtual void setOptions(const proto::CliParameter &paramDef) override;
+    virtual void setOptions(
+            const google::protobuf::FieldDescriptor *fieldDesc) override;
 
     virtual void setMultipleValue(bool multipleValue) override;
 

@@ -3,26 +3,25 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/interface/InterfaceCliImpl.h>
-
 #include <google/protobuf/descriptor.h>
 #include <exception>
 #include <octf/cli/internal/OptionsValidation.h>
+#include <octf/interface/InterfaceCliImpl.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/ProtoConverter.h>
 
-typedef google::protobuf::FieldDescriptor::CppType CppType;
-
 namespace octf {
+
 void InterfaceCliImpl::getCliCommandSetDescription(
         ::google::protobuf::RpcController *controller,
         const ::octf::proto::Void *request,
-        ::octf::proto::CliCommandSet *response,
+        ::octf::proto::CliCommandSetDesc *response,
         ::google::protobuf::Closure *done) {
     // request is Void and not used
     (void) request;
 
     InterfacesIdList interfacesId;
+    google::protobuf::FileDescriptorProto protoFileDesc;
 
     try {
         bool result = m_owner->getInterfacesIdList(interfacesId);
@@ -39,6 +38,7 @@ void InterfaceCliImpl::getCliCommandSetDescription(
             }
             const google::protobuf::ServiceDescriptor *interfaceDesc =
                     interface->GetDescriptor();
+
             if (!isValidInterface(interfaceDesc)) {
                 // Don't include this interface in command set
                 continue;
@@ -54,8 +54,10 @@ void InterfaceCliImpl::getCliCommandSetDescription(
                     // Don't include this method in command set
                     continue;
                 }
+
                 // Add Command to CommandSet
-                proto::CliCommand *cmd = response->add_command();
+                proto::CliCommandDesc *cmd = response->add_command();
+
                 // Set description for command
                 if (!setCommandDescription(cmd, id, methodIndex, methodDesc)) {
                     // Invalid description of specific method, skip it
@@ -63,7 +65,7 @@ void InterfaceCliImpl::getCliCommandSetDescription(
                     continue;
                 }
             }
-            const octf::proto::CliCommandSet &cmdSet = *response;
+            const octf::proto::CliCommandSetDesc &cmdSet = *response;
             // Check validness of whole created command set
             if (!cli::utils::isCommandSetValid(cmdSet, true)) {
                 throw Exception("Not valid command set.");
@@ -78,10 +80,11 @@ void InterfaceCliImpl::getCliCommandSetDescription(
     // about some failure during execution of command
     done->Run();
 }
+
 void InterfaceCliImpl::getCliCommandDescription(
         ::google::protobuf::RpcController *controller,
         const ::octf::proto::CliCommandId *request,
-        ::octf::proto::CliCommand *response,
+        ::octf::proto::CliCommandDesc *response,
         ::google::protobuf::Closure *done) {
     InterfacesIdList interfacesId;
     bool isCmdFound = false;
@@ -146,7 +149,7 @@ void InterfaceCliImpl::getCliCommandDescription(
 }
 
 bool InterfaceCliImpl::setCommandDescription(
-        proto::CliCommand *cmd,
+        proto::CliCommandDesc *cmd,
         const InterfaceId &id,
         int methodIndex,
         const google::protobuf::MethodDescriptor *methodDesc) {
@@ -170,20 +173,19 @@ bool InterfaceCliImpl::setCommandDescription(
         cmd->mutable_cmdops()->CopyFrom(opsCmd);
     }
 
-    // CliParameter-s - input
-    auto mutableInput = cmd->mutable_inputparameter();
-    auto inputDesc = methodDesc->input_type();
+    // Input/Output types description
+    // We generate a Set of FileDescriptors which contain definitions of input
+    // and output messages and all enums or messages used within. We also set
+    // what message is to be used as input and which as output.
+    google::protobuf::FileDescriptorSet fdSet;
+    protoconverter::FileDescriptorSetCreator fdSetCreator(fdSet);
+    fdSetCreator.addMessageDesc(methodDesc->input_type());
+    fdSetCreator.addMessageDesc(methodDesc->output_type());
 
-    if (!setParamsDescription(mutableInput, inputDesc)) {
-        return false;
-    }
+    cmd->mutable_inputoutputdescription()->CopyFrom(fdSet);
 
-    // CliParameter-s - output
-    auto mutableOutput = cmd->mutable_outputparameter();
-    auto outputDesc = methodDesc->output_type();
-    if (!setParamsDescription(mutableOutput, outputDesc, false)) {
-        return false;
-    }
+    cmd->set_inputmessagetypename(methodDesc->input_type()->full_name());
+    cmd->set_outputmessagetypename(methodDesc->output_type()->full_name());
 
     return true;
 }
@@ -231,218 +233,4 @@ bool InterfaceCliImpl::isValidMethod(
     return true;
 }
 
-void InterfaceCliImpl::setDefaultValues(
-        proto::CliParameter *param,
-        const google::protobuf::FieldDescriptor *fieldDesc,
-        proto::CliParameter_Type type) {
-    // Set defaults for missing values in enum
-    if (type == proto::CliParameter_Type::CliParameter_Type_ENUM) {
-        const auto &opsParamEnum =
-                fieldDesc->enum_type()->options().GetExtension(
-                        proto::opts_enum_param);
-
-        proto::OptsParam *mutableParamOps = param->mutable_paramops();
-
-        if (mutableParamOps->cli_desc().empty()) {
-            param->mutable_paramops()->set_cli_desc(opsParamEnum.cli_desc());
-        }
-
-        if (mutableParamOps->cli_long_key().empty()) {
-            param->mutable_paramops()->set_cli_long_key(
-                    opsParamEnum.cli_long_key());
-        }
-
-        if (mutableParamOps->cli_short_key().empty()) {
-            param->mutable_paramops()->set_cli_short_key(
-                    opsParamEnum.cli_short_key());
-        }
-
-        // TODO (jstencel) Consider how to recognize unset bool from
-        // the one explicitly set to zero
-        if (!mutableParamOps->cli_required()) {
-            param->mutable_paramops()->set_cli_required(
-                    opsParamEnum.cli_required());
-        }
-    }
-}
-
-bool InterfaceCliImpl::setParamsDescription(
-        google::protobuf::RepeatedPtrField<proto::CliParameter>
-                *mutableCliParam,
-        const google::protobuf::Descriptor *desc,
-        bool isInput) {
-    for (int paramIndex = 0; paramIndex < desc->field_count(); paramIndex++) {
-        auto fieldDesc = desc->field(paramIndex);
-
-        if (!fieldDesc) {
-            throw Exception("Incorrect interface.");
-        }
-
-        // Add parameter to command's input/output description
-        proto::CliParameter *param = mutableCliParam->Add();
-
-        // Map CliParameter to descriptor's field
-        if (!setParamDescription(param, fieldDesc, isInput)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool InterfaceCliImpl::setParamDescription(
-        proto::CliParameter *param,
-        const google::protobuf::FieldDescriptor *fieldDesc,
-        bool isInput) {
-    // Set type
-    auto cppType = fieldDesc->cpp_type();
-    proto::CliParameter_Type type = getTypeFromCppType(cppType);
-
-    param->set_type(type);
-    param->set_fieldid(fieldDesc->number());
-
-    // SaOptParam
-    const auto &opsParam = fieldDesc->options().GetExtension(proto::opts_param);
-
-    // Set values from interface definition
-    param->mutable_paramops()->CopyFrom(opsParam);
-
-    if (type == proto::CliParameter_Type::CliParameter_Type_ENUM) {
-        auto enumDesc = fieldDesc->enum_type();
-        setEnumOps(enumDesc, param);
-
-    } else if (type == proto::CliParameter_Type::CliParameter_Type_MESSAGE) {
-        // Field is a message, create message type parameter
-        const google::protobuf::Descriptor *messageFieldDesc =
-                fieldDesc->message_type();
-
-        // Fill nested CliParameter with fields from descriptor
-        for (int fieldIndex = 0; fieldIndex < messageFieldDesc->field_count();
-             fieldIndex++) {
-            auto nestedParam = param->add_nestedparam();
-            setParamDescription(nestedParam,
-                                messageFieldDesc->field(fieldIndex), false);
-        }
-    }
-
-    // Add label for repeated fields
-    param->mutable_paramops()->set_is_repeated(fieldDesc->is_repeated());
-
-    // Complete missing values with default ones
-    setDefaultValues(param, fieldDesc, type);
-
-    if (isInput) {
-        // Check correctness of input parameter's options
-        if (!cli::utils::isDescValid(param->mutable_paramops()->cli_desc())) {
-            return false;
-        }
-        if (!cli::utils::isShortKeyValid(
-                    param->mutable_paramops()->cli_short_key())) {
-            return false;
-        }
-        if (!cli::utils::isLongKeyValid(
-                    param->mutable_paramops()->cli_long_key())) {
-            return false;
-        }
-    } else {
-        // Building output description...
-        //
-        // For message:
-        // message HelloWorldResponse {
-        //      string helloResponse = 1;
-        //      someEnum enumResponse = 2;
-        //      someMessage messageResponse = 3;
-        // }
-        //
-        // JSON output shall be:
-        // {
-        //      "helloResponse": "Test response",
-        //      "enumResponse": "foo",
-        //      "messageReponse":
-        //      {
-        //          "fieldName": "Test response"
-        //      }
-        //  }
-        //
-        // So we have to copy fields' names. We store them in parameter's
-        // paramOps. To output a nested message we also need to send message
-        // definition. To do so without duplication of definitions, if field
-        // is a message, we keep the message's name in paramOps.
-
-        // Set name of the message
-        if (fieldDesc->type() ==
-            google::protobuf::FieldDescriptor::Type::TYPE_MESSAGE) {
-            param->mutable_paramops()->mutable_cli_msg()->set_message_name(
-                    fieldDesc->message_type()->name());
-        }
-
-        // Set field name
-        param->mutable_paramops()->set_field_name(fieldDesc->name());
-    }
-
-    return true;
-}
-
-void InterfaceCliImpl::setEnumOps(
-        const google::protobuf::EnumDescriptor *enumDesc,
-        proto::CliParameter *param) {
-    if (enumDesc == nullptr) {
-        throw Exception("Incorrect CLI description.");
-    }
-
-    auto *enumOps = param->mutable_paramops()->mutable_cli_enum();
-    enumOps->set_enum_name(enumDesc->name());
-
-    for (int enumValueIndex = 0; enumValueIndex < enumDesc->value_count();
-         enumValueIndex++) {
-        auto enumValDesc = enumDesc->value(enumValueIndex);
-
-        if (!enumValDesc) {
-            throw Exception("Incorrect interface.");
-        }
-
-        const auto &opsEnumVal =
-                enumValDesc->options().GetExtension(proto::opts_enumval);
-
-        proto::OptsEnumValue *enumV = enumOps->add_enum_value();
-
-        enumV->CopyFrom(opsEnumVal);
-        enumV->set_value(enumValDesc->number());
-    }
-}
-
-proto::CliParameter_Type InterfaceCliImpl::getTypeFromCppType(
-        google::protobuf::FieldDescriptor::CppType cppType) {
-    switch (cppType) {
-    case CppType::CPPTYPE_INT32:
-        return proto::CliParameter_Type::CliParameter_Type_INT32;
-
-    case CppType::CPPTYPE_INT64:
-        return proto::CliParameter_Type::CliParameter_Type_INT64;
-
-    case CppType::CPPTYPE_UINT32:
-        return proto::CliParameter_Type::CliParameter_Type_UINT32;
-
-    case CppType::CPPTYPE_ENUM:
-        return proto::CliParameter_Type::CliParameter_Type_ENUM;
-
-    case CppType::CPPTYPE_STRING:
-        return proto::CliParameter_Type::CliParameter_Type_STRING;
-
-    case CppType::CPPTYPE_BOOL:
-        return proto::CliParameter_Type::CliParameter_Type_FLAG;
-
-    case CppType::CPPTYPE_MESSAGE:
-        return proto::CliParameter_Type::CliParameter_Type_MESSAGE;
-
-    case CppType::CPPTYPE_UINT64:
-    case CppType::CPPTYPE_FLOAT:
-    case CppType::CPPTYPE_DOUBLE:
-
-    default:
-        // Not explicitly supported type
-        // TODO (jstencel) Consider if it should be passed in some form
-        // or if error should occur in such case
-        return proto::CliParameter_Type::CliParameter_Type_UNKNOWN;
-    }
-}
 }  // namespace octf

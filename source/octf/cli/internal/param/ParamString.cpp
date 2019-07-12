@@ -12,10 +12,12 @@
 extern "C" {
 #include <errno.h>
 }
+
 using namespace std;
 
 namespace octf {
 namespace cli {
+
 ParamString::ParamString()
         : Parameter()
         , m_values()
@@ -90,11 +92,19 @@ void ParamString::parseToProtobuf(
     }
 }
 
-void ParamString::setOptions(const proto::CliParameter &paramDef) {
-    const proto::OptsParam &paramOps = paramDef.paramops();
+void ParamString::setOptions(
+        const google::protobuf::FieldDescriptor *fieldDesc) {
+    const google::protobuf::FieldOptions &fieldOptions = fieldDesc->options();
+
+    if (!fieldOptions.HasExtension(proto::opts_param)) {
+        throw Exception("Input message's field: " + fieldDesc->name() +
+                        " does not have parameter options");
+    }
+    const proto::OptsParam &paramOps =
+            fieldOptions.GetExtension(proto::opts_param);
 
     // Set options independent of type
-    Parameter::setOptions(paramDef);
+    Parameter::setOptions(fieldDesc);
 
     // If string-specific options are present, set them
     if (paramOps.has_cli_str()) {
@@ -122,7 +132,7 @@ std::vector<std::string> ParamString::parseValuesToVector(
     constexpr int DELIMITER_LENGTH = sizeof(PARAMETER_VALUE_DELIMITER) - 1;
 
     // Parse input for delimited multiple values
-    // TODO[trybicki]: Implement escaping of delimiter sign
+    // TODO (trybicki): Implement escaping of delimiter sign
     while ((pos = values.find(PARAMETER_VALUE_DELIMITER)) !=
            std::string::npos) {
         token = values.substr(0, pos);

@@ -32,6 +32,11 @@ CommandProtobufLocal::CommandProtobufLocal(
     m_interface = interface;
     m_method = method;
 
+    // Save input and output types description to later create appropriate
+    // CLI parameters
+    setInputDesc(method->input_type());
+    setOutputDesc(method->output_type());
+
     // Set keys and description
     setDesc(method->options().GetExtension(opts_command).cli_desc());
     setLongKey(method->options().GetExtension(opts_command).cli_long_key());
@@ -47,19 +52,7 @@ CommandProtobufLocal::CommandProtobufLocal(
                         getShortKey());
     }
 
-    // Add CLI parameters:
-    // We utilize here autoCLI mechanism from base class to add CLI
-    // parameter from method descriptor. To do so we need to convert
-    // each FieldDescriptor of method's input message to CliParameter
-    // as this is the type CommandProtobuf operates on
-    const protobuf::Descriptor *inputMessage = method->input_type();
-    for (int i = 0; i < inputMessage->field_count(); i++) {
-        const auto inputField = inputMessage->field(i);
-        proto::CliParameter param;
-        InterfaceCliImpl::setParamDescription(&param, inputField, true);
-
-        CommandProtobuf::createParameter(param);
-    }
+    CommandProtobuf::createParameters();
 }
 
 void CommandProtobufLocal::execute() {

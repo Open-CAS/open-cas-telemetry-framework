@@ -11,7 +11,6 @@
 #include <octf/cli/internal/cmd/Command.h>
 #include <octf/communication/Call.h>
 #include <octf/interface/InterfaceId.h>
-#include <octf/proto/InterfaceCLI.pb.h>
 
 namespace octf {
 namespace cli {
@@ -25,7 +24,7 @@ public:
      * @brief CommandProtobuf constructor using proto::CliCommand
      * @param cmdDesc Command description
      */
-    CommandProtobuf(const proto::CliCommand &cmdDesc);
+    explicit CommandProtobuf(const proto::CliCommandDesc &cmdDesc);
 
     CommandProtobuf()
             : m_inDesc(nullptr)
@@ -71,14 +70,14 @@ public:
      *
      * @return Input protocol buffer descriptor
      */
-    const google::protobuf::Descriptor *getInputDesc();
+    const google::protobuf::Descriptor *getInputDesc() const;
 
     /**
      * @brief Gets output protocol buffer descriptor
      *
      * @return Output protocol buffer descriptor
      */
-    const google::protobuf::Descriptor *getOutputDesc();
+    const google::protobuf::Descriptor *getOutputDesc() const;
 
     /**
      * @brief Parses values in command's parameters and fills message based on
@@ -100,39 +99,24 @@ public:
 
 protected:
     /**
-     * @brief Creates a parameter and adds it to this command.
+     * @brief Sets descriptor of input protobuf message for command
      *
-     * The parameter will be created based on supplied definition.
-     *
-     * @param paramDef Parameter definition as defined in .proto file
+     * @param desc Input message descriptor
      */
-    void createParameter(const proto::CliParameter &paramDef);
+    void setInputDesc(const google::protobuf::Descriptor *desc);
 
-private:
     /**
-     * @brief Returns FieldDescriptor::Type from CliParameter_Type
-     * @param type Type to be converted
-     * @return value as FieldDescriptor::Type
+     * @brief Sets descriptor of output protobuf message for command
+     *
+     * @param desc Output message descriptor
      */
-    virtual google::protobuf::FieldDescriptor::Type getFieldDescriptorType(
-            proto::CliParameter_Type type);
+    void setOutputDesc(const google::protobuf::Descriptor *desc);
 
-    void addParamDescProto(const std::string &name,
-                           google::protobuf::DescriptorProto *desc,
-                           const proto::CliParameter &param);
-
-    void addInputParamDescProto(google::protobuf::DescriptorProto *desc,
-                                const proto::CliParameter &param);
-
-    void addOutputParamDescProto(google::protobuf::DescriptorProto *desc,
-                                 const proto::CliParameter &param);
-
-    void addEnumParamDescProto(const std::string &name,
-                               const proto::OptsParam &paramOpts);
-
-    void addMessageParamDescProto(const std::string &messageName,
-                                  google::protobuf::DescriptorProto *desc,
-                                  const proto::CliParameter &param);
+    /**
+     * @brief Creates parameters and adds them to this command based on method
+     * input descriptor.
+     */
+    void createParameters();
 
 private:
     /**
@@ -141,12 +125,6 @@ private:
     void execute() override{};
 
 private:
-    /**
-     * Protocol buffer file descriptor which is used to create runtime file
-     * descriptor
-     */
-    google::protobuf::FileDescriptorProto m_fd;
-
     /**
      * Pool with descriptors of input and output messages
      */
