@@ -5,6 +5,7 @@
 
 #include <octf/interface/InterfaceTraceParsingImpl.h>
 
+#include <octf/trace/parser/IoTraceEventHandlerCsvPriner.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/utils/Exception.h>
 
@@ -22,7 +23,8 @@ void InterfaceTraceParsingImpl::ParseTrace(
             IoTraceEventHandlerJsonPrinter parser(request->tracepath());
             parser.processEvents();
         } else if (request->format() == proto::OutputFormat::CSV) {
-            throw Exception("CSV output format not implemented");
+            IoTraceEventHandlerCsvPrinter parser(request->tracepath());
+            parser.processEvents();
         } else {
             throw Exception("Invalid output format");
         }

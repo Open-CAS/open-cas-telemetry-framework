@@ -14,10 +14,6 @@
 
 namespace octf {
 
-static constexpr char CSV_DELIMITER[] = ";";
-
-class TraceManager;
-
 class InterfaceTraceParsingImpl : public proto::InterfaceTraceParsing {
 public:
     InterfaceTraceParsingImpl() = default;
