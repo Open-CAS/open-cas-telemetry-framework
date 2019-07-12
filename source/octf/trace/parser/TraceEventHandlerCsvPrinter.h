@@ -27,11 +27,7 @@ class TraceEventHandlerCsvPrinter : public octf::TraceEventHandler<EventType> {
 public:
     TraceEventHandlerCsvPrinter(const std::string &tracePath)
             : TraceEventHandler<EventType>(tracePath)
-            , m_table() {
-        // Form CSV header and print it
-        m_table[0] << EventType::descriptor();
-        std::cout << m_table << std::endl;
-    }
+            , m_table() {}
 
     virtual ~TraceEventHandlerCsvPrinter() = default;
 
@@ -39,6 +35,14 @@ public:
         m_table[0].clear();
         m_table[0] << *traceEvent;
         std::cout << m_table << std::endl;
+    }
+
+    void processEvents() override {
+        // Form CSV header and print it
+        m_table[0] << EventType::descriptor();
+        std::cout << m_table << std::endl;
+
+        TraceEventHandler<EventType>::processEvents();
     }
 
 private:

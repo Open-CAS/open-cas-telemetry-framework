@@ -18,7 +18,7 @@
 #include <octf/utils/table/Types.h>
 
 /*
- * Forward declaration for Row's streams operator
+ * Forward declaration for Row's stream operators
  */
 namespace google {
 namespace protobuf {
@@ -176,7 +176,8 @@ std::ostream &operator<<(std::ostream &os, const Table &table);
  * @param row row into which stream protocol buffer message description
  * @param desc message description to be streamed
  *
- * @note At the moment map and repeated fields in message are not supported
+ * @note At the moment map and repeated fields in message are not supported,
+ * skipped, and not printed.
  *
  * @return Reference to the row
  */
@@ -239,7 +240,8 @@ Row &operator<<(Row &row, const ::google::protobuf::Descriptor *desc);
  * @param row row into which stream protocol buffer message
  * @param desc message to be streamed
  *
- * @note At the moment map and repeated fields in message are not supported
+ * @note At the moment map and repeated fields in message are not supported,
+ * skipped, and not printed
  *
  * @return Reference to the row
  */
