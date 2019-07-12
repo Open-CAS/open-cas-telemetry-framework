@@ -55,7 +55,7 @@ public:
 
     CellIterator beginCell(index_t id);
     CellIterator endCell(index_t id);
-    CellIterator eraseCell(CellIterator iter);
+    CellIterator eraseCell(CellIterator &iter);
 
     CellIteratorConst beginCell(index_t id) const;
     CellIteratorConst endCell(index_t id) const;
