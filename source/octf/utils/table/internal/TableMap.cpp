@@ -150,7 +150,7 @@ CellIterator TableMap::endCell(index_t id) {
     return CellIterator(*this, m_columns.end(), id);
 }
 
-CellIterator octf::table::TableMap::eraseCell(CellIterator iter) {
+CellIterator octf::table::TableMap::eraseCell(CellIterator &iter) {
     if (iter.m_iter != m_columns.end()) {
         Addr addr(iter.m_rowIndex, iter.m_iter->first);
         m_map.erase(addr);

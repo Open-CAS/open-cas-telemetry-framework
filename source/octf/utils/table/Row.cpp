@@ -47,7 +47,8 @@ CellIteratorConst Row::end() const {
 
 void Row::clear() {
     auto iter = m_map.beginCell(getIndex());
-    while (iter != m_map.endCell(getIndex())) {
+    auto end = m_map.endCell(getIndex());
+    while (iter != end) {
         iter = m_map.eraseCell(iter);
     }
 }

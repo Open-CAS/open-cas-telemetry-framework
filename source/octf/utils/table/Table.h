@@ -17,6 +17,16 @@
 #include <octf/utils/table/Row.h>
 #include <octf/utils/table/Types.h>
 
+/*
+ * Forward declaration for Row's stream operators
+ */
+namespace google {
+namespace protobuf {
+class Descriptor;
+class Message;
+}  // namespace protobuf
+}  // namespace google
+
 namespace octf {
 namespace table {
 
@@ -102,6 +112,140 @@ public:
 private:
     std::unique_ptr<TableMap> m_map;
 };
+
+/**
+ * @ingroup Table
+ *
+ * @brief Output stream operator of Table
+ *
+ * @param os output stream
+ * @param table Table to be streamed
+ *
+ * @return Reference to stream
+ */
+std::ostream &operator<<(std::ostream &os, const Table &table);
+
+/**
+ * @ingroup Table
+ *
+ * @brief Streams protocol buffer message description to the row
+ *
+ * For the following message:
+ * @code
+ * message Bar {
+ *     uint32 type = 1;
+ *
+ *     string name = 2;
+ * }
+ *
+ * message Foo {
+ *     uint64 timestamp = 1;
+ *
+ *     Bar bar = 2;
+ * }
+ * @endcode
+ *
+ * executing the code:
+ * @code
+ * // Define the table
+ * octf::table::Table table;
+ *
+ * // Define message
+ * Foo foo;
+ *
+ * // Fill table's header (row 0)
+ * table[0] << foo.GetDescriptor();
+ * @endcode
+ *
+ * it is equivalent to the following sequence:
+ * @code
+ * row["timestamp"] = "timestamp";
+ * row["bar.type"] = "bar.type";
+ * row["name"] = "bar.name";
+ * @endcode
+ *
+ * Printing table to the output stream:
+ * @code
+ * octf::log << table << std::endl;
+ * @endcode
+ * will result in:
+ * @code
+ * timestamp,bar.type,bar.name
+ * @endcode
+ *
+ * @param row row into which stream protocol buffer message description
+ * @param desc message description to be streamed
+ *
+ * @note At the moment map and repeated fields in message are not supported,
+ * skipped, and not printed.
+ *
+ * @return Reference to the row
+ */
+Row &operator<<(Row &row, const ::google::protobuf::Descriptor *desc);
+
+/**
+ * @ingroup Table
+ *
+ * @brief Streams protocol buffer message to the row
+ *
+ * For the following message:
+ * @code
+ * message Bar {
+ *     uint32 type = 1;
+ *
+ *     string name = 2;
+ * }
+ *
+ * message Foo {
+ *     uint64 timestamp = 1;
+ *
+ *     Bar bar = 2;
+ * }
+ * @endcode
+ *
+ * executing the code:
+ * @code
+ * // Define the table
+ * octf::table::Table table;
+ *
+ * // Define messages and set them
+ * Foo foo;
+ * foo.set_timestamp(100);
+ * foo.mutable_bar()->set_type(7);
+ * foo.mutable_bar()->set_name("Galaxy");
+ *
+ * Bar bar;
+ * bar.set_type(33);
+ * bar.set_name("Star");
+ *
+ * // Fill table's header (row 0)
+ * table[0] << foo.GetDescriptor() << bar.GetDescriptor();
+ *
+ * // Fill table's rows
+ * table[1] << foo;
+ * table[2] << bar;
+ * table[3] << bar << foo;
+ *
+ * octf::log << table << std::endl;
+ * @endcode
+ *
+ * will print following:
+ * @code
+ * timestamp,bar.type,bar.name,type,bar
+ * 100,7,Galaxy,,
+ * ,,,33,Star
+ * 100,7,Galaxy,33,Star
+ * @endcode
+ *
+ * @param row row into which stream protocol buffer message
+ * @param desc message to be streamed
+ *
+ * @note At the moment map and repeated fields in message are not supported,
+ * skipped, and not printed
+ *
+ * @return Reference to the row
+ */
+Row &operator<<(Row &row, const ::google::protobuf::Message &msg);
 
 }  // namespace table
 }  // namespace octf
