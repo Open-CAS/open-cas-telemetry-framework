@@ -115,6 +115,14 @@ static void streamDescriptionToRow(Row &row,
 
         string name = prefix + field->name();
 
+        auto oneofDesc = field->containing_oneof();
+        if (oneofDesc && oneofDesc->field_count()) {
+            if (oneofDesc->field(0) == field) {
+                string oneofName = prefix + oneofDesc->name();
+                row[oneofName] = oneofName;
+            }
+        }
+
         if (field->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
             string nestedPrefix = name + ".";
             streamDescriptionToRow(row, field->message_type(), nestedPrefix);
@@ -145,7 +153,19 @@ static void streamMessageToRow(Row &row,
             continue;  // Not supported
         }
 
-        string name = prefix + field->name();
+        std::string name = prefix + field->name();
+
+        auto oneofDesc = field->containing_oneof();
+        if (oneofDesc) {
+            auto oneofField =
+                    reflection->GetOneofFieldDescriptor(msg, oneofDesc);
+
+            if (oneofField && oneofField == field) {
+                std::string oneofName = prefix + oneofDesc->name();
+                std::string oneofFieldName = prefix + oneofField->name();
+                row[oneofName] = oneofFieldName;
+            }
+        }
 
         if (field->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
             if (reflection->HasField(msg, field)) {
