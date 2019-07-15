@@ -5,8 +5,10 @@
 
 #ifndef SOURCE_OCTF_TRACE_PARSER_ITRACEPARSER_H
 #define SOURCE_OCTF_TRACE_PARSER_ITRACEPARSER_H
+
 #include <google/protobuf/message.h>
 #include <string>
+
 namespace octf {
 
 /**

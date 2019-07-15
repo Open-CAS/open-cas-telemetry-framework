@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 #include <string>
-
 #include <octf/trace/parser/ITraceParser.h>
 
 namespace octf {

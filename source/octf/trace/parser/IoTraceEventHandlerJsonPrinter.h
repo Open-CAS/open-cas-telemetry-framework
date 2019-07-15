@@ -7,7 +7,7 @@
 #define SOURCE_OCTF_TRACE_PARSER_IOTRACEEVENTHANDLERJSONPRINTER_H
 
 #include <octf/proto/trace.pb.h>
-#include "TraceEventHandlerJsonPrinter.h"
+#include <octf/trace/parser/TraceEventHandlerJsonPrinter.h>
 
 namespace octf {
 

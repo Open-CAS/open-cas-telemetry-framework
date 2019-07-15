@@ -23,7 +23,7 @@ namespace octf {
  * (by static asserts).
  */
 template <typename EventType>
-class TraceEventHandlerCsvPrinter : public octf::TraceEventHandler<EventType> {
+class TraceEventHandlerCsvPrinter : public TraceEventHandler<EventType> {
 public:
     TraceEventHandlerCsvPrinter(const std::string &tracePath)
             : TraceEventHandler<EventType>(tracePath)
@@ -39,7 +39,8 @@ public:
 
     void processEvents() override {
         // Form CSV header and print it
-        m_table[0] << EventType::descriptor();
+        auto msg = TraceEventHandler<EventType>::getEventMessagePrototype();
+        table::setHeader(m_table[0], msg.get());
         std::cout << m_table << std::endl;
 
         TraceEventHandler<EventType>::processEvents();
