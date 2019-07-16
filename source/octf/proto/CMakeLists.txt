@@ -11,6 +11,7 @@ set(protoList
 	opts.proto
 	packets.proto
 	trace.proto
+	parsedTrace.proto
 	traceDefinitions.proto
 	)
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${protoList})
