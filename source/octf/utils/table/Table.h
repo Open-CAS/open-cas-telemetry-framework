@@ -197,6 +197,9 @@ inline Row &operator<<(Row &row, const ::google::protobuf::Message *msg) {
  * description. Then row will be filled with columns' name association
  * respectively.
  *
+ * @note When streaming messages with variable size of repeated fields, the
+ * header should be set using each message.
+ *
  * @param row row into which fill header
  * @param msg protocol buffer message on the basis which header is made
  */

@@ -335,10 +335,12 @@ static void streamMessageToRow(Row &row,
 
         auto oneofDesc = field->containing_oneof();
         if (oneofDesc) {
+            // Given field is a part of oneof, let's get oneof selected field
             auto oneofField =
                     reflection->GetOneofFieldDescriptor(msg, oneofDesc);
 
-            if (oneofField && oneofField == field) {
+            if (oneofField == field) {
+                // This field is selected by oneof, set name of used case
                 std::string oneofName = prefix + oneofDesc->name();
                 std::string oneofFieldName = prefix + oneofField->name();
                 row[oneofName] = oneofFieldName;
@@ -384,9 +386,9 @@ Row &operator<<(Row &row, const ::google::protobuf::Message &msg) {
     return row;
 }
 
-static void streamDescriptionToRow(Row &row,
-                                   const ::google::protobuf::Descriptor *desc,
-                                   const std::string &prefix) {
+static void setupRowAsHeader(Row &row,
+                             const ::google::protobuf::Descriptor *desc,
+                             const std::string &prefix) {
     using namespace google::protobuf;
 
     int count = desc->field_count();
@@ -394,7 +396,9 @@ static void streamDescriptionToRow(Row &row,
         auto field = desc->field(i);
 
         if (field->is_repeated()) {
-            continue;  // Not supported
+            // The repeated field description doesn't contain information about
+            // its items. It has to be set using a message.
+            continue;
         }
 
         std::string name = prefix + field->name();
@@ -409,7 +413,7 @@ static void streamDescriptionToRow(Row &row,
 
         if (field->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
             std::string nestedPrefix = name + ".";
-            streamDescriptionToRow(row, field->message_type(), nestedPrefix);
+            setupRowAsHeader(row, field->message_type(), nestedPrefix);
         } else {
             row[name] = name;
         }
@@ -417,11 +421,24 @@ static void streamDescriptionToRow(Row &row,
 }
 
 void setHeader(Row &row, const ::google::protobuf::Message *msg) {
+    // First we store column association in temporary table
     TableMap map;
 
-    streamMessageToRow(map.getRow(0), *msg, "");
-    streamDescriptionToRow(map.getRow(0), msg->GetDescriptor(), "");
+    // When setting header, we should name columns. We do two steps to
+    // achieve this.
+    //      First we use message content. It provides information about
+    // primitive fields, allocated mutable messages, and especially it gives
+    // reflection about dynamic objects like map, arrays. The information about
+    // dynamic messages is not available in message descriptor. Thus we use
+    // message itself.
+    //      However message can have gaps in mutable messages (when fields not
+    // set). Because of it we use descriptor to get info about all sub-messages
+    // which are missing in the message.
 
+    streamMessageToRow(map.getRow(0), *msg, "");
+    setupRowAsHeader(map.getRow(0), msg->GetDescriptor(), "");
+
+    // Re-write columns name from temporary table to the destination row
     auto iter = map.getColumnsAssociation().begin();
     auto end = map.getColumnsAssociation().end();
     for (; iter != end; iter++) {
