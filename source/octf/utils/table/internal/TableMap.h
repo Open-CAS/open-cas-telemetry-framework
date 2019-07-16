@@ -64,6 +64,14 @@ public:
     index_t size() const;
     bool empty() const;
 
+    const std::map<std::string, index_t> &getColumnsAssociation() const {
+        return m_columnsAssociation;
+    }
+
+    const std::map<std::string, index_t> &getRowsAssociation() const {
+        return m_rowsAssociation;
+    }
+
 private:
     std::map<index_t, Row> m_rows;
     std::map<std::string, index_t> m_rowsAssociation;

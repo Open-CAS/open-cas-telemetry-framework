@@ -17,16 +17,6 @@
 #include <octf/utils/table/Row.h>
 #include <octf/utils/table/Types.h>
 
-/*
- * Forward declaration for Row's stream operators
- */
-namespace google {
-namespace protobuf {
-class Descriptor;
-class Message;
-}  // namespace protobuf
-}  // namespace google
-
 namespace octf {
 namespace table {
 
@@ -128,64 +118,6 @@ std::ostream &operator<<(std::ostream &os, const Table &table);
 /**
  * @ingroup Table
  *
- * @brief Streams protocol buffer message description to the row
- *
- * For the following message:
- * @code
- * message Bar {
- *     uint32 type = 1;
- *
- *     string name = 2;
- * }
- *
- * message Foo {
- *     uint64 timestamp = 1;
- *
- *     Bar bar = 2;
- * }
- * @endcode
- *
- * executing the code:
- * @code
- * // Define the table
- * octf::table::Table table;
- *
- * // Define message
- * Foo foo;
- *
- * // Fill table's header (row 0)
- * table[0] << foo.GetDescriptor();
- * @endcode
- *
- * it is equivalent to the following sequence:
- * @code
- * row["timestamp"] = "timestamp";
- * row["bar.type"] = "bar.type";
- * row["name"] = "bar.name";
- * @endcode
- *
- * Printing table to the output stream:
- * @code
- * octf::log << table << std::endl;
- * @endcode
- * will result in:
- * @code
- * timestamp,bar.type,bar.name
- * @endcode
- *
- * @param row row into which stream protocol buffer message description
- * @param desc message description to be streamed
- *
- * @note At the moment map and repeated fields in message are not supported,
- * skipped, and not printed.
- *
- * @return Reference to the row
- */
-Row &operator<<(Row &row, const ::google::protobuf::Descriptor *desc);
-
-/**
- * @ingroup Table
- *
  * @brief Streams protocol buffer message to the row
  *
  * For the following message:
@@ -219,7 +151,8 @@ Row &operator<<(Row &row, const ::google::protobuf::Descriptor *desc);
  * bar.set_name("Star");
  *
  * // Fill table's header (row 0)
- * table[0] << foo.GetDescriptor() << bar.GetDescriptor();
+ * table::setHeader(table[0], foo);
+ * table::setHeader(table[0], bar);
  *
  * // Fill table's rows
  * table[1] << foo;
@@ -246,6 +179,31 @@ Row &operator<<(Row &row, const ::google::protobuf::Descriptor *desc);
  * @return Reference to the row
  */
 Row &operator<<(Row &row, const ::google::protobuf::Message &msg);
+
+/**
+ * @ingroup Table
+ * @brief Streams protocol buffer message to the row
+ */
+inline Row &operator<<(Row &row, const ::google::protobuf::Message *msg) {
+    row << *msg;
+    return row;
+}
+
+/**
+ * @ingroup Table
+ * @brief Sets header on the basis of protocol buffer message
+ *
+ * The specified message will be analyzed in terms of content and its
+ * description. Then row will be filled with columns' name association
+ * respectively.
+ *
+ * @note When streaming messages with variable size of repeated fields, the
+ * header should be set using each message.
+ *
+ * @param row row into which fill header
+ * @param msg protocol buffer message on the basis which header is made
+ */
+void setHeader(Row &row, const ::google::protobuf::Message *msg);
 
 }  // namespace table
 }  // namespace octf

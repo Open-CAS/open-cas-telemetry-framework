@@ -7,7 +7,7 @@
 #define SOURCE_OCTF_TRACE_PARSER_IOTRACEEVENTHANDLERCSVPRINER_H
 
 #include <octf/proto/trace.pb.h>
-#include "TraceEventHandlerCsvPrinter.h"
+#include <octf/trace/parser/TraceEventHandlerCsvPrinter.h>
 
 namespace octf {
 

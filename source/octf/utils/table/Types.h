@@ -8,6 +8,17 @@
 
 #include <stddef.h>
 
+/*
+ * Forward declaration for Row's stream operators
+ */
+namespace google {
+namespace protobuf {
+class Descriptor;
+class Message;
+class Reflection;
+}  // namespace protobuf
+}  // namespace google
+
 namespace octf {
 namespace table {
 
