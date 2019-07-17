@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/trace/parser/IoTraceEventHandler.h>
+#include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
 namespace octf {
 
-IoTraceEventHandler::IoTraceEventHandler(const std::string &tracePath)
+ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(const std::string &tracePath)
         : TraceEventHandler<proto::trace::Event>(tracePath)
         , m_cache()
         , m_devices()
         , m_timestampOffset(0)
         , m_ioQueueDepth(0) {}
 
-void IoTraceEventHandler::handleEvent(
+void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
     auto timestamp = traceEvent->header().timestamp();
@@ -111,11 +111,11 @@ void IoTraceEventHandler::handleEvent(
 }
 
 std::shared_ptr<proto::trace::Event>
-IoTraceEventHandler::getEventMessagePrototype() {
+ParsedIoTraceEventHandler::getEventMessagePrototype() {
     return std::make_shared<proto::trace::Event>();
 }
 
-void IoTraceEventHandler::flushEvents() {
+void ParsedIoTraceEventHandler::flushEvents() {
     auto iter = m_cache.begin();
     auto end = m_cache.end();
     for (; iter != end;) {
