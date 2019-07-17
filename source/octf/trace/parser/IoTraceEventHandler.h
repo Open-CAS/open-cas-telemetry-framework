@@ -17,9 +17,12 @@ namespace octf {
 /**
  * This is IO trace event handler of parsed IO
  *
- * The parsed IO contains basic IO information (LBA, length, etc). It is
+ * The parsed IO is created from multiple events (especially IO request and IO
+ * completion). It contains basic IO information (LBA, length, etc). It is
  * supplemented by related information like filesystem one. In addition it
  * provides post parse information (latency, queue depth, etc...).
+ *
+ * @note The order of handled IO respect the IOs queuing order
  */
 class IoTraceEventHandler : public TraceEventHandler<proto::trace::Event> {
 public:
@@ -29,7 +32,7 @@ public:
     /**
      * Handles parsed IO
      *
-     * @param io Parsed IO to be handle
+     * @param IO Parsed IO to be handle
      */
     virtual void handleIO(proto::trace::ParsedEvent &io) = 0;
 
@@ -39,16 +42,15 @@ private:
         return a->header().sid() < b->header().sid();
     }
 
-    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent);
+    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
 
     virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype()
             override;
 
-    void flushEvetns();
+    void flushEvents();
 
 private:
-    typedef proto::trace::ParsedEvent ParsedEvent;
-    std::map<uint64_t, ParsedEvent> m_cache;
+    std::map<uint64_t, proto::trace::ParsedEvent> m_cache;
     std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
     uint64_t m_timestampOffset;
     uint64_t m_ioQueueDepth;

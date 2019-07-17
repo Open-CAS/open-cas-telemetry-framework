@@ -17,7 +17,7 @@ IoTraceEventHandler::IoTraceEventHandler(const std::string &tracePath)
 void IoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
-    auto timestamp = traceEvent->mutable_header()->timestamp();
+    auto timestamp = traceEvent->header().timestamp();
     if (!m_timestampOffset) {
         // This event handler presents traces from time '0', we remember
         // first event timestamp and subtract by this value for each event
@@ -28,13 +28,13 @@ void IoTraceEventHandler::handleEvent(
     switch (traceEvent->EventType_case()) {
     case Event::EventTypeCase::kDeviceDescription: {
         // Remember device
-        auto device = traceEvent->mutable_devicedescription();
-        m_devices[device->id()] = *device;
+        const auto &device = traceEvent->devicedescription();
+        m_devices[device.id()] = device;
     } break;
 
     case Event::EventTypeCase::kIo: {
-        auto sid = traceEvent->mutable_header()->sid();
-        auto device = traceEvent->io().deviceid();
+        auto sid = traceEvent->header().sid();
+        auto deviceId = traceEvent->io().deviceid();
         // Allocate new parsed IO event in the cache
         auto &cachedEvent = m_cache[sid];
         cachedEvent.mutable_header()->CopyFrom(traceEvent->header());
@@ -46,7 +46,6 @@ void IoTraceEventHandler::handleEvent(
             dst.set_lba(src.lba());
             dst.set_len(src.len());
             dst.set_ioclass(src.ioclass());
-            dst.set_deviceid(src.deviceid());
             dst.set_operation(src.operation());
             dst.set_flush(src.flush());
             dst.set_fua(src.fua());
@@ -54,7 +53,8 @@ void IoTraceEventHandler::handleEvent(
             dst.set_qd(++m_ioQueueDepth);
         }
 
-        cachedEvent.mutable_device()->set_name(m_devices[device].name());
+        cachedEvent.mutable_device()->set_name(m_devices[deviceId].name());
+        cachedEvent.mutable_device()->set_id(deviceId);
     } break;
 
     case Event::EventTypeCase::kIoCompletion: {
@@ -62,11 +62,11 @@ void IoTraceEventHandler::handleEvent(
             m_ioQueueDepth--;
         }
 
-        auto lba = traceEvent->mutable_iocompletion()->lba();
-        auto len = traceEvent->mutable_iocompletion()->len();
-        auto timestamp = traceEvent->mutable_header()->timestamp();
-        auto sid = traceEvent->mutable_header()->sid();
-        auto error = traceEvent->mutable_iocompletion()->error();
+        auto lba = traceEvent->iocompletion().lba();
+        auto len = traceEvent->iocompletion().len();
+        auto timestamp = traceEvent->header().timestamp();
+        auto sid = traceEvent->header().sid();
+        auto error = traceEvent->iocompletion().error();
         // Find in cache which IO has been completed. We match by LBA and
         // length
         auto iter = m_cache.begin();
@@ -78,28 +78,29 @@ void IoTraceEventHandler::handleEvent(
                 break;
             }
 
-            if (iter->second.mutable_io()->lba() == lba &&
-                iter->second.mutable_io()->len() == len) {
+            auto io = iter->second.mutable_io();
+
+            if (io->lba() == lba && io->len() == len) {
                 uint64_t latency =
-                        timestamp - iter->second.mutable_header()->timestamp();
+                        timestamp - iter->second.header().timestamp();
 
                 // IO found, set latency and result of IO
-                iter->second.mutable_io()->set_latency(latency);
-                iter->second.mutable_io()->set_error(error);
+                io->set_latency(latency);
+                io->set_error(error);
 
                 break;
             }
         }
-        flushEvetns();
+        flushEvents();
     } break;
 
     case Event::kFilesystemMeta: {
-        auto sid = traceEvent->mutable_filesystemmeta()->refsid();
+        auto sid = traceEvent->filesystemmeta().refsid();
 
         auto iter = m_cache.find(sid);
         if (iter != m_cache.end()) {
             auto &dst = *iter->second.mutable_file();
-            const auto &src = *traceEvent->mutable_filesystemmeta();
+            const auto &src = traceEvent->filesystemmeta();
             dst.set_id(src.fileid());
             dst.set_offset(src.fileoffset());
             dst.set_size(src.filesize());
@@ -114,7 +115,7 @@ IoTraceEventHandler::getEventMessagePrototype() {
     return std::make_shared<proto::trace::Event>();
 }
 
-void IoTraceEventHandler::flushEvetns() {
+void IoTraceEventHandler::flushEvents() {
     auto iter = m_cache.begin();
     auto end = m_cache.end();
     for (; iter != end;) {

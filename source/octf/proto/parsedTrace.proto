@@ -3,10 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 syntax = "proto3";
-option cc_generic_services = true;
 import "trace.proto";
 package octf.proto.trace;
 
+/**
+ * The parsed IO contains basic IO information (LBA, length, etc). It is
+ * supplemented by related information like filesystem one. In addition it
+ * provides post parse information (latency, queue depth, etc...).
+ */
 message ParsedEvent {
     message IO {
         /** Address of IO in sectors */
@@ -18,9 +22,6 @@ message ParsedEvent {
         /** IO class of IO */
         uint32 ioClass = 3;
 
-        /** Device ID */
-        uint64 deviceId = 4;
-
         /** Operation type: read, write, trim */
         IoType operation = 5;
 
@@ -29,6 +30,9 @@ message ParsedEvent {
 
         /** FUA flag */
         bool fua = 7;
+
+        /** Reserve not presented fields of EventIo */
+        reserved 4;
 
         /** Flags indicates if IO ended with an error */
         bool error = 10000;
@@ -41,8 +45,14 @@ message ParsedEvent {
     }
 
     message DeviceInfo {
+        /** Device ID */
+        uint64 id = 1;
+
         /** Device Name */
         string name = 2;
+
+        /** Reserve not presented fields of EventDeviceDescription */
+        reserved 3;
     }
 
     message FileInfo {
@@ -54,6 +64,9 @@ message ParsedEvent {
 
         /** File size in sectors */
         uint64 size = 5;
+
+        /** Reserve not presented fields of EventIoFilesystemMeta */
+        reserved 1, 3;
     }
 
     /** Header Information */
