@@ -24,10 +24,10 @@ namespace octf {
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class IoTraceEventHandler : public TraceEventHandler<proto::trace::Event> {
+class ParsedIoTraceEventHandler : public TraceEventHandler<proto::trace::Event> {
 public:
-    IoTraceEventHandler(const std::string &tracePath);
-    virtual ~IoTraceEventHandler() = default;
+    ParsedIoTraceEventHandler(const std::string &tracePath);
+    virtual ~ParsedIoTraceEventHandler() = default;
 
     /**
      * Handles parsed IO
