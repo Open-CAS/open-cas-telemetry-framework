@@ -11,8 +11,9 @@ set(protoList
 	opts.proto
 	packets.proto
 	trace.proto
+	parsedTrace.proto
 	traceDefinitions.proto
-	)
+)
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${protoList})
 add_library(protooctf OBJECT ${PROTO_HEADER} ${PROTO_SRC})
 target_include_directories(protooctf
