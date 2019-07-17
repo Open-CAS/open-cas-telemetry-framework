@@ -59,25 +59,11 @@ message OptsEnumValue {
 
     // defines enumerator value description (full name) used for printing help
     string cli_desc = 2;
-
-    // Enumerator value
-    int32 value = 3;
 }
 
 message OptsParamEnum {
     // Specifies default value of enumerator parameter
     int32 default_value = 1;
-
-    // Reserved, describes enumerator values, set by framework
-    repeated OptsEnumValue enum_value = 2;
-
-    // Type name of enumerator
-    string enum_name = 3;
-}
-
-message OptsParamMessage {
-    // Name of the message
-    string message_name = 1;
 }
 
 message OptsParam {
@@ -97,12 +83,6 @@ message OptsParam {
     // defines command description displayed when user invokes help
     string cli_desc = 4;
 
-    // Name of the field - used for output description
-    string field_name = 5;
-
-    // Is the parameter repeated
-    bool is_repeated = 6;
-
     // defines specific options for different types (number, string, etc...)
     oneof cli_param {
         OptsParamNum cli_num = 100; // options for number parameter
@@ -110,8 +90,6 @@ message OptsParam {
         OptsParamString cli_str = 101; // options for string parameter
 
         OptsParamEnum cli_enum = 102; // options for enumerator parameter
-
-        OptsParamMessage cli_msg = 103; // options for message parameter
     };
 }
 
