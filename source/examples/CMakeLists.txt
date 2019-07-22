@@ -1,2 +1,2 @@
 add_subdirectory(c)
-add_subdirectory(cli)
+add_subdirectory(auto_cli)
