@@ -23,6 +23,12 @@ public:
                             const ::octf::proto::ParseTraceRequest *request,
                             ::octf::proto::Void *response,
                             ::google::protobuf::Closure *done) override;
+
+    virtual void GetTraceStatistics(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::IoStatisticsSet *response,
+            ::google::protobuf::Closure *done) override;
 };
 
 }  // namespace octf

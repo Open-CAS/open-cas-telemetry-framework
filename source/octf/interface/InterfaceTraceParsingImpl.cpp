@@ -42,4 +42,14 @@ void InterfaceTraceParsingImpl::ParseTrace(
     done->Run();
 }
 
+void InterfaceTraceParsingImpl::GetTraceStatistics(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::IoStatisticsSet *response,
+        ::google::protobuf::Closure *done) {
+    response->mutable_read()->mutable_latency()->set_unit("ns");
+
+    done->Run();
+}
+
 }  // namespace octf
