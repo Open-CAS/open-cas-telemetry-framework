@@ -18,7 +18,7 @@ using namespace octf;
 class IOTracePluginC : public IOTracePlugin {
 private:
     struct QueueContext {
-        std::atomic_bool traceStoping;
+        std::atomic_bool traceStopping;
         std::atomic_uint64_t tracingRefCounter;
     };
 
@@ -31,7 +31,7 @@ public:
             , m_queueContext(queueCount) {
         for (auto &queueContext : m_queueContext) {
             queueContext.tracingRefCounter = 0;
-            queueContext.traceStoping = true;
+            queueContext.traceStopping = true;
         }
     }
 
@@ -43,7 +43,7 @@ public:
         if (result) {
             m_context->tracing_active = true;
             for (auto &queueContext : m_queueContext) {
-                queueContext.traceStoping = false;
+                queueContext.traceStopping = false;
             }
         }
 
@@ -54,7 +54,7 @@ public:
         m_context->tracing_active = false;
 
         for (auto &queueContext : m_queueContext) {
-            queueContext.traceStoping = true;
+            queueContext.traceStopping = true;
         }
 
         // Poll for all ongoing traces completion
@@ -73,7 +73,7 @@ public:
         auto &queueContext = m_queueContext[ioQueueId];
 
         queueContext.tracingRefCounter++;
-        if (queueContext.traceStoping) {
+        if (queueContext.traceStopping) {
             // Tracing stop was requested
             queueContext.tracingRefCounter--;
             return;
@@ -101,7 +101,7 @@ private:
 extern "C" int octf_iotrace_plugin_create(
         const struct octf_iotrace_plugin_cnfg *cnfg,
         octf_iotrace_plugin_context_t *_context) {
-    IOTracePluginC *plugin = NULL;
+    IOTracePluginC *plugin = nullptr;
     auto context = new struct octf_iotrace_plugin_context;
 
     if (nullptr == context) {
@@ -118,7 +118,13 @@ extern "C" int octf_iotrace_plugin_create(
 
         context->ref_sid = 0;
         context->tracing_active = false;
+
         plugin = new IOTracePluginC(context, cnfg->id, cnfg->io_queue_count);
+        if (nullptr == plugin) {
+            delete context;
+            return -ENOMEM;
+        }
+
         context->plugin = plugin;
 
         if (!plugin->init()) {
@@ -145,12 +151,12 @@ extern "C" int octf_iotrace_plugin_create(
 
 extern "C" void octf_iotrace_plugin_destroy(
         octf_iotrace_plugin_context_t *_context) {
-    if (NULL == _context) {
+    if (nullptr == _context) {
         return;
     }
 
     octf_iotrace_plugin_context_t context = *_context;
-    if (NULL == context) {
+    if (nullptr == context) {
         return;
     }
 
@@ -167,7 +173,7 @@ extern "C" void octf_iotrace_plugin_destroy(
     }
 
     delete context;
-    *_context = NULL;
+    *_context = nullptr;
 }
 
 extern "C" void octf_iotrace_plugin_init_trace_header(

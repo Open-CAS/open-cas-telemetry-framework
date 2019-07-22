@@ -15,6 +15,9 @@ namespace octf {
 
 class InterfaceTraceCreatingImpl;
 
+/**
+ * @brief A OCTF plug-in with implementation of InterfaceTraceCreatingImpl
+ */
 class IOTracePlugin : public NodePlugin, public ITraceExecutor {
 public:
     IOTracePlugin(const std::string &pluginId, uint32_t queueCount);
@@ -38,6 +41,8 @@ public:
      * @param ioQueueId
      * @param trace trace event to be stored
      * @param size size of trace event to be stored
+     *
+     * @note Events defined in iotrace_event.h are serialized only.
      */
     virtual void push(uint32_t ioQueueId, const void *trace, size_t size);
 

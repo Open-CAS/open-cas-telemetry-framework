@@ -25,7 +25,7 @@ struct octf_iotrace_plugin_context {
     volatile bool tracing_active;
 
     /**
-     * Reference of trace event SID for sequentialing them
+     * Reference of trace event SID for sequentializing them
      */
     volatile uint64_t ref_sid;
 
@@ -54,7 +54,7 @@ static inline bool octf_iotrace_plugin_is_tracing_active(
 }
 
 /**
- * IO trace configuration plug-in
+ * IO trace plug-in configuration
  */
 struct octf_iotrace_plugin_cnfg {
     /**
@@ -104,9 +104,9 @@ void octf_iotrace_plugin_init_trace_header(
 /**
  * @brief Pushes IO trace event
  *
- * @note Pushed evetns shall be started with IO trace event header
+ * @note Pushed events shall be started with IO trace event header
  * (struct iotrace_event_hdr).
- * @note Events defined in iotrace_event.h are serialized onlyt.
+ * @note Events defined in iotrace_event.h are serialized only.
  *
  * @param plugin IO tracer plug-in context
  * @param ioQueue IO queue id into which store event
