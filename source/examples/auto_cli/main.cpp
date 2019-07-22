@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
+#include <examples/auto_cli/InterfaceHelloWorldImpl.h>
 #include <memory>
 #include <string>
 #include <octf/octf.h>
-#include "InterfaceHelloWorldImpl.h"
 
 int main(int argc, char *argv[]) {
     // Create executor and local command set
@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 
     // Configure CLI program
     auto &properties = ex.getCliProperties();
-    properties.setName("example-cli");
+    properties.setName("auto-cli");
     properties.setVersion("1.0");
 
     // Create interface

@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include "InterfaceHelloWorldImpl.h"
-
+#include <examples/auto_cli/InterfaceHelloWorldImpl.h>
 #include <string>
 #include <octf/octf.h>
 

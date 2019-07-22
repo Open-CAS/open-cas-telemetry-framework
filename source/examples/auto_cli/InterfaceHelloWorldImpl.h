@@ -16,7 +16,7 @@ public:
     virtual void HelloWorld(::google::protobuf::RpcController *controller,
                             const ::Request *request,
                             ::Response *response,
-                            ::google::protobuf::Closure *done);
+                            ::google::protobuf::Closure *done) override;
 };
 
 #endif  // SOURCE_EXAMPLES_CLI_INTERFACEHELLOWORLDIMPL_H
