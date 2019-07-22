@@ -1,11 +1,17 @@
 target_sources(octf
 PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/ITraceParser.h
-	${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.cpp
-	${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.h
-	${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.h
-	${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
-	${CMAKE_CURRENT_LIST_DIR}/TraceEventHandler.h
-	${CMAKE_CURRENT_LIST_DIR}/IoTraceEventHandlerJsonPrinter.h
-	${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerJsonPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/IoTraceEventHandlerCsvPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/IoTraceEventHandlerJsonPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/ITraceParser.h
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandler.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandler.h
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerPrinter.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandler.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerCsvPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerJsonPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.h
 )

@@ -4,43 +4,20 @@
  */
 syntax = "proto3";
 option cc_generic_services = true;
-import "google/protobuf/descriptor.proto";
 import "defs.proto";
 import "opts.proto";
+import "google/protobuf/descriptor.proto";
 package octf.proto;
 
-// CLI parameter description
-message CliParameter {
-    enum Type {
-        UNKNOWN = 0;
-
-        INT32 = 1;
-        INT64 = 2;
-        UINT32 = 3;
-        UINT64 = 4;
-        STRING = 5;
-        ENUM = 6;
-        FLAG = 7;
-        MESSAGE = 8;
-    }
-
-    // CLI parameter type
-    Type type = 1;
-
-    // Protocol buffer field ID within message
-    int32 fieldId = 2;
-
-    // Parameter options
-    OptsParam paramOps = 3;
-
-    // If type is message, this field describes message's fields
-    repeated CliParameter nestedParam = 4;
-
-    // Can this parameter hold multiple values
-    bool isMultipleValue = 5;
+// Message which identifies particular command by: path, interface, and command
+// key (long or short)
+message CliCommandId {
+    // CLI long or short command switch
+    string commandKey = 1;
 }
 
-message CliCommand {
+// Description of command
+message CliCommandDesc {
     // Path of node which provides given interface
     NodePath path = 1;
 
@@ -53,31 +30,27 @@ message CliCommand {
     // CLI commands option (like: short key, long key, description for help)
     OptsCommand cmdOps = 4;
 
-    // Array of CLI command parameters
-    repeated CliParameter inputParameter = 5;
+    // Descriptors of input and output types for this command
+    google.protobuf.FileDescriptorSet inputOutputDescription = 5;
 
-    // Array of CLI parameters defining method response
-    repeated CliParameter outputParameter = 6;
+    // Full name of input message type for this command
+    string inputMessageTypeName = 6;
+
+    // Full name of output message type for this command
+    string outputMessageTypeName = 7;
 }
 
-// Set of available commands
-message CliCommandSet {
+// Set describing available commands
+message CliCommandSetDesc {
     // Array of commands
-    repeated CliCommand command = 1;
-}
-
-// Message which identifies particular command by: path, interface, and command
-// key (long or short)
-message CliCommandId {
-    // CLI long or short command switch
-    string commandKey = 1;
+    repeated CliCommandDesc command = 1;
 }
 
 // Auto CLI Interface definitions
 service InterfaceCli {
     // Get all CLI commands description
-    rpc getCliCommandSetDescription(Void) returns (CliCommandSet);
+    rpc getCliCommandSetDescription(Void) returns (CliCommandSetDesc);
 
     // Get particular command description
-    rpc getCliCommandDescription(CliCommandId) returns (CliCommand);
+    rpc getCliCommandDescription(CliCommandId) returns (CliCommandDesc);
 }

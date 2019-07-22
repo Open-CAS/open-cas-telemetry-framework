@@ -7,17 +7,8 @@
 
 using namespace std;
 
-CLIProperties::CLIProperties()
-        : m_description()
-        , m_name()
-        , m_version() {}
-
-CLIProperties::~CLIProperties() {}
-
-CLIProperties &CLIProperties::getCliProperties() {
-    static CLIProperties props;
-    return props;
-}
+namespace octf {
+namespace cli {
 
 const string &CLIProperties::getDescription() const {
     return m_description;
@@ -42,3 +33,6 @@ const string &CLIProperties::getVersion() const {
 void CLIProperties::setVersion(const string &version) {
     m_version = version;
 }
+
+}  // namespace cli
+}  // namespace octf

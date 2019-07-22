@@ -4,7 +4,6 @@
  */
 syntax = "proto3";
 option cc_generic_services = true;
-import "google/protobuf/descriptor.proto";
 import "defs.proto";
 import "opts.proto";
 import "traceDefinitions.proto";
@@ -22,7 +21,7 @@ message TracePathPrefix {
 
 message RemoveTracesRequest {
     string prefix = 1 [
-        (opts_param).cli_required = false,
+        (opts_param).cli_required = true,
         (opts_param).cli_long_key = "prefix",
         (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Prefix of trace path used as a complete trace "

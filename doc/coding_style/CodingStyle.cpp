@@ -68,7 +68,7 @@ int PrettyDerivedClass::magicInternalFormula(int number) {
     number = number + 3;
 
     // [M] Pattern to be used for marking to-do tasks:
-    // [TODO] (jankowalski) Provide explanation about computation.
+    // TODO (jankowalski) Provide explanation about computation.
 
     return number;
 }

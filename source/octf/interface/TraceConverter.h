@@ -29,6 +29,7 @@ public:
 private:
     std::shared_ptr<proto::trace::Event> m_evDesc;
     std::shared_ptr<proto::trace::Event> m_evIO;
+    std::shared_ptr<proto::trace::Event> m_evIOCmpl;
     std::shared_ptr<proto::trace::Event> m_evFsMeta;
 };
 

@@ -4,8 +4,10 @@
  */
 
 #include <octf/interface/InterfaceTraceParsingImpl.h>
+#include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
+#include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
 #include <octf/utils/Exception.h>
 
 namespace octf {
@@ -18,13 +20,20 @@ void InterfaceTraceParsingImpl::ParseTrace(
     (void) (response);
 
     try {
-        if (request->format() == proto::OutputFormat::JSON) {
-            IoTraceEventHandlerJsonPrinter parser(request->tracepath());
-            parser.processEvents();
-        } else if (request->format() == proto::OutputFormat::CSV) {
-            throw Exception("CSV output format not implemented");
+        if (request->raw()) {
+            if (request->format() == proto::OutputFormat::JSON) {
+                IoTraceEventHandlerJsonPrinter parser(request->tracepath());
+                parser.processEvents();
+            } else if (request->format() == proto::OutputFormat::CSV) {
+                IoTraceEventHandlerCsvPrinter parser(request->tracepath());
+                parser.processEvents();
+            } else {
+                throw Exception("Invalid output format");
+            }
         } else {
-            throw Exception("Invalid output format");
+            ParsedIoTraceEventHandlerPrinter parser(request->tracepath(),
+                                                    request->format());
+            parser.processEvents();
         }
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());

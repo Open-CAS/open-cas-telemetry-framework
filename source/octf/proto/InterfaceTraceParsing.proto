@@ -7,7 +7,6 @@ syntax = "proto3";
 option cc_generic_services = true;
 import "defs.proto";
 import "opts.proto";
-import "traceDefinitions.proto";
 package octf.proto;
 
 message ParseTraceRequest {
@@ -19,6 +18,14 @@ message ParseTraceRequest {
     ];
 
     OutputFormat format = 2;
+
+    bool raw = 3 [
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "raw",
+        (opts_param).cli_short_key = "r",
+        (opts_param).cli_desc =
+            "Present trace as it had been recorded without post processing"
+    ];
 }
 
 service InterfaceTraceParsing {

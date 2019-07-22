@@ -1,0 +1,16 @@
+add_subdirectory(internal)
+target_sources(octf
+    PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/Column.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Column.h
+    ${CMAKE_CURRENT_LIST_DIR}/Cell.h
+    ${CMAKE_CURRENT_LIST_DIR}/Table.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Table.h
+    ${CMAKE_CURRENT_LIST_DIR}/Row.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Row.h
+    ${CMAKE_CURRENT_LIST_DIR}/ISet.h
+    ${CMAKE_CURRENT_LIST_DIR}/Set.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Set.h
+    ${CMAKE_CURRENT_LIST_DIR}/Iterators.h
+    ${CMAKE_CURRENT_LIST_DIR}/Iterators.cpp
+)

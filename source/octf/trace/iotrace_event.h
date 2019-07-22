@@ -33,6 +33,9 @@ typedef enum {
     /** IO queue event */
     iotrace_event_type_io = 'Q',
 
+    /** IO completion event */
+    iotrace_event_type_io_cmpl = 'C',
+
     /** IO queue event */
     iotrace_event_type_fs_meta = 'F',
 } iotrace_event_type;
@@ -129,6 +132,28 @@ struct iotrace_event {
      * Values according to iotrace_event_flag_t enum
      * are summed (OR-ed) together. */
     uint32_t flags;
+} __attribute__((packed, aligned(8)));
+
+/**
+ * @brief IO completion trace event
+ */
+struct iotrace_event_completion {
+    /** Trace event header */
+    struct iotrace_event_hdr hdr;
+
+    /** Address of completed IO in sectors */
+    uint64_t lba;
+
+    /** Size of completed IO in sectors */
+    uint32_t len;
+
+    /**
+     * Result of completed IO
+     *
+     * Value equals zero means no errors and IO was completed successfully.
+     * Otherwise IO ended with an error.
+     */
+    int32_t error;
 } __attribute__((packed, aligned(8)));
 
 /**

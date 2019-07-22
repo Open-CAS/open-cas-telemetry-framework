@@ -131,6 +131,10 @@ public:
         }
     }
 
+    const std::string &getPrefix() const {
+        return m_prefix;
+    }
+
 private:
     inline std::string getLog() {
         if (m_jsonFormat) {

@@ -6,57 +6,59 @@
 #include <octf/cli/Executor.h>
 
 #include <google/protobuf/dynamic_message.h>
-#include <exception>
-#include <iterator>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <octf/cli/CLIList.h>
-#include <octf/cli/CLIProperties.h>
-#include <octf/cli/CLIUtils.h>
-#include <octf/cli/CommandSet.h>
-#include <octf/cli/cmd/CmdVersion.h>
-#include <octf/cli/cmd/CommandProtobuf.h>
-#include <octf/cli/cmd/CommandProtobufLocal.h>
-#include <octf/node/INode.h>
-#include <octf/node/NodeClient.h>
-#include <octf/proto/InterfaceCLI.pb.h>
+#include <octf/cli/internal/CLIList.h>
+#include <octf/cli/internal/CLIUtils.h>
+#include <octf/cli/internal/CommandSet.h>
+#include <octf/cli/internal/GenericPluginShadow.h>
+#include <octf/cli/internal/Module.h>
+#include <octf/cli/internal/OptionsValidation.h>
+#include <octf/cli/internal/cmd/CmdHelp.h>
+#include <octf/cli/internal/cmd/CmdVersion.h>
+#include <octf/cli/internal/cmd/CommandProtobuf.h>
+#include <octf/cli/internal/cmd/CommandProtobufLocal.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/ModulesDiscover.h>
-#include <octf/utils/OptionsValidation.h>
 
 using std::endl;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
 using std::stringstream;
+using std::vector;
 
 namespace octf {
+namespace cli {
 
 Executor::Executor()
-        : m_localCmdSet()
-        , m_moduleCmdSet()
+        : m_cliProperties()
+        , m_localCmdSet(new CommandSet())
+        , m_moduleCmdSet(new CommandSet())
         , m_modules()
-        , m_module()
+        , m_module(new Module())
         , m_progress(0.0)
         , m_nodePlugin() {
-    // Get a list of available modules
-    getModules();
+    addLocalCommand(make_shared<CmdVersion>(m_cliProperties));
+}
+
+Executor::~Executor() {}
+
+CLIProperties &Executor::getCliProperties() {
+    return m_cliProperties;
 }
 
 void Executor::addLocalCommand(shared_ptr<ICommand> cmd) {
-    m_localCmdSet.addCmd(cmd);
+    m_localCmdSet->addCmd(cmd);
 }
 
 void Executor::loadModuleCommandSet() {
-    if (m_module.isLocal()) {
+    if (m_module->isLocal()) {
         // Module is local, set the appropriate command set
-        m_moduleCmdSet = m_localModules[m_module.getLongKey()];
+        *m_moduleCmdSet = m_localModules[m_module->getLongKey()];
 
     } else {
         // Get description of this module's command set
-        Call<proto::Void, proto::CliCommandSet> call(m_nodePlugin.get());
+        Call<proto::Void, proto::CliCommandSetDesc> call(m_nodePlugin.get());
         m_nodePlugin->getCliInterface()->getCliCommandSetDescription(
                 &call, call.getInput().get(), call.getOutput().get(), &call);
         call.wait();
@@ -67,28 +69,28 @@ void Executor::loadModuleCommandSet() {
         }
 
         auto cmdSetDesc = call.getOutput();
-        if (cliUtils::isCommandSetValid(*cmdSetDesc)) {
+        if (utils::isCommandSetValid(*cmdSetDesc)) {
             int commandCount = cmdSetDesc->command_size();
             for (int i = 0; i < commandCount; i++) {
-                const proto::CliCommand &cmdDesc = cmdSetDesc->command(i);
+                const proto::CliCommandDesc &cmdDesc = cmdSetDesc->command(i);
                 auto cmd = make_shared<CommandProtobuf>(cmdDesc);
-                m_moduleCmdSet.addCmd(cmd);
+                m_moduleCmdSet->addCmd(cmd);
             }
         }
     }
 }
 
 void Executor::printMainHelp(std::stringstream &ss) {
-    CLIUtils::printUsage(ss, nullptr, false, m_modules.size());
+    utils::printUsage(ss, nullptr, m_cliProperties, false, m_modules.size());
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
         for (auto module : m_modules) {
-            CLIUtils::printModuleHelp(ss, &module.second, true);
+            utils::printModuleHelp(ss, &module.second, true);
         }
     }
 
-    CLIUtils::printCmdSetHelp(ss, m_localCmdSet);
+    utils::printCmdSetHelp(ss, *m_localCmdSet);
 
     return;
 }
@@ -143,13 +145,13 @@ shared_ptr<ICommand> Executor::validateCommand(CLIList &cliList) {
     shared_ptr<ICommand> commandToExecute;
     if (localCommand) {
         // Local command
-        commandToExecute = m_localCmdSet.getCmd(cmd);
+        commandToExecute = m_localCmdSet->getCmd(cmd);
 
     } else {
         // Module command
-        if (m_moduleCmdSet.hasCmd(cmd)) {
+        if (m_moduleCmdSet->hasCmd(cmd)) {
             // Module command set already loaded
-            commandToExecute = m_moduleCmdSet.getCmd(cmd);
+            commandToExecute = m_moduleCmdSet->getCmd(cmd);
         } else {
             // Module command set not loaded or command not existent
             commandToExecute = getCommandFromModule(cmd);
@@ -163,7 +165,7 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
     if (!m_nodePlugin.get()) {
         return nullptr;
     }
-    Call<proto::CliCommandId, proto::CliCommand> call(m_nodePlugin.get());
+    Call<proto::CliCommandId, proto::CliCommandDesc> call(m_nodePlugin.get());
     call.getInput()->set_commandkey(cmdName);
 
     m_nodePlugin->getCliInterface()->getCliCommandDescription(
@@ -175,70 +177,114 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
                 "Cannot get command description, error: " + call.ErrorText());
     }
 
-    const proto::CliCommand &cliCmd = *call.getOutput();
-    if (cliUtils::isCommandValid(cliCmd)) {
+    const proto::CliCommandDesc &cliCmd = *call.getOutput();
+    if (utils::isCommandValid(cliCmd)) {
         return make_shared<CommandProtobuf>(cliCmd);
     } else {
         return nullptr;
     }
 }
 
-bool Executor::execute(CLIList &cliList) {
+int Executor::execute(CLIList &cliList) {
     shared_ptr<ICommand> command = validateCommand(cliList);
 
-    if (command == nullptr || command == m_moduleCmdSet.getHelpCmd()) {
+    if (command == nullptr || command == m_moduleCmdSet->getHelpCmd()) {
         // No command for module specified or specified command is help
         // download module's command set and show help
         loadModuleCommandSet();
         stringstream ss;
-        CLIUtils::printUsage(ss, &m_module, false);
-        CLIUtils::printCmdSetHelp(ss, m_moduleCmdSet);
+        utils::printUsage(ss, m_module.get(), m_cliProperties, false);
+        utils::printCmdSetHelp(ss, *m_moduleCmdSet);
         log::cout << ss.str();
-        return true;
 
-    } else if (command == m_localCmdSet.getHelpCmd()) {
+        return command == nullptr;
+    }
+
+    if (command == m_localCmdSet->getHelpCmd()) {
         // "First level" help (general for application)
         stringstream ss;
         printMainHelp(ss);
         log::cout << ss.str();
-    } else {
-        bool hasHelp = cliList.hasHelp();
+        return 0;
+    }
+
+    try {
+        if (cliList.hasHelp()) {
+            // Help reqested, print it and return
+            stringstream ss;
+            utils::printCmdHelp(ss, command, m_cliProperties);
+            log::cout << ss.str();
+            return 0;
+        }
 
         // Fill command's parameters
-        if (!hasHelp && command->parseParamValues(cliList)) {
-            setupOutputsForCommandsLogs();
+        command->parseParamValues(cliList);
 
-            if (command->isLocal()) {
-                // Execute command locally
-                command->execute();
+    } catch (Exception &e) {
+        // An error during parsing command, print it and then print help,
+        // and return
 
-            } else {
-                // Execute remotely
-                shared_ptr<CommandProtobuf> protoCmd =
-                        std::dynamic_pointer_cast<CommandProtobuf>(command);
-                if (protoCmd) {
-                    executeRemote(protoCmd);
+        if ("" != e.getMessage()) {
+            log::cerr << e.getMessage() << endl;
+        }
 
-                } else {
-                    // Dynamic cast failed
-                    throw InvalidParameterException("Unknown command type.");
-                }
-            }
+        stringstream ss;
+        utils::printCmdHelp(ss, command, m_cliProperties);
+        log::cout << ss.str();
+
+        return 1;
+    }
+
+    setupOutputsForCommandsLogs();
+
+    if (command->isLocal()) {
+        // Execute command locally
+        command->execute();
+    } else {
+        // Execute remotely
+        shared_ptr<CommandProtobuf> protoCmd =
+                std::dynamic_pointer_cast<CommandProtobuf>(command);
+        if (protoCmd) {
+            executeRemote(protoCmd);
+
         } else {
-            // Parse parameters failed, show third level (command's) help
-            stringstream ss;
-            CLIUtils::printCmdHelp(ss, command);
-            log::cout << ss.str();
-
-            if (hasHelp) {
-                return true;
-            } else {
-                return false;
-            }
+            // Dynamic cast failed
+            throw InvalidParameterException("Unknown command type.");
         }
     }
 
-    return true;
+    return 0;
+}
+
+int Executor::execute(int argc, char *argv[]) {
+    int result = 1;
+
+    try {
+        if (argc > 1) {
+            // Parse application input
+            vector<string> arguments(argv, argv + argc);
+            CLIList cliList;
+            cliList.create(arguments);
+
+            // Execute command
+            result = execute(cliList);
+
+        } else {
+            throw InvalidParameterException(
+                    "Specify module or command first. Use '" +
+                    m_cliProperties.getName() + " -H' for help.");
+        }
+
+    } catch (Exception &e) {
+        log::cerr << e.what() << endl;
+        return 1;
+    } catch (std::exception &e) {
+        log::critical << m_cliProperties.getName()
+                      << " execution interrupted: " << e.what() << endl;
+        return 1;
+    }
+
+    return result;
 }
 
 bool Executor::isModuleExistent(std::string moduleName) const {
@@ -252,20 +298,20 @@ bool Executor::isModuleExistent(std::string moduleName) const {
 }
 
 void Executor::setModule(std::string moduleName) {
-    for (const auto module : m_modules) {
+    for (const auto &module : m_modules) {
         if (module.second.getLongKey() == moduleName ||
             module.second.getShortKey() == moduleName) {
             // Remember which module was set
-            m_module = module.second;
+            *m_module = module.second;
 
-            if (m_module.isLocal()) {
+            if (m_module->isLocal()) {
                 // Set appropriate command set for local module
-                m_moduleCmdSet = m_localModules[moduleName];
+                *m_moduleCmdSet = m_localModules[moduleName];
 
             } else {
                 // Initialize node plugin if module is remote
                 m_nodePlugin.reset(
-                        new GenericPluginShadow(m_module.getLongKey()));
+                        new GenericPluginShadow(m_module->getLongKey()));
                 if (!m_nodePlugin->init()) {
                     throw Exception("Plugin unavailable.");
                 }
@@ -287,6 +333,7 @@ void Executor::addInterface(InterfaceShRef interface, CommandSet &commandSet) {
 void Executor::addMethod(const ::google::protobuf::MethodDescriptor *method,
                          InterfaceShRef interface,
                          CommandSet &commandSet) {
+    // TODO(trybicki): Don't create commands upfront for every interface method
     // Create local command and add it to command set
     std::shared_ptr<CommandProtobufLocal> cmd =
             make_shared<CommandProtobufLocal>(method, interface);
@@ -316,7 +363,7 @@ void Executor::addLocalModule(InterfaceShRef interface,
 }
 
 void Executor::addLocalModule(InterfaceShRef interface) {
-    addInterface(interface, m_localCmdSet);
+    addInterface(interface, *m_localCmdSet);
 }
 
 void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
@@ -362,12 +409,12 @@ void Executor::setProgress(double progress, std::ostream &out) {
 
     if (next != prev) {
         m_progress = progress;
-        CLIUtils::printProgressBar(m_progress, out);
+        utils::printProgressBar(m_progress, out);
     }
 }
 
 void Executor::setupOutputsForCommandsLogs() const {
-    auto const &prefix = CLIProperties::getCliProperties().getName();
+    auto const &prefix = m_cliProperties.getName();
 
     if (nullptr != getenv("VERBOSE")) {
         log::verbose << log::enable << log::json << log::prefix << prefix;
@@ -382,4 +429,5 @@ void Executor::setupOutputsForCommandsLogs() const {
     log::cout << log::enable << log::json << log::prefix << prefix;
 }
 
+}  // namespace cli
 }  // namespace octf

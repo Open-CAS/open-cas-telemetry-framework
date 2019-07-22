@@ -8,7 +8,6 @@
 
 #include <string>
 #include <octf/node/NodeId.h>
-#include <octf/proto/configuration.pb.h>
 #include <octf/utils/NonCopyable.h>
 
 namespace octf {
@@ -93,11 +92,7 @@ public:
 
 private:
     FrameworkConfiguration();
-
     friend const FrameworkConfiguration &getFrameworkConfiguration();
-
-private:
-    proto::FrameworkConfiguration m_config;
 };
 
 /**
