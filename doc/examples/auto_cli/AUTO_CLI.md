@@ -10,13 +10,15 @@ In this tutorial:
 * [Specifying CLI Schema](#specifying_cli_schema)
 * [Method Implementation](#method_implementation)
 * [Main Function](#main_function)
+* [Help](#help)
+* [Using your CLI](#using_your_cli)
 * [Resources](#resources)
 
 <a id="protocol_buffer_basis"></a>
 
 ## Google Protocol Buffer Basis
 
-What are protocol buffers? According to [Google Protocol Buffer Basis](https://developers.google.com/protocol-buffers/):
+What are protocol buffers? According to [Google Protocol Buffer](https://developers.google.com/protocol-buffers/):
 "Protocol buffers are Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data - think XML, but smaller, faster, and simpler. You define how you want your data to be structured once, then you can use special generated source code to easily write and read your structured data to and from a variety of data streams and using a variety of languages."
 
 Assuming you defined a protocol buffer message:
@@ -48,9 +50,9 @@ class Request : public ::google::protobuf::Message {
 };
 ~~~
 
-In addition the protocol buffer allows to define a service - know as a
+In addition the protocol buffer allows to define a service - known as a
 **interface** in OCTF world. The following **InterfaceHelloWorld** interface
-defines a method **HelloWorld**. The method accept the **Request** message,
+defines a method **HelloWorld**. The method accepts the **Request** message,
 the result of this method is the message **Response**.   
 
 ~~~{.proto}
@@ -67,7 +69,7 @@ service InterfaceHelloWorld {
 }
 ~~~
 
-we should expect auto generated code:
+We should expect auto generated code:
 
 ~~~{.cpp}
 /*
@@ -132,7 +134,7 @@ class InterfaceHelloWorld : public ::google::protobuf::Service {
 };
 ~~~
 
-Then you can use above source stubs to implements your own interface as it will
+Then you can use above source stubs to implement your own interface as it will
 be presented in the further part of this tutorial. 
 
 <a id="specifying_cli_schema"></a>
@@ -148,7 +150,7 @@ commands and their parameters. However we have to get CLI meta information about
 
 Thus the OCTF defines [CLI options](https://github.com/Open-CAS/open-cas-telemetry-framework/blob/master/source/octf/proto/opts.proto) which allows to provide above specification.
 
-Let's take a look what the full specification of our CLI should be:
+Let's take a look at what the full specification of our CLI should be:
 
 ~~~{.proto}
 syntax = "proto3";
@@ -300,6 +302,8 @@ int main(int argc, char *argv[]) {
 }
 ~~~
 
+<a id="help"></a>
+
 ## Help
 
 Once the program is ready we can get the program's help:
@@ -324,6 +328,8 @@ This is hello world command
 Options that are valid with {-W | --hello-world}  
      -L    --hello <VALUE>                       Say hello
 ~~~
+
+<a id="using_your_cli"></a>
 
 ## Using your CLI
 
