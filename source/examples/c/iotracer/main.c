@@ -8,7 +8,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <pthread.h>
+#include <signal.h>
+#include <errno.h>
+#include <stdio.h>
 
 static void trace_io(octf_iotrace_plugin_context_t context)
 {
@@ -32,20 +35,13 @@ static void trace_io(octf_iotrace_plugin_context_t context)
     octf_iotrace_plugin_push_trace(context, 0, &ev, sizeof(ev));
 }
 
-int main() {
-    int result = 0;
-    octf_iotrace_plugin_context_t context;
+volatile bool thread_stop;
 
-    struct octf_iotrace_plugin_cnfg cnfg = {
-            .id = "c-iotrace-example",
-            .io_queue_count = 1,
-    };
+static void* thread_function(void *data)
+{
+    octf_iotrace_plugin_context_t context = data;
 
-    if (octf_iotrace_plugin_create(&cnfg, &context)) {
-        return -1;
-    }
-
-    while (true) {
+    while (!thread_stop) {
         if (octf_iotrace_plugin_is_tracing_active(context)) {
             trace_io(context);
         }
@@ -53,6 +49,49 @@ int main() {
         usleep(1000 * (random() % 100));
     }
 
+    return NULL;
+}
+
+void signal_handler(int signal_no)
+{
+    printf("Interrupt signal received\n");
+    thread_stop = true;
+}
+
+int main() {
+    int result = 0;
+    pthread_t thread;
+    octf_iotrace_plugin_context_t context;
+
+    struct octf_iotrace_plugin_cnfg cnfg = {
+            .id = "c-iotrace-example",
+            .io_queue_count = 1,
+    };
+
+    // Register signals
+    if (signal(SIGINT, signal_handler) == SIG_ERR
+            || signal(SIGTERM, signal_handler) == SIG_ERR) {
+        // Cannot register handler for signals
+        return errno;
+    }
+
+    // Create plug-in
+    result = octf_iotrace_plugin_create(&cnfg, &context);
+    if (result) {
+        return result;
+    }
+
+    // Run thread which generates IO traces
+    result = pthread_create(&thread, NULL, thread_function, context);
+    if (result) {
+        octf_iotrace_plugin_destroy(&context);
+        return result;
+    }
+
+    // Wait for thread end
+    pthread_join(thread, NULL);
+
+    // Destroy plugin
     octf_iotrace_plugin_destroy(&context);
 
     return result;

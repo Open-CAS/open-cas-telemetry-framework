@@ -23,7 +23,7 @@ TBD
 
 ## Producing IO traces by C Application
 
-All fun starts with including the C IO trace plug-in.
+All the fun starts with including the C IO trace plug-in.
 
 ~~~{.c}
 #include <octf/c/iotrace_plugin.h>
@@ -31,7 +31,7 @@ All fun starts with including the C IO trace plug-in.
 
 Having that you can power your C application by OCTF. But actually in this case
 you are going to use C wrapper for IO tracer plug-in. When linking your program,
-don't forget about adding OCTF library (just add -loctf to linker option).  
+don't forget about adding OCTF library (just add -loctf to linker options).  
 
 ### Initializing IO trace plug-in
 
@@ -86,7 +86,7 @@ Now you can start tracing by invoking:
 iotrace --c-iotrace-example --start-trace
 ~~~
 
-Print help of start tracing command to get more tracing option. 
+Print help of start tracing command to get more tracing options. 
 
 ~~~{.sh}
 iotrace --c-iotrace-example --start-trace --help 
