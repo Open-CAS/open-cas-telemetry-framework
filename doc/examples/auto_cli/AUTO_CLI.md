@@ -1,6 +1,6 @@
 # The Auto CLI
 
-The OCTF introduces a functionality called "Auto CLI". Generally this capability
+The OCTF introduces a functionality called "Auto CLI". Generally, this capability
 on the basis of google protocol buffer definition builds automatically a CLI
 tool. In this example we are going to guide you to have own CLI utilizing OCTF.
 
