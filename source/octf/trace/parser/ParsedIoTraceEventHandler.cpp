@@ -7,7 +7,8 @@
 
 namespace octf {
 
-ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(const std::string &tracePath)
+ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
+        const std::string &tracePath)
         : TraceEventHandler<proto::trace::Event>(tracePath)
         , m_cache()
         , m_devices()

@@ -16,7 +16,7 @@ FrameworkConfiguration &getFrameworkConfiguration() {
     static FrameworkConfiguration config;
     static std::once_flag once;
 
-    std::call_once(once, [](){
+    std::call_once(once, []() {
         ProtobufReaderWriter rw(OCTF_CONFIG_FILE);
         if (false == rw.read(config)) {
             throw Exception("Cannot read framework configuration");

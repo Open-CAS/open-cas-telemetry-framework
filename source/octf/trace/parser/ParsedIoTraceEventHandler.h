@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_TRACE_PARSER_IOTRACEEVENTHANDLER_H
-#define SOURCE_OCTF_TRACE_PARSER_IOTRACEEVENTHANDLER_H
+#ifndef SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H
+#define SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H
 
 #include <map>
 #include <memory>
@@ -24,7 +24,8 @@ namespace octf {
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler : public TraceEventHandler<proto::trace::Event> {
+class ParsedIoTraceEventHandler
+        : public TraceEventHandler<proto::trace::Event> {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
     virtual ~ParsedIoTraceEventHandler() = default;
@@ -58,4 +59,4 @@ private:
 
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_TRACE_PARSER_IOTRACEEVENTHANDLER_H
+#endif  // SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H

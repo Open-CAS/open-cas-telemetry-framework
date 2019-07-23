@@ -11,8 +11,6 @@ add_subdirectory(octf)
 add_subdirectory(octf/proto)
 add_subdirectory(third_party)
 
-# TODO enable examples compilation
-# add_subdirectory(examples)
 set(PROTOBUF_IMPORT_DIRS  "${PROTOBUF_IMPORT_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}/octf/proto")
 
 set_target_properties(octf PROPERTIES LINKER_LANGUAGE CXX)
@@ -104,3 +102,5 @@ file(APPEND ${CMAKE_BINARY_DIR}/octf-vars.cmake
 
 # Install it next to octf-config
 install(FILES ${CMAKE_BINARY_DIR}/octf-vars.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install)
+
+add_subdirectory(examples)

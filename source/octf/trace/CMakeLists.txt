@@ -5,4 +5,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/trace.h
 	${CMAKE_CURRENT_LIST_DIR}/trace.c
 	${CMAKE_CURRENT_LIST_DIR}/iotrace_event.h
+	${CMAKE_CURRENT_LIST_DIR}/IOTracePlugin.h
+	${CMAKE_CURRENT_LIST_DIR}/IOTracePlugin.cpp
 )
