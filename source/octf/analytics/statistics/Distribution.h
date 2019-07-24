@@ -6,8 +6,8 @@
 #ifndef SOURCE_OCTF_ANALYTICS_STATISTICS_DISTRIBUTION_H
 #define SOURCE_OCTF_ANALYTICS_STATISTICS_DISTRIBUTION_H
 
-#include <cmath>
 #include <map>
+#include <string>
 #include <vector>
 #include <octf/proto/statistics.pb.h>
 #include <octf/utils/Exception.h>
@@ -16,13 +16,17 @@ namespace octf {
 
 class Distribution {
 public:
-    Distribution(uint64_t bucketSize, uint64_t backetPower);
+    Distribution(const std::string &unit,
+                 uint64_t bucketSize,
+                 uint64_t backetPower);
+    Distribution(Distribution const &other);
+    Distribution &operator=(Distribution const &other);
 
     virtual ~Distribution();
 
     void operator+=(uint64_t value);
 
-    void getDistribution(proto::Distribution &distribution);
+    void fillDistribution(proto::Distribution *distribution) const;
 
 private:
     struct Backet;
@@ -30,10 +34,10 @@ private:
     Backet &getBucket(uint64_t value);
 
 private:
-    const uint64_t m_bucketSize;
-    const uint64_t m_backetPower;
-
-    uint64_t m_sum;
+    std::string m_unit;
+    uint64_t m_bucketSize;
+    uint64_t m_bucketPower;
+    uint64_t m_total;
     uint64_t m_count;
     uint64_t m_min;
     uint64_t m_max;

@@ -5,6 +5,9 @@
 
 #include <octf/analytics/statistics/Distribution.h>
 
+#include <cmath>
+#include <limits>
+
 namespace octf {
 
 struct Distribution::Backet {
@@ -85,12 +88,15 @@ struct Distribution::Backet {
     std::vector<uint64_t> Count;
 };
 
-Distribution::Distribution(uint64_t backetSize, uint64_t backetPower)
-        : m_bucketSize(backetSize)
-        , m_backetPower(backetPower)
-        , m_sum()
+Distribution::Distribution(const std::string &unit,
+                           uint64_t bucketSize,
+                           uint64_t backetPower)
+        : m_unit(unit)
+        , m_bucketSize(bucketSize)
+        , m_bucketPower(backetPower)
+        , m_total()
         , m_count()
-        , m_min()
+        , m_min(std::numeric_limits<decltype(m_min)>::max())
         , m_max()
         , m_histogram() {
     if (backetPower < 2) {
@@ -98,10 +104,35 @@ Distribution::Distribution(uint64_t backetSize, uint64_t backetPower)
     }
 }
 
+Distribution::Distribution(const Distribution &other)
+        : m_unit(other.m_unit)
+        , m_bucketSize(other.m_bucketSize)
+        , m_bucketPower(other.m_bucketPower)
+        , m_total(other.m_total)
+        , m_count(other.m_count)
+        , m_min(other.m_min)
+        , m_max(other.m_max)
+        , m_histogram(other.m_histogram) {}
+
+Distribution &Distribution::operator=(const Distribution &other) {
+    if (this != &other) {
+        m_unit = other.m_unit;
+        m_bucketSize = other.m_bucketSize;
+        m_bucketPower = other.m_bucketPower;
+        m_total = other.m_total;
+        m_count = other.m_count;
+        m_min = other.m_min;
+        m_max = other.m_max;
+        m_histogram = other.m_histogram;
+    }
+
+    return *this;
+}
+
 Distribution::~Distribution() {}
 
 void Distribution::operator+=(uint64_t value) {
-    m_sum += value;
+    m_total += value;
     m_count++;
     m_min = std::min(m_min, value);
     m_max = std::max(m_max, value);
@@ -110,11 +141,17 @@ void Distribution::operator+=(uint64_t value) {
     backet += value;
 }
 
-void Distribution::getDistribution(proto::Distribution &distribution) {
-    distribution.Clear();
-    distribution.set_avarage(m_sum / m_count);
-    distribution.set_min(m_min);
-    distribution.set_max(m_max);
+void Distribution::fillDistribution(proto::Distribution *distribution) const {
+    distribution->Clear();
+    distribution->set_avarage(m_count ? m_total / m_count : 0);
+    distribution->set_min(m_count ? m_min : 0);
+    distribution->set_max(m_max);
+    distribution->set_count(m_count);
+    distribution->set_total(m_total);
+    distribution->set_unit(m_unit);
+
+    // XXX
+    return;
 
     for (const auto &bucket : m_histogram) {
         uint64_t begin = bucket.Begin;
@@ -125,7 +162,7 @@ void Distribution::getDistribution(proto::Distribution &distribution) {
                 std::string name =
                         std::to_string(begin) + ".." + std::to_string(end);
 
-                (*distribution.mutable_histogram())[name] = bucket.Count[i];
+                (*distribution->mutable_histogram())[name] = bucket.Count[i];
             }
 
             begin += bucket.Step;
@@ -139,7 +176,7 @@ Distribution::Backet &Distribution::getBucket(uint64_t value) {
     uint64_t size = m_bucketSize;
 
     while (size <= value) {
-        size *= m_backetPower;
+        size *= m_bucketPower;
         i++;
     }
 
@@ -147,7 +184,7 @@ Distribution::Backet &Distribution::getBucket(uint64_t value) {
         uint64_t j = m_histogram.size();
         m_histogram.resize(i + 1);
         for (; j <= i; j++) {
-            m_histogram[j] = Backet(j, m_bucketSize, m_backetPower);
+            m_histogram[j] = Backet(j, m_bucketSize, m_bucketPower);
         }
     }
 

@@ -120,11 +120,15 @@ void ParsedIoTraceEventHandler::flushEvents() {
         }
     }
 
-    // If IO traces cache exceed some number, or all parser finished its job,
-    // flush IOs
-    constexpr uint64_t cacheLimit = 1000 * 1000;
     bool isFinished = getParser()->isFinished();
-    while (m_cache.size() > cacheLimit || isFinished) {
+
+    constexpr uint64_t cacheLimit = 1000 * 1000;
+    if (m_cache.size() < cacheLimit && !isFinished) {
+        return;
+    }
+
+    // Cache exceed some number, or all parser finished its job, then flush IOs
+    while (m_cache.size()) {
         handleIO(m_cache.begin()->second);
         m_cache.erase(m_cache.begin());
 
@@ -132,7 +136,7 @@ void ParsedIoTraceEventHandler::flushEvents() {
             m_ioQueueDepth--;
         }
 
-        if (0 == m_cache.size()) {
+        if (!isFinished && m_cache.size() < cacheLimit) {
             break;
         }
     }

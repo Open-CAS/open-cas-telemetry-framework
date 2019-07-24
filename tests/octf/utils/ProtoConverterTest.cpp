@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <limits>
 #include <list>
+#include <ostream>
 #include <octf/utils/ProtoConverter.h>
 
 using namespace octf::protoconverter;
