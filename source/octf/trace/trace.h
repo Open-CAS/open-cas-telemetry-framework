@@ -165,6 +165,21 @@ int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size);
  */
 int64_t octf_trace_get_free_space(octf_trace_t trace);
 
+/**
+ * Checks if trace is almost full
+ *
+ * Sometimes it doesn't make any sense to ready a few events and suspend. It
+ * may cost more CPU usage. It's better to wait longer until trace is almost
+ * full.
+ *
+ * @param trace[in] Trace handle
+ *
+ * @retval 0 trace is not almost full
+ * @retval 1 trace is almost full
+ * @retval -EINVAL Trace handle is invalid
+ */
+int octf_trace_is_almost_full(octf_trace_t trace);
+
 #ifdef __cplusplus
 }
 #endif
