@@ -23,7 +23,7 @@ BACKUP_DIR="tools/coding_style/backup"
 BACKUP_EXTENSION=".hbackup"
 
 CHANGED_FILES=$(git diff --cached --name-only --diff-filter=AM)
-CHANGED_FILES_CLANG=$(echo "${CHANGED_FILES}" | grep -Ee '\.([ch](pp|xx)|[h]|(cc|hh)|[CH]|proto)$')
+CHANGED_FILES_CLANG=$(echo "${CHANGED_FILES}" | grep -Ee '\.([ch](pp|xx)|(cc|hh)|[CcHh]|proto)$')
 CHANGED_FILES_LICENSE_HEADERS=$(echo "${CHANGED_FILES}" | grep -Ee '\.([chCH]|cc|hh|cpp|hpp|cxx|hxx|proto|sh|py)$')
 CHANGED_FILES_INCLUDE_GUARDS=$(echo "${CHANGED_FILES}" |  grep -Ee '\.([hH]|hh|hpp|hxx)$')
 
