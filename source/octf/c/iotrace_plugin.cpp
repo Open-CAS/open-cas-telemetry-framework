@@ -19,7 +19,7 @@ class IOTracePluginC : public IOTracePlugin {
 private:
     struct QueueContext {
         std::atomic_bool traceStopping;
-        std::atomic_uint64_t tracingRefCounter;
+        std::atomic<uint64_t> tracingRefCounter;
     };
 
 public:
