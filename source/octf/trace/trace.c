@@ -288,15 +288,12 @@ static uint64_t _move_ptr(struct octf_trace *trace, uint64_t ptr, uint64_t mv) {
 
 static int _try_lock_wr(octf_trace_t trace) {
     long lock = -1;
-    uint32_t try
-        = 0;
+    uint32_t retry = 0;
 
     do {
-        if (try) {
+        if (retry++ > 128) {
             return -EBUSY;
         }
-        try
-            ++;
 
         // Try lock for reading event
         lock = env_atomic64_cmpxchg(&trace->phdr->wr_lock, 0, 1);
