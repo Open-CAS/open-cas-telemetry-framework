@@ -43,7 +43,7 @@ void ParsedIoTraceEventHandlerPrinter::processEvents() {
         table::setHeader(m_table[0], &event);
         std::cout << m_table << std::endl;
     }
-    TraceEventHandler<proto::trace::Event>::processEvents();
+    ParsedIoTraceEventHandler::processEvents();
 }
 
 }  // namespace octf

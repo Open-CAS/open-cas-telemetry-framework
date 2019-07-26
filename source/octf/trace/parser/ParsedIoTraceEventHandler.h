@@ -28,7 +28,11 @@ class ParsedIoTraceEventHandler
         : public TraceEventHandler<proto::trace::Event> {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
-    virtual ~ParsedIoTraceEventHandler() = default;
+    virtual ~ParsedIoTraceEventHandler() {
+        if (m_cache.size()) {
+            abort();
+        }
+    }
 
     /**
      * Handles parsed IO
@@ -36,6 +40,11 @@ public:
      * @param IO Parsed IO to be handle
      */
     virtual void handleIO(const proto::trace::ParsedEvent &io) = 0;
+
+    void processEvents() override {
+        TraceEventHandler<proto::trace::Event>::processEvents();
+        flushEvents();
+    }
 
 private:
     bool compareEvents(const proto::trace::Event *a,

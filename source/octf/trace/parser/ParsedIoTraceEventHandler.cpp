@@ -62,6 +62,8 @@ void ParsedIoTraceEventHandler::handleEvent(
             m_ioQueueDepth--;
         }
 
+        break;
+
         auto lba = traceEvent->iocompletion().lba();
         auto len = traceEvent->iocompletion().len();
         auto error = traceEvent->iocompletion().error();
