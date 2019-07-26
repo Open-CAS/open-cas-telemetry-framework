@@ -7,11 +7,12 @@
 
 #include <cmath>
 #include <limits>
+#include <octf/utils/Exception.h>
 
 namespace octf {
 
-struct Distribution::Backet {
-    Backet()
+struct Distribution::Bucket {
+    Bucket()
             : Id()
             , Size()
             , Power()
@@ -21,7 +22,7 @@ struct Distribution::Backet {
             , Sum()
             , Count() {}
 
-    Backet(const Backet &other)
+    Bucket(const Bucket &other)
             : Id(other.Id)
             , Size(other.Size)
             , Power(other.Power)
@@ -31,7 +32,7 @@ struct Distribution::Backet {
             , Sum(other.Sum)
             , Count(other.Count) {}
 
-    Backet &operator=(const Backet &other) {
+    Bucket &operator=(const Bucket &other) {
         if (&other != this) {
             Id = other.Id;
             Size = other.Size;
@@ -46,7 +47,7 @@ struct Distribution::Backet {
         return *this;
     }
 
-    Backet(uint64_t id, uint64_t size, uint64_t power)
+    Bucket(uint64_t id, uint64_t size, uint64_t power)
             : Sum(size)
             , Count(size) {
         Id = id;
@@ -100,7 +101,7 @@ Distribution::Distribution(const std::string &unit,
         , m_max()
         , m_histogram() {
     if (backetPower < 2) {
-        // XXX
+        throw Exception("Invalid bucket power");
     }
 }
 
@@ -136,6 +137,7 @@ void Distribution::operator+=(uint64_t value) {
     m_count++;
     m_min = std::min(m_min, value);
     m_max = std::max(m_max, value);
+
     // Update histogram
     auto &backet = getBucket(value);
     backet += value;
@@ -149,29 +151,9 @@ void Distribution::fillDistribution(proto::Distribution *distribution) const {
     distribution->set_count(m_count);
     distribution->set_total(m_total);
     distribution->set_unit(m_unit);
-
-    // XXX
-    return;
-
-    for (const auto &bucket : m_histogram) {
-        uint64_t begin = bucket.Begin;
-        uint64_t end = begin + bucket.Step;
-
-        for (uint64_t i = 0; i < bucket.Size; i++) {
-            if (bucket.Count[i]) {
-                std::string name =
-                        std::to_string(begin) + ".." + std::to_string(end);
-
-                (*distribution->mutable_histogram())[name] = bucket.Count[i];
-            }
-
-            begin += bucket.Step;
-            end += bucket.Step;
-        }
-    }
 }
 
-Distribution::Backet &Distribution::getBucket(uint64_t value) {
+Distribution::Bucket &Distribution::getBucket(uint64_t value) {
     uint64_t i = 0;
     uint64_t size = m_bucketSize;
 
@@ -184,7 +166,7 @@ Distribution::Backet &Distribution::getBucket(uint64_t value) {
         uint64_t j = m_histogram.size();
         m_histogram.resize(i + 1);
         for (; j <= i; j++) {
-            m_histogram[j] = Backet(j, m_bucketSize, m_bucketPower);
+            m_histogram[j] = Bucket(j, m_bucketSize, m_bucketPower);
         }
     }
 

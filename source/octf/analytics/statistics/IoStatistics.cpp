@@ -37,15 +37,19 @@ struct IoStatistics::Stats {
 
 IoStatistics::IoStatistics()
         : m_statistics(proto::trace::IoType_ARRAYSIZE)
-        , m_total(new IoStatistics::Stats()) {}
+        , m_total(new IoStatistics::Stats())
+        , m_flush(new IoStatistics::Stats()) {}
 
 IoStatistics::IoStatistics(const IoStatistics &other)
         : m_statistics(other.m_statistics)
-        , m_total(new Stats(*other.m_total)) {}
+        , m_total(new Stats(*other.m_total))
+        , m_flush(new Stats(*other.m_flush)) {}
 
 IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
     if (this != &other) {
         m_statistics = other.m_statistics;
+        *m_total = *other.m_total;
+        *m_flush = *other.m_flush;
     }
 
     return *this;
@@ -61,15 +65,18 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     if (size < type) {
         throw Exception("Invalid IO type");
     }
-    Stats &stats = m_statistics[type];
+    Stats *stats = &m_statistics[type];
 
-    // TODO (mbarczak) consider flush IOs
+    if (io.flush() && !io.len()) {
+        // This IO is sync request, count it into flush IO group
+        stats = m_flush.get();
+    }
 
     auto len = io.len();
     auto latency = io.latency();
 
-    stats.SizeDistribution += len;
-    stats.LatencyDistribution += latency;
+    stats->SizeDistribution += len;
+    stats->LatencyDistribution += latency;
 
     (*m_total).SizeDistribution += len;
     (*m_total).LatencyDistribution += latency;
@@ -84,6 +91,9 @@ void IoStatistics::fillIoStatistics(proto::IoStatistics *stats) const {
 
     auto discard = stats->mutable_discard();
     m_statistics[proto::trace::IoType::Discard].fillIoStatisticsEntry(discard);
+
+    auto flush = stats->mutable_flush();
+    m_flush->fillIoStatisticsEntry(flush);
 
     auto total = stats->mutable_total();
     m_total->fillIoStatisticsEntry(total);

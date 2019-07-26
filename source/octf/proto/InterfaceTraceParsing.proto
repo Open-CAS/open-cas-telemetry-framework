@@ -29,24 +29,6 @@ message ParseTraceRequest {
     ];
 }
 
-enum ParseTraceTimeUnit {
-    option (opts_enum_param).cli_enum.default_value = 0;
-    option (opts_enum_param).cli_required = false;
-    option (opts_enum_param).cli_short_key = "t";
-    option (opts_enum_param).cli_long_key = "time-unit";
-    option (opts_enum_param).cli_desc = "Specifiy time unit of parsing result";
-
-    ns = 0 [
-        (opts_enumval).cli_desc = "nanoseconds",
-        (opts_enumval).cli_switch = "ns"
-    ];
-
-    us = 1 [
-        (opts_enumval).cli_desc = "microseconds",
-        (opts_enumval).cli_switch = "us"
-    ];
-}
-
 message GetTraceStatisticsRequest {
     string tracePath = 1 [
         (opts_param).cli_required = true,
@@ -54,10 +36,6 @@ message GetTraceStatisticsRequest {
         (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Path to trace"
     ];
-
-    OutputFormat format = 2;
-
-    ParseTraceTimeUnit timeUnit = 3;
 }
 
 service InterfaceTraceParsing {

@@ -54,8 +54,7 @@ struct IoStatisticsSet::Key {
 };
 
 IoStatisticsSet::IoStatisticsSet()
-        : NonCopyable()
-        , m_map() {}
+        : m_map() {}
 
 IoStatisticsSet::~IoStatisticsSet() {}
 
@@ -64,6 +63,17 @@ void IoStatisticsSet::count(const proto::trace::ParsedEvent &event) {
     Key key(device.id(), 0, device.name());
     IoStatistics &stats = getIoStatistics(key);
     stats.count(event);
+}
+
+IoStatisticsSet::IoStatisticsSet(const IoStatisticsSet &other)
+        : m_map(other.m_map) {}
+
+IoStatisticsSet &IoStatisticsSet::operator=(const IoStatisticsSet &other) {
+    if (this != &other) {
+        m_map = other.m_map;
+    }
+
+    return *this;
 }
 
 IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
@@ -83,6 +93,7 @@ IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
 }
 
 void IoStatisticsSet::fillIoStatisticsSet(proto::IoStatisticsSet *set) const {
+    // For each pair in map
     for (const auto &stats : m_map) {
         auto dst = set->add_statistics();
 

@@ -8,35 +8,71 @@ option cc_generic_services = true;
 import "trace.proto";
 package octf.proto;
 
+/**
+ * Distribution of values. It provides info about: maximum value, minimum value,
+ * average value, etc.
+ */
 message Distribution {
+    /**
+     * Unit for values of this distribution
+     */
     string unit = 1;
 
+    /**
+     * Average value of distribution's items
+     */
     uint64 avarage = 2;
 
+    /**
+     * Minimum value of distribution's items
+     */
     uint64 min = 3;
 
+    /**
+     * Maximum value of distribution's items
+     */
     uint64 max = 4;
 
+    /**
+     * Count of items in this distribution
+     */
     uint64 count = 5;
 
+    /**
+     * Total sum of items in this distribution
+     */
     uint64 total = 6;
-
-    map<string, uint64> histogram = 100;
-
-    map<string, uint64> percentile = 101;
 }
 
 message IoStatisticsEntry {
-    Distribution size = 10;
+    /**
+     * Size distribution
+     */
+    Distribution size = 1;
 
-    Distribution latency = 11;
+    /**
+     * Latency distribution
+     */
+    Distribution latency = 2;
 }
 
+/**
+ *
+ */
 message IoStatisticsDescription {
+    /**
+     * Device for which statistics belongs to
+     */
     trace.EventDeviceDescription devcie = 1;
 }
 
+/**
+ * IO statistics for a device
+ */
 message IoStatistics {
+    /**
+     * Description for this statistics
+     */
     IoStatisticsDescription desc = 1;
 
     IoStatisticsEntry read = 101;
@@ -45,9 +81,14 @@ message IoStatistics {
 
     IoStatisticsEntry discard = 103;
 
-    IoStatisticsEntry total = 104;
+    IoStatisticsEntry flush = 104;
+
+    IoStatisticsEntry total = 105;
 }
 
+/**
+ * Set of statistics grouped by devices
+ */
 message IoStatisticsSet {
     repeated IoStatistics statistics = 1;
 }
