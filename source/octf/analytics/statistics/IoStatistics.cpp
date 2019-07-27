@@ -83,18 +83,17 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto len = io.len();
     auto latency = io.latency();
 
-    if (0 == latency) {
+    if (latency) {
+        m_total->SizeDistribution += len;
+        m_total->LatencyDistribution += latency;
+    } else {
         // Zero latency in nanoscend is impossible, treat it as an invalid IO
         stats = m_invalid.get();
-
         // TODO (mariuszbarczak) consider if print invalid IOs statistics
     }
 
     stats->SizeDistribution += len;
     stats->LatencyDistribution += latency;
-
-    (*m_total).SizeDistribution += len;
-    (*m_total).LatencyDistribution += latency;
 
     if (io.error()) {
         stats->Errors++;
