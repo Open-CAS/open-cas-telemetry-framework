@@ -57,6 +57,11 @@ protected:
         (void) devDesc;
     }
 
+    void processEvents() override {
+        TraceEventHandler<proto::trace::Event>::processEvents();
+        flushEvents();
+    }
+
 private:
     bool compareEvents(const proto::trace::Event *a,
                        const proto::trace::Event *b) override {

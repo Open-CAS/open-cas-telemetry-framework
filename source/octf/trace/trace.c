@@ -4,22 +4,23 @@
  */
 
 #ifndef __KERNEL__
-#include <octf/trace/trace.h>
 #include <octf/trace/internal/trace_env_usr.h>
+#include <octf/trace/trace.h>
 #else
 #include "trace.h"
 #include "trace_env_kernel.h"
 #endif
 
-#define TRACE_VER               1
+#define TRACE_VER 1
 
-#define TRACE_MAGIC(a,b,c,d)    ((UINT64_C(a) << 24) | (UINT64_C(b) << 16) \
-                                    | (UINT64_C(c) << 8) | UINT64_C(d))
+#define TRACE_MAGIC(a, b, c, d)                                       \
+    ((UINT64_C(a) << 24) | (UINT64_C(b) << 16) | (UINT64_C(c) << 8) | \
+     UINT64_C(d))
 
 /**
  * Magic number identifies trace buffer like in case of superblock in filesystem
  */
-#define TRACE_MAGIC_BUFFER      TRACE_MAGIC(0x1410, 0x1683, 0x1920, 0x1989)
+#define TRACE_MAGIC_BUFFER TRACE_MAGIC(0x1410, 0x1683, 0x1920, 0x1989)
 
 struct octf_trace {
     octf_trace_open_mode_t mode;
@@ -27,6 +28,7 @@ struct octf_trace {
     struct trace_consumer_hdr *chdr;
     void *ring_buffer;
     uint64_t ring_size;
+    uint64_t ring_size_almost_empty;
 };
 
 struct trace_producer_hdr {
@@ -66,13 +68,11 @@ struct trace_event_hdr {
     uint64_t data_ptr;
 } __attribute__((packed, aligned(8)));
 
-#define TRACE_ALIGNMENT         sizeof(struct trace_event_hdr)
+#define TRACE_ALIGNMENT sizeof(struct trace_event_hdr)
 
-#define TRACE_ALIGN(s)          (DIV_ROUND_UP((s), TRACE_ALIGNMENT) \
-                                    * TRACE_ALIGNMENT)
+#define TRACE_ALIGN(s) (DIV_ROUND_UP((s), TRACE_ALIGNMENT) * TRACE_ALIGNMENT)
 
-static bool _is_trace_valid(octf_trace_t trace)
-{
+static bool _is_trace_valid(octf_trace_t trace) {
     if (!trace) {
         return false;
     }
@@ -88,9 +88,10 @@ static bool _is_trace_valid(octf_trace_t trace)
     return true;
 }
 
-static int _init_ring(octf_trace_t trace, void *mempool, size_t size,
-        octf_trace_hdr_t *hdr)
-{
+static int _init_ring(octf_trace_t trace,
+                      void *mempool,
+                      size_t size,
+                      octf_trace_hdr_t *hdr) {
     const uint64_t p_hdr_size = TRACE_ALIGN(sizeof(struct trace_producer_hdr));
     const uint64_t c_hdr_size = TRACE_ALIGN(sizeof(struct trace_consumer_hdr));
 
@@ -109,7 +110,7 @@ static int _init_ring(octf_trace_t trace, void *mempool, size_t size,
         trace->ring_buffer = mempool + p_hdr_size + c_hdr_size;
     } else {
         // consumer header in a separate buffer
-        trace->chdr = (struct trace_consumer_hdr *)hdr;
+        trace->chdr = (struct trace_consumer_hdr *) hdr;
         trace->ring_buffer = mempool + p_hdr_size;
     }
 
@@ -117,13 +118,15 @@ static int _init_ring(octf_trace_t trace, void *mempool, size_t size,
     trace->ring_size = size;
     trace->ring_size /= TRACE_ALIGNMENT;
     trace->ring_size *= TRACE_ALIGNMENT;
+    trace->ring_size_almost_empty = trace->ring_size * 2 / 10;
 
     return 0;
 }
 
-static int _init_producer(struct octf_trace *trace, void *buffer,
-        size_t size, octf_trace_hdr_t *hdr)
-{
+static int _init_producer(struct octf_trace *trace,
+                          void *buffer,
+                          size_t size,
+                          octf_trace_hdr_t *hdr) {
     int result = _init_ring(trace, buffer, size, hdr);
 
     if (result) {
@@ -144,9 +147,10 @@ static int _init_producer(struct octf_trace *trace, void *buffer,
     return 0;
 }
 
-static int _init_consumer(struct octf_trace *trace, void *buffer,
-        size_t size, octf_trace_hdr_t *hdr)
-{
+static int _init_consumer(struct octf_trace *trace,
+                          void *buffer,
+                          size_t size,
+                          octf_trace_hdr_t *hdr) {
     int result = _init_ring(trace, buffer, size, hdr);
 
     if (result) {
@@ -166,9 +170,11 @@ static int _init_consumer(struct octf_trace *trace, void *buffer,
     return 0;
 }
 
-int octf_trace_open(void *mempool, uint32_t mempool_size, octf_trace_hdr_t *hdr,
-        octf_trace_open_mode_t mode, octf_trace_t *_trace)
-{
+int octf_trace_open(void *mempool,
+                    uint32_t mempool_size,
+                    octf_trace_hdr_t *hdr,
+                    octf_trace_open_mode_t mode,
+                    octf_trace_t *_trace) {
     int result;
     struct octf_trace *trace;
 
@@ -198,8 +204,7 @@ int octf_trace_open(void *mempool, uint32_t mempool_size, octf_trace_hdr_t *hdr,
     return 0;
 }
 
-void octf_trace_close(octf_trace_t *trace)
-{
+void octf_trace_close(octf_trace_t *trace) {
     struct octf_trace *_trace = *trace;
 
     if (!_trace) {
@@ -224,8 +229,8 @@ void octf_trace_close(octf_trace_t *trace)
 //******************************************************************************
 
 static inline bool _integrity_check(struct octf_trace *trace,
-        uint64_t ptr, uint64_t count)
-{
+                                    uint64_t ptr,
+                                    uint64_t count) {
     if (ptr >= trace->ring_size) {
         return false;
     }
@@ -238,8 +243,8 @@ static inline bool _integrity_check(struct octf_trace *trace,
 }
 
 static uint64_t _get_continuous_space(struct octf_trace *trace,
-        uint64_t rdp, uint64_t wrp)
-{
+                                      uint64_t rdp,
+                                      uint64_t wrp) {
     uint64_t space = 0;
 
     if (wrp >= rdp) {
@@ -247,16 +252,16 @@ static uint64_t _get_continuous_space(struct octf_trace *trace,
         if (!rdp) {
             space--;
         }
-    } else  {
+    } else {
         space = rdp - wrp - 1;
     }
 
     return space;
 }
 
-static uint64_t _get_free_space(struct octf_trace *trace, uint64_t rdp,
-        uint64_t wrp)
-{
+static uint64_t _get_free_space(struct octf_trace *trace,
+                                uint64_t rdp,
+                                uint64_t wrp) {
     uint64_t space;
 
     if (wrp >= rdp) {
@@ -268,8 +273,7 @@ static uint64_t _get_free_space(struct octf_trace *trace, uint64_t rdp,
     return space - 1;
 }
 
-static uint64_t _move_ptr(struct octf_trace *trace, uint64_t ptr, uint64_t mv)
-{
+static uint64_t _move_ptr(struct octf_trace *trace, uint64_t ptr, uint64_t mv) {
     ptr += mv;
     if (ptr >= trace->ring_size) {
         ptr %= trace->ring_size;
@@ -284,10 +288,10 @@ static uint64_t _move_ptr(struct octf_trace *trace, uint64_t ptr, uint64_t mv)
 
 static int _try_lock_wr(octf_trace_t trace) {
     long lock = -1;
-    uint32_t try = 0;
+    uint32_t retry = 0;
 
     do {
-        if (try++ > 128) {
+        if (retry++ > 128) {
             return -EBUSY;
         }
 
@@ -302,14 +306,12 @@ static void _unlock_wr(octf_trace_t trace) {
     env_atomic64_set(&trace->phdr->wr_lock, 0);
 }
 
-static uint64_t _is_wrap(uint64_t rdp, uint64_t wrp)
-{
+static uint64_t _is_wrap(uint64_t rdp, uint64_t wrp) {
     return wrp > rdp;
 }
 
-static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
-        const uint32_t size)
-{
+static struct trace_event_hdr *_allocate_event(struct octf_trace *trace,
+                                               const uint32_t size) {
     uint32_t _size;
     uint64_t wrp, rdp, continuous;
     struct trace_event_hdr *hdr = NULL, *result = NULL;
@@ -335,7 +337,7 @@ static struct trace_event_hdr* _allocate_event(struct octf_trace *trace,
         goto END;
     }
 
-    hdr = (struct trace_event_hdr*)(trace->ring_buffer + wrp);
+    hdr = (struct trace_event_hdr *) (trace->ring_buffer + wrp);
     wrp = _move_ptr(trace, wrp, sizeof(*hdr));
 
     // Allocate continuous space for trace data
@@ -381,8 +383,9 @@ END:
     return result;
 }
 
-int octf_trace_push(octf_trace_t trace, const void *event, const uint32_t size)
-{
+int octf_trace_push(octf_trace_t trace,
+                    const void *event,
+                    const uint32_t size) {
     struct trace_event_hdr *hdr;
 
     if (!_is_trace_valid(trace)) {
@@ -422,13 +425,11 @@ int octf_trace_push(octf_trace_t trace, const void *event, const uint32_t size)
 // POP
 //******************************************************************************
 
-bool _is_empty(uint64_t rdp, uint64_t wrp)
-{
+bool _is_empty(uint64_t rdp, uint64_t wrp) {
     return rdp == wrp;
 }
 
-static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace)
-{
+static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace) {
     uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
     uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
     struct trace_event_hdr *hdr;
@@ -445,7 +446,7 @@ static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace)
         return NULL;
     }
 
-    hdr = (struct trace_event_hdr *)(trace->ring_buffer + ptr_rd);
+    hdr = (struct trace_event_hdr *) (trace->ring_buffer + ptr_rd);
 
     if (!hdr->ready) {
         // Event not ready
@@ -456,11 +457,10 @@ static struct trace_event_hdr *_get_rd_hdr(struct octf_trace *trace)
 }
 
 static void _move_rd_ptr(struct octf_trace *trace,
-        struct trace_event_hdr *hdr)
-{
+                         struct trace_event_hdr *hdr) {
     // Move pointer to next event which will be read
-    uint64_t rd_ptr = _move_ptr(trace, hdr->data_ptr,
-            TRACE_ALIGN(hdr->data_size));
+    uint64_t rd_ptr =
+            _move_ptr(trace, hdr->data_ptr, TRACE_ALIGN(hdr->data_size));
 
     env_atomic64_set(&trace->chdr->rd_ptr, rd_ptr);
 }
@@ -481,8 +481,7 @@ static void _unlock_rd(octf_trace_t trace) {
     env_atomic64_set(&trace->chdr->rd_lock, 0);
 }
 
-int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size)
-{
+int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size) {
     int result = -1;
     struct trace_event_hdr *hdr;
 
@@ -540,10 +539,8 @@ END:
     return result;
 }
 
-int octf_trace_is_empty(octf_trace_t trace)
-{
+int octf_trace_is_empty(octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
-
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
 
@@ -558,10 +555,24 @@ int octf_trace_is_empty(octf_trace_t trace)
     }
 }
 
-int octf_trace_is_closed(octf_trace_t trace)
-{
+int octf_trace_is_almost_full(octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
+        uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
+        uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
+        uint64_t free_space = _get_free_space(trace, ptr_rd, ptr_wr);
 
+        if (free_space < trace->ring_size_almost_empty) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        return -EINVAL;
+    }
+}
+
+int octf_trace_is_closed(octf_trace_t trace) {
+    if (_is_trace_valid(trace)) {
         if (env_atomic64_read(&trace->phdr->closed)) {
             return 1;
         } else {
@@ -573,8 +584,7 @@ int octf_trace_is_closed(octf_trace_t trace)
     }
 }
 
-int64_t octf_trace_get_lost_count(octf_trace_t trace)
-{
+int64_t octf_trace_get_lost_count(octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         return env_atomic64_read(&trace->phdr->lost);
     } else {
@@ -582,13 +592,12 @@ int64_t octf_trace_get_lost_count(octf_trace_t trace)
     }
 }
 
-int64_t octf_trace_get_free_space(octf_trace_t trace)
-{
+int64_t octf_trace_get_free_space(octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
         return _get_free_space(trace, ptr_rd, ptr_wr);
-    }else {
+    } else {
         return -EINVAL;
     }
 }
