@@ -10,11 +10,14 @@
 namespace octf {
 
 struct IoStatisticsSet::Key {
-    Key(uint64_t id, uint64_t size = 0, const std::string &name = "")
+    Key(uint64_t id, uint64_t size, const std::string &name)
             : Id(id)
             , Size(size)
             , Name(name) {}
-
+    Key(uint64_t id)
+            : Id(id)
+            , Size(0)
+            , Name("") {}
     Key()
             : Id()
             , Size()
@@ -37,15 +40,15 @@ struct IoStatisticsSet::Key {
     }
 
     bool operator==(const Key &other) const {
-        return Size == other.Size;
+        return Id == other.Id;
     }
 
     bool operator!=(const Key &other) const {
-        return Size != other.Size;
+        return Id != other.Id;
     }
 
     bool operator<(const Key &other) const {
-        return Size < other.Size;
+        return Id < other.Id;
     }
 
     uint64_t Id;
@@ -60,7 +63,7 @@ IoStatisticsSet::~IoStatisticsSet() {}
 
 void IoStatisticsSet::count(const proto::trace::ParsedEvent &event) {
     const auto &device = event.device();
-    Key key(device.id(), 0, device.name());
+    Key key(device.id());
     IoStatistics &stats = getIoStatistics(key);
     stats.count(event);
 }
@@ -74,6 +77,33 @@ IoStatisticsSet &IoStatisticsSet::operator=(const IoStatisticsSet &other) {
     }
 
     return *this;
+}
+
+void IoStatisticsSet::addDevice(
+        const proto::trace::EventDeviceDescription &devDesc) {
+    Key key(devDesc.id(), devDesc.size(), devDesc.name());
+
+    // Check maybe key already exists
+    auto iter = m_map.find(key);
+    if (iter != m_map.end()) {
+        // Key already exists, we have to update it, but need to keep the old
+        // copy of IO statistics
+
+        // Create pair of the updated key and the old statistics
+        auto pair = std::make_pair(Key(key), IoStatistics(iter->second));
+
+        // Remove the old key
+        m_map.erase(key);
+
+        // Insert the new pair
+        auto result = m_map.emplace(pair);
+        if (!result.second || result.first == m_map.end()) {
+            throw Exception("Cannot allocate IO statistics");
+        }
+    } else {
+        // Key doesn't exist add it and allocate for them IO statistics
+        getIoStatistics(key);
+    }
 }
 
 IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
@@ -92,17 +122,17 @@ IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
     return iter->second;
 }
 
-void IoStatisticsSet::fillIoStatisticsSet(proto::IoStatisticsSet *set) const {
+void IoStatisticsSet::getIoStatisticsSet(proto::IoStatisticsSet *set) const {
     // For each pair in map
     for (const auto &stats : m_map) {
         auto dst = set->add_statistics();
 
-        auto device = dst->mutable_desc()->mutable_devcie();
+        auto device = dst->mutable_desc()->mutable_device();
         device->set_id(stats.first.Id);
         device->set_name(stats.first.Name);
         device->set_size(stats.first.Size);
 
-        stats.second.fillIoStatistics(dst);
+        stats.second.getIoStatistics(dst);
     }
 }
 

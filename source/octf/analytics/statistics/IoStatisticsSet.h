@@ -23,7 +23,7 @@ namespace octf {
  * @ingroup Statistics
  * @brief A utility class which provides set of statistics for IO events.
  *
- * The set is grouped by device
+ * The set is grouped by devices
  */
 class IoStatisticsSet {
 public:
@@ -40,12 +40,19 @@ public:
     void count(const proto::trace::ParsedEvent &event);
 
     /**
-     * @brief Copies gathers statistics of IOs into protocol buffer IO
+     * @brief Add devices to the IO statistics
+     *
+     * @param devDesc Device description trace event
+     */
+    void addDevice(const proto::trace::EventDeviceDescription &devDesc);
+
+    /**
+     * @brief Copies gathered statistics of IOs into protocol buffer IO
      * statistics set object
      *
      * @param[out] set protocol buffer IO statistics object to be filled
      */
-    void fillIoStatisticsSet(proto::IoStatisticsSet *set) const;
+    void getIoStatisticsSet(proto::IoStatisticsSet *set) const;
 
 private:
     struct Key;

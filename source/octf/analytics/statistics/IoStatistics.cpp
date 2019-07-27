@@ -11,45 +11,53 @@ namespace octf {
 struct IoStatistics::Stats {
     Stats()
             : SizeDistribution("sector", 4096, 2)
-            , LatencyDistribution("ns", 100, 10) {}
+            , LatencyDistribution("ns", 100, 10)
+            , Errors(0) {}
 
     Stats(const Stats &other)
             : SizeDistribution(other.SizeDistribution)
-            , LatencyDistribution(other.LatencyDistribution) {}
+            , LatencyDistribution(other.LatencyDistribution)
+            , Errors(other.Errors) {}
 
     Stats &operator=(const Stats &other) {
         if (this != &other) {
             SizeDistribution = other.SizeDistribution;
             LatencyDistribution = other.LatencyDistribution;
+            Errors = other.Errors;
         }
 
         return *this;
     }
 
-    void fillIoStatisticsEntry(proto::IoStatisticsEntry *entry) const {
-        SizeDistribution.fillDistribution(entry->mutable_size());
-        LatencyDistribution.fillDistribution(entry->mutable_latency());
+    void getIoStatisticsEntry(proto::IoStatisticsEntry *entry) const {
+        SizeDistribution.getDistribution(entry->mutable_size());
+        LatencyDistribution.getDistribution(entry->mutable_latency());
+        entry->set_errors(Errors);
     }
 
     Distribution SizeDistribution;
     Distribution LatencyDistribution;
+    uint64_t Errors;
 };
 
 IoStatistics::IoStatistics()
         : m_statistics(proto::trace::IoType_ARRAYSIZE)
         , m_total(new IoStatistics::Stats())
-        , m_flush(new IoStatistics::Stats()) {}
+        , m_flush(new IoStatistics::Stats())
+        , m_invalid(new IoStatistics::Stats()) {}
 
 IoStatistics::IoStatistics(const IoStatistics &other)
         : m_statistics(other.m_statistics)
         , m_total(new Stats(*other.m_total))
-        , m_flush(new Stats(*other.m_flush)) {}
+        , m_flush(new Stats(*other.m_flush))
+        , m_invalid(new Stats(*other.m_invalid)) {}
 
 IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
     if (this != &other) {
         m_statistics = other.m_statistics;
         *m_total = *other.m_total;
         *m_flush = *other.m_flush;
+        *m_invalid = *other.m_invalid;
     }
 
     return *this;
@@ -75,28 +83,39 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto len = io.len();
     auto latency = io.latency();
 
+    if (0 == latency) {
+        // Zero latency in nanoscend is impossible, treat it as an invalid IO
+        stats = m_invalid.get();
+
+        // TODO (mariuszbarczak) consider if print invalid IOs statistics
+    }
+
     stats->SizeDistribution += len;
     stats->LatencyDistribution += latency;
 
     (*m_total).SizeDistribution += len;
     (*m_total).LatencyDistribution += latency;
+
+    if (io.error()) {
+        stats->Errors++;
+    }
 }
 
-void IoStatistics::fillIoStatistics(proto::IoStatistics *stats) const {
+void IoStatistics::getIoStatistics(proto::IoStatistics *stats) const {
     auto read = stats->mutable_read();
-    m_statistics[proto::trace::IoType::Read].fillIoStatisticsEntry(read);
+    m_statistics[proto::trace::IoType::Read].getIoStatisticsEntry(read);
 
     auto write = stats->mutable_write();
-    m_statistics[proto::trace::IoType::Write].fillIoStatisticsEntry(write);
+    m_statistics[proto::trace::IoType::Write].getIoStatisticsEntry(write);
 
     auto discard = stats->mutable_discard();
-    m_statistics[proto::trace::IoType::Discard].fillIoStatisticsEntry(discard);
+    m_statistics[proto::trace::IoType::Discard].getIoStatisticsEntry(discard);
 
     auto flush = stats->mutable_flush();
-    m_flush->fillIoStatisticsEntry(flush);
+    m_flush->getIoStatisticsEntry(flush);
 
     auto total = stats->mutable_total();
-    m_total->fillIoStatisticsEntry(total);
+    m_total->getIoStatisticsEntry(total);
 }
 
 }  // namespace octf

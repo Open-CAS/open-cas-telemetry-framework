@@ -26,6 +26,12 @@ public:
         return m_statisticsSet;
     }
 
+protected:
+    void handleDeviceDescription(
+            const proto::trace::EventDeviceDescription &devDesc) override {
+        m_statisticsSet.addDevice(devDesc);
+    }
+
 private:
     IoStatisticsSet m_statisticsSet;
 };

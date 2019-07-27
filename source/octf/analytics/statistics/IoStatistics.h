@@ -40,7 +40,7 @@ public:
      *
      * @param[out] stats protocol buffer IO statistics object to be filled
      */
-    void fillIoStatistics(proto::IoStatistics *stats) const;
+    void getIoStatistics(proto::IoStatistics *stats) const;
 
 private:
     struct Stats;
@@ -59,6 +59,12 @@ private:
      * @brief IO statistics summary for flush IOs
      */
     std::unique_ptr<Stats> m_flush;
+
+    /**
+     * @brief IO statistics summary for invalid IOs, e.g. an IO with zero
+     * latency
+     */
+    std::unique_ptr<Stats> m_invalid;
 };
 
 }  // namespace octf

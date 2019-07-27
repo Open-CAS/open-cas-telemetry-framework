@@ -32,6 +32,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Remember device
         const auto &device = traceEvent->devicedescription();
         m_devices[device.id()] = device;
+        handleDeviceDescription(device);
     } break;
 
     case Event::EventTypeCase::kIo: {
@@ -61,8 +62,6 @@ void ParsedIoTraceEventHandler::handleEvent(
         if (m_ioQueueDepth) {
             m_ioQueueDepth--;
         }
-
-        break;
 
         auto lba = traceEvent->iocompletion().lba();
         auto len = traceEvent->iocompletion().len();

@@ -54,16 +54,21 @@ message IoStatisticsEntry {
      * Latency distribution
      */
     Distribution latency = 2;
+
+    /**
+     * Number of IO errors
+     */
+    uint64 errors = 100;
 }
 
 /**
- *
+ * Description of IO statistics
  */
 message IoStatisticsDescription {
     /**
      * Device for which statistics belongs to
      */
-    trace.EventDeviceDescription devcie = 1;
+    trace.EventDeviceDescription device = 1;
 }
 
 /**

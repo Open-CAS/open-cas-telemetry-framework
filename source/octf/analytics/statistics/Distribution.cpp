@@ -13,33 +13,33 @@ namespace octf {
 
 struct Distribution::Bucket {
     Bucket()
-            : Id()
+            : Level()
             , Size()
             , Power()
             , Begin()
             , End()
-            , Step()
+            , RangeSize()
             , Sum()
             , Count() {}
 
     Bucket(const Bucket &other)
-            : Id(other.Id)
+            : Level(other.Level)
             , Size(other.Size)
             , Power(other.Power)
             , Begin(other.Begin)
             , End(other.End)
-            , Step(other.Step)
+            , RangeSize(other.RangeSize)
             , Sum(other.Sum)
             , Count(other.Count) {}
 
     Bucket &operator=(const Bucket &other) {
         if (&other != this) {
-            Id = other.Id;
+            Level = other.Level;
             Size = other.Size;
             Power = other.Power;
             Begin = other.Begin;
             End = other.End;
-            Step = other.Step;
+            RangeSize = other.RangeSize;
             Sum = other.Sum;
             Count = other.Count;
         }
@@ -47,18 +47,20 @@ struct Distribution::Bucket {
         return *this;
     }
 
-    Bucket(uint64_t id, uint64_t size, uint64_t power)
+    Bucket(uint64_t level, uint64_t size, uint64_t power)
             : Sum(size)
             , Count(size) {
-        Id = id;
+        Level = level;
         Size = size;
         Power = power;
         Begin = 0;
-        if (id) {
-            Begin = std::pow(power, id - 1) * size;
+        if (level) {
+            Begin = std::pow(power, level - 1) * size;
         }
-        End = std::pow(power, id) * size - 1;
-        Step = (End - Begin + 1) / size;
+        End = std::pow(power, level) * size - 1;
+
+        // Calculate particular range size in backet
+        RangeSize = (End - Begin + 1) / size;
     }
 
     void operator+=(uint64_t value) {
@@ -66,24 +68,24 @@ struct Distribution::Bucket {
             throw Exception("Updating wrong distribution bucket");
         }
 
-        uint id = value;
-        id -= Begin;
-        id /= Step;
+        uint64_t rangeId = value;
+        rangeId -= Begin;
+        rangeId /= RangeSize;
 
-        if (id < Size) {
-            Sum[id] += value;
-            Count[id]++;
+        if (rangeId < Size) {
+            Sum[rangeId] += value;
+            Count[rangeId]++;
         } else {
             throw Exception("Updating distribution bucket fatal error");
         }
     }
 
-    uint64_t Id;
+    uint64_t Level;
     uint64_t Size;
     uint64_t Power;
     uint64_t Begin;
     uint64_t End;
-    uint64_t Step;
+    uint64_t RangeSize;
 
     std::vector<uint64_t> Sum;
     std::vector<uint64_t> Count;
@@ -139,11 +141,11 @@ void Distribution::operator+=(uint64_t value) {
     m_max = std::max(m_max, value);
 
     // Update histogram
-    auto &backet = getBucket(value);
-    backet += value;
+    auto &bucket = getBucket(value);
+    bucket += value;
 }
 
-void Distribution::fillDistribution(proto::Distribution *distribution) const {
+void Distribution::getDistribution(proto::Distribution *distribution) const {
     distribution->Clear();
     distribution->set_avarage(m_count ? m_total / m_count : 0);
     distribution->set_min(m_count ? m_min : 0);
@@ -154,23 +156,25 @@ void Distribution::fillDistribution(proto::Distribution *distribution) const {
 }
 
 Distribution::Bucket &Distribution::getBucket(uint64_t value) {
-    uint64_t i = 0;
+    uint64_t level = 0;
     uint64_t size = m_bucketSize;
 
     while (size <= value) {
         size *= m_bucketPower;
-        i++;
+        level++;
     }
 
-    if (i >= m_histogram.size()) {
+    if (level >= m_histogram.size()) {
         uint64_t j = m_histogram.size();
-        m_histogram.resize(i + 1);
-        for (; j <= i; j++) {
+        m_histogram.resize(level + 1);
+
+        // Initialized missed buckets
+        for (; j <= level; j++) {
             m_histogram[j] = Bucket(j, m_bucketSize, m_bucketPower);
         }
     }
 
-    return m_histogram[i];
+    return m_histogram[level];
 }
 
 }  // namespace octf

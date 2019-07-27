@@ -31,14 +31,14 @@ public:
      * bucketSize = 10
      * bucketPower = 2
      *
-     * +-------+------------+------------+-----+----------------------+
-     * | Level |  Range 1   |  Range 2   | ... | Last Range in Bucket |
-     * +-------+------------+------------+-----+----------------------+
-     * |     1 | [0..1]     | [2..3]     | ... | [8..9]               |
-     * |     2 | [10..19]   | [20..29]   | ... | [90..99]             |
-     * |     3 | [100..199] | [200..199] | ... | [900..999]           |
-     * |   ... | ...        | ...        | ... | ...                  |
-     * +-------+------------+------------+-----+----------------------+
+     * +--------------+------------+------------+-----+----------------------+
+     * | Bucket level |  Range 1   |  Range 2   | ... | Last Range in Bucket |
+     * +--------------+------------+------------+-----+----------------------+
+     * |            0 | [0..1]     | [2..3]     | ... | [8..9]               |
+     * |            2 | [10..19]   | [20..29]   | ... | [90..99]             |
+     * |            3 | [100..199] | [200..199] | ... | [900..999]           |
+     * |          ... | ...        | ...        | ... | ...                  |
+     * +--------------+------------+------------+-----+----------------------+
      *
      * @param unit Unit for values of this distribution
      * @param bucketSize
@@ -64,7 +64,7 @@ public:
      *
      * @param[out] distribution Protocol buffer distribution object to be filled
      */
-    void fillDistribution(proto::Distribution *distribution) const;
+    void getDistribution(proto::Distribution *distribution) const;
 
 private:
     struct Bucket;

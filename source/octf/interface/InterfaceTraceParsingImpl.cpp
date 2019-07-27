@@ -51,7 +51,7 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
     try {
         ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
         handler.processEvents();
-        handler.getStatisticsSet().fillIoStatisticsSet(response);
+        handler.getStatisticsSet().getIoStatisticsSet(response);
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());
     }

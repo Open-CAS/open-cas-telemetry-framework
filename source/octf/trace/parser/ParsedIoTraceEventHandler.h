@@ -35,7 +35,7 @@ public:
     }
 
     /**
-     * Handles parsed IO
+     * @brief Handles parsed IO
      *
      * @param IO Parsed IO to be handle
      */
@@ -44,6 +44,17 @@ public:
     void processEvents() override {
         TraceEventHandler<proto::trace::Event>::processEvents();
         flushEvents();
+    }
+
+protected:
+    /**
+     * @brief Handles device description trace event
+     *
+     * @param devDesc Device description trace event
+     */
+    virtual void handleDeviceDescription(
+            const proto::trace::EventDeviceDescription &devDesc) {
+        (void) devDesc;
     }
 
 private:
