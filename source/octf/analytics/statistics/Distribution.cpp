@@ -93,16 +93,16 @@ struct Distribution::Bucket {
 
 Distribution::Distribution(const std::string &unit,
                            uint64_t bucketSize,
-                           uint64_t backetPower)
+                           uint64_t bucketPower)
         : m_unit(unit)
         , m_bucketSize(bucketSize)
-        , m_bucketPower(backetPower)
+        , m_bucketPower(bucketPower)
         , m_total()
         , m_count()
         , m_min(std::numeric_limits<decltype(m_min)>::max())
         , m_max()
         , m_histogram() {
-    if (backetPower < 2) {
+    if (bucketPower < 2) {
         throw Exception("Invalid bucket power");
     }
 }

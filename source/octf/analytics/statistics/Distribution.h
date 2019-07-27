@@ -23,22 +23,22 @@ public:
     /**
      * @brief Distribution of values
      *
-     * The distribution provides histogram. It is hard track each value because
-     * memory consumption. Thus distribution bucketize the values. The buckets
-     * ranges are specified in constructor.
+     * The distribution provides histogram. It is hard to track each value
+     * because of memory consumption. Thus distribution bucketizes the values.
+     * The buckets ranges are specified in constructor.
      *
-     * The example of histogram for following buckets configuration:
+     * An example of histogram for following buckets configuration:
      * bucketSize = 10
      * bucketPower = 2
      *
-     * +--------------+------------+------------+-----+----------------------+
-     * | Bucket level |  Range 1   |  Range 2   | ... | Last Range in Bucket |
-     * +--------------+------------+------------+-----+----------------------+
-     * |            0 | [0..1]     | [2..3]     | ... | [8..9]               |
-     * |            2 | [10..19]   | [20..29]   | ... | [90..99]             |
-     * |            3 | [100..199] | [200..199] | ... | [900..999]           |
-     * |          ... | ...        | ...        | ... | ...                  |
-     * +--------------+------------+------------+-----+----------------------+
+     * +--------------+------------+------------+-----+------------+
+     * | Bucket level |  Range 0   |  Range 1   | ... | Range 9    |
+     * +--------------+------------+------------+-----+------------+
+     * |            0 | [0..1]     | [2..3]     | ... | [8..9]     |
+     * |            2 | [10..19]   | [20..29]   | ... | [90..99]   |
+     * |            3 | [100..199] | [200..199] | ... | [900..999] |
+     * |          ... | ...        | ...        | ... | ...        |
+     * +--------------+------------+------------+-----+------------+
      *
      * @param unit Unit for values of this distribution
      * @param bucketSize
@@ -46,7 +46,7 @@ public:
      */
     Distribution(const std::string &unit,
                  uint64_t bucketSize,
-                 uint64_t backetPower);
+                 uint64_t bucketPower);
     Distribution(Distribution const &other);
     Distribution &operator=(Distribution const &other);
     virtual ~Distribution();
