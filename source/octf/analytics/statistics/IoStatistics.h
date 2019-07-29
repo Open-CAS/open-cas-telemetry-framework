@@ -65,6 +65,16 @@ private:
      * latency
      */
     std::unique_ptr<Stats> m_invalid;
+
+    /**
+     * @brief Start time
+     */
+    uint64_t m_startTime;
+
+    /**
+     * @brief End time
+     */
+    uint64_t m_endTime;
 };
 
 }  // namespace octf

@@ -66,6 +66,24 @@ public:
      */
     void getDistribution(proto::Distribution *distribution) const;
 
+    /**
+     * Gets count of items in this distribution
+     *
+     * @return Count of items in this distribution
+     */
+    uint64_t getCount() const {
+        return m_count;
+    }
+
+    /**
+     * Gets total sum of items in this distribution
+     *
+     * @return Total sum of items in this distribution
+     */
+    uint64_t getTotal() const {
+        return m_total;
+    }
+
 private:
     struct Bucket;
     Bucket &getBucket(uint64_t value);

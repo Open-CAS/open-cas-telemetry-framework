@@ -44,6 +44,24 @@ message Distribution {
     uint64 total = 6;
 }
 
+/**
+ * IO statistics metric
+ */
+message IoStatisticsMetric {
+    /**
+     * Metric name
+     */
+    string name = 1;
+    /**
+     * Metric Unit
+     */
+    string unit = 2;
+    /**
+     * Metric value
+     */
+    double value = 3;
+}
+
 message IoStatisticsEntry {
     /**
      * Size distribution
@@ -54,6 +72,11 @@ message IoStatisticsEntry {
      * Latency distribution
      */
     Distribution latency = 2;
+
+    /**
+     * Metrics
+     */
+    repeated IoStatisticsMetric metrics = 3;
 
     /**
      * Number of IO errors
@@ -79,6 +102,11 @@ message IoStatistics {
      * Description for this statistics
      */
     IoStatisticsDescription desc = 1;
+
+    /**
+     * duration
+     */
+    uint64 duration = 10;
 
     IoStatisticsEntry read = 101;
 
