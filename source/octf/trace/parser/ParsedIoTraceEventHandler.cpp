@@ -5,6 +5,8 @@
 
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
+#include <octf/utils/Exception.h>
+
 namespace octf {
 
 ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
@@ -76,6 +78,13 @@ void ParsedIoTraceEventHandler::handleEvent(
             if (io->lba() == lba && io->len() == len) {
                 uint64_t submissionTime = iter->second.header().timestamp();
                 uint64_t completionTime = traceEvent->header().timestamp();
+
+                if (completionTime < submissionTime) {
+                    throw Exception(
+                            "Error in trace file, completion time before "
+                            "submission");
+                }
+
                 uint64_t latency = completionTime - submissionTime;
 
                 // IO found, set latency and result of IO
@@ -128,7 +137,7 @@ void ParsedIoTraceEventHandler::flushEvents() {
         return;
     }
 
-    // Cache exceed some number, or all parser finished its job, then flush IOs
+    // Cache exceeds some number, or all parser finished its job, then flush IOs
     while (m_cache.size()) {
         handleIO(m_cache.begin()->second);
         m_cache.erase(m_cache.begin());

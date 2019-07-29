@@ -28,25 +28,23 @@ public:
      * The buckets ranges are specified in constructor.
      *
      * An example of histogram for following buckets configuration:
-     * bucketSize = 10
-     * bucketPower = 2
+     * ranges = 10
+     * base = 2
      *
      * +--------------+------------+------------+-----+------------+
      * | Bucket level |  Range 0   |  Range 1   | ... | Range 9    |
      * +--------------+------------+------------+-----+------------+
-     * |            0 | [0..1]     | [2..3]     | ... | [8..9]     |
+     * |            0 | [0..0]     | [1..1]     | ... | [9..9]     |
      * |            2 | [10..19]   | [20..29]   | ... | [90..99]   |
-     * |            3 | [100..199] | [200..199] | ... | [900..999] |
+     * |            3 | [100..199] | [200..299] | ... | [900..999] |
      * |          ... | ...        | ...        | ... | ...        |
      * +--------------+------------+------------+-----+------------+
      *
      * @param unit Unit for values of this distribution
-     * @param bucketSize
-     * @param backetPower
+     * @param ranges Number of ranges in bucket
+     * @param base Base for powering a next bucket level (base^level)
      */
-    Distribution(const std::string &unit,
-                 uint64_t bucketSize,
-                 uint64_t bucketPower);
+    Distribution(const std::string &unit, uint64_t ranges, uint64_t base);
     Distribution(Distribution const &other);
     Distribution &operator=(Distribution const &other);
     virtual ~Distribution();
@@ -79,12 +77,12 @@ private:
     /**
      * Bucket size
      */
-    uint64_t m_bucketSize;
+    uint64_t m_ranges;
 
     /**
      * Bucket power for next level
      */
-    uint64_t m_bucketPower;
+    uint64_t m_base;
 
     /**
      * Total sum of items in this distribution
