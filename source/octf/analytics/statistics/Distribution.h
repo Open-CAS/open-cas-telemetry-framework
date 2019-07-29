@@ -25,24 +25,31 @@ public:
      *
      * The distribution provides histogram. It is hard to track each value
      * because of memory consumption. Thus distribution bucketizes the values.
-     * The buckets ranges are specified in constructor.
+     * The bucket sizes are defined by two variables:
+     * 1. Ranges - Number of ranges in bucket. Each bucket contains the same
+     * number of ranges. Each range in bucket has the same size.
+     * 2. Base - Value of base used to compute a next bucket.
+     *
+     * The following equation defines the beginning and the end of buckets:
+     * Begin = 0 for level 0, otherwise: (base ^ (level - 1)) * ranges
+     * End = (base ^ level) * ranges - 1
      *
      * An example of histogram for following buckets configuration:
      * ranges = 10
-     * base = 2
+     * base = 10
      *
      * +--------------+------------+------------+-----+------------+
      * | Bucket level |  Range 0   |  Range 1   | ... | Range 9    |
      * +--------------+------------+------------+-----+------------+
      * |            0 | [0..0]     | [1..1]     | ... | [9..9]     |
-     * |            2 | [10..19]   | [20..29]   | ... | [90..99]   |
-     * |            3 | [100..199] | [200..299] | ... | [900..999] |
+     * |            1 | [10..18]   | [19..27]   | ... | [91..99]   |
+     * |            2 | [100..189] | [190..279] | ... | [910..999] |
      * |          ... | ...        | ...        | ... | ...        |
      * +--------------+------------+------------+-----+------------+
      *
      * @param unit Unit for values of this distribution
      * @param ranges Number of ranges in bucket
-     * @param base Base for powering a next bucket level (base^level)
+     * @param base Value of base used to compute a next bucket
      */
     Distribution(const std::string &unit, uint64_t ranges, uint64_t base);
     Distribution(Distribution const &other);
@@ -80,7 +87,7 @@ private:
     uint64_t m_ranges;
 
     /**
-     * Bucket power for next level
+     * Base used for calculation a next level bucket
      */
     uint64_t m_base;
 

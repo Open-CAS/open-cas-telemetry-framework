@@ -152,11 +152,15 @@ void Distribution::getDistribution(proto::Distribution *distribution) const {
 
 Distribution::Bucket &Distribution::getBucket(uint64_t value) {
     uint64_t level = 0;
-    uint64_t size = m_ranges;
+    uint64_t end = m_ranges - 1;
+    uint64_t base = 1;
 
-    while (size <= value) {
-        size *= m_base;
+    while (end < value) {
         level++;
+        base *= m_base;
+
+        // Compute end edge for bucket: (base ^ level) * ranges - 1
+        end = base * m_ranges - 1;
     }
 
     if (level >= m_histogram.size()) {
