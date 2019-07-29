@@ -42,17 +42,27 @@ enum class TracingState {
 class TraceManager {
 public:
     TraceManager(const NodePath &ownerNodePath, ITraceExecutor *executor);
-    /**
-     * @brief Spawns a management thread which will execute jobs
-     * (number provided by executor), each with the given
-     * maximum time duration and a memory pool
-     * (which will be divided between each job)
-     */
     ~TraceManager();
 
+    /**
+     * @brief Starts jobs which run consuming IO traces and serializing them
+     *
+     * Spawns a management thread which will execute jobs (number provided by
+     * executor), each with the given maximum time duration and a memory pool
+     * (which will be divided between each job)
+     *
+     * @note Once all setup ITraceExecutor::startTrace is called
+     *
+     * @param maxDuration Max trace duration time (in seconds)
+     * @param maxFileSizeInMiB Max size of trace file (in MiB)
+     * @param circBufferSizeInMiB Size of the internal trace buffer (in MiB)
+     * @param label User defined label
+     * @param serializerType Serializer Type
+     */
     void startJobs(uint32_t maxDuration,
                    uint64_t maxFileSizeInMiB,
                    uint32_t circBufferSizeInMiB,
+                   const std::string &label,
                    SerializerType serializerType);
     void stopJobs();
     /**
@@ -82,6 +92,12 @@ public:
      * @brief Gets numer of IO queues
      */
     int64_t getQueueCount() const;
+    /**
+     * @brief Gets user defined label
+     *
+     * @return User label
+     */
+    const std::string &getLabel() const;
     /**
      * @brief Gets the overall state of the last/current trace.
      */
@@ -205,6 +221,10 @@ private:
      * trace collection as a path relative to the general trace directory.
      */
     std::string m_traceDirRelativePath;
+    /**
+     * @brief User defined label
+     */
+    std::string m_label;
 };
 
 }  // namespace octf
