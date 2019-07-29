@@ -14,8 +14,7 @@ namespace octf {
 struct Distribution::Bucket {
     Bucket()
             : Level()
-            , Size()
-            , Power()
+            , RangesCount()
             , Begin()
             , End()
             , RangeSize()
@@ -24,8 +23,7 @@ struct Distribution::Bucket {
 
     Bucket(const Bucket &other)
             : Level(other.Level)
-            , Size(other.Size)
-            , Power(other.Power)
+            , RangesCount(other.RangesCount)
             , Begin(other.Begin)
             , End(other.End)
             , RangeSize(other.RangeSize)
@@ -35,8 +33,7 @@ struct Distribution::Bucket {
     Bucket &operator=(const Bucket &other) {
         if (&other != this) {
             Level = other.Level;
-            Size = other.Size;
-            Power = other.Power;
+            RangesCount = other.RangesCount;
             Begin = other.Begin;
             End = other.End;
             RangeSize = other.RangeSize;
@@ -47,20 +44,19 @@ struct Distribution::Bucket {
         return *this;
     }
 
-    Bucket(uint64_t level, uint64_t size, uint64_t power)
-            : Sum(size)
-            , Count(size) {
+    Bucket(uint64_t level, uint64_t ranges, uint64_t base)
+            : Sum(ranges)
+            , Count(ranges) {
         Level = level;
-        Size = size;
-        Power = power;
+        RangesCount = ranges;
         Begin = 0;
         if (level) {
-            Begin = std::pow(power, level - 1) * size;
+            Begin = std::pow(base, level - 1) * ranges;
         }
-        End = std::pow(power, level) * size - 1;
+        End = std::pow(base, level) * ranges - 1;
 
-        // Calculate particular range size in backet
-        RangeSize = (End - Begin + 1) / size;
+        // Calculate particular range size in bucket
+        RangeSize = (End - Begin + 1) / ranges;
     }
 
     void operator+=(uint64_t value) {
@@ -72,7 +68,7 @@ struct Distribution::Bucket {
         rangeId -= Begin;
         rangeId /= RangeSize;
 
-        if (rangeId < Size) {
+        if (rangeId < RangesCount) {
             Sum[rangeId] += value;
             Count[rangeId]++;
         } else {
@@ -81,8 +77,7 @@ struct Distribution::Bucket {
     }
 
     uint64_t Level;
-    uint64_t Size;
-    uint64_t Power;
+    uint64_t RangesCount;
     uint64_t Begin;
     uint64_t End;
     uint64_t RangeSize;
@@ -92,25 +87,25 @@ struct Distribution::Bucket {
 };
 
 Distribution::Distribution(const std::string &unit,
-                           uint64_t bucketSize,
-                           uint64_t bucketPower)
+                           uint64_t ranges,
+                           uint64_t base)
         : m_unit(unit)
-        , m_bucketSize(bucketSize)
-        , m_bucketPower(bucketPower)
+        , m_ranges(ranges)
+        , m_base(base)
         , m_total()
         , m_count()
         , m_min(std::numeric_limits<decltype(m_min)>::max())
         , m_max()
         , m_histogram() {
-    if (bucketPower < 2) {
-        throw Exception("Invalid bucket power");
+    if (base < 2) {
+        throw Exception("Invalid bucket base");
     }
 }
 
 Distribution::Distribution(const Distribution &other)
         : m_unit(other.m_unit)
-        , m_bucketSize(other.m_bucketSize)
-        , m_bucketPower(other.m_bucketPower)
+        , m_ranges(other.m_ranges)
+        , m_base(other.m_base)
         , m_total(other.m_total)
         , m_count(other.m_count)
         , m_min(other.m_min)
@@ -120,8 +115,8 @@ Distribution::Distribution(const Distribution &other)
 Distribution &Distribution::operator=(const Distribution &other) {
     if (this != &other) {
         m_unit = other.m_unit;
-        m_bucketSize = other.m_bucketSize;
-        m_bucketPower = other.m_bucketPower;
+        m_ranges = other.m_ranges;
+        m_base = other.m_base;
         m_total = other.m_total;
         m_count = other.m_count;
         m_min = other.m_min;
@@ -157,11 +152,13 @@ void Distribution::getDistribution(proto::Distribution *distribution) const {
 
 Distribution::Bucket &Distribution::getBucket(uint64_t value) {
     uint64_t level = 0;
-    uint64_t size = m_bucketSize;
+    uint64_t end = m_ranges - 1;
+    uint64_t base = 1;
 
-    while (size <= value) {
-        size *= m_bucketPower;
+    while (end < value) {
         level++;
+        base *= m_base;
+        end = base * m_ranges - 1;
     }
 
     if (level >= m_histogram.size()) {
@@ -170,7 +167,7 @@ Distribution::Bucket &Distribution::getBucket(uint64_t value) {
 
         // Initialized missed buckets
         for (; j <= level; j++) {
-            m_histogram[j] = Bucket(j, m_bucketSize, m_bucketPower);
+            m_histogram[j] = Bucket(j, m_ranges, m_base);
         }
     }
 
