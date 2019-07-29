@@ -137,7 +137,8 @@ void ParsedIoTraceEventHandler::flushEvents() {
         return;
     }
 
-    // Cache exceeds some number, or all parser finished its job, then flush IOs
+    // Cache exceeds some number, or every parser finished its job, then flush
+    // IOs
     while (m_cache.size()) {
         handleIO(m_cache.begin()->second);
         m_cache.erase(m_cache.begin());
