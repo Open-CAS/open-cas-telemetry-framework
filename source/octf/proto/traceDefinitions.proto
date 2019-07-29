@@ -61,6 +61,9 @@ message TraceListItem {
 
     // State of trace
     TraceState state = 2;
+
+    // User defined label
+    string label = 3;
 }
 
 message TraceList {
@@ -92,4 +95,6 @@ message TraceSummary {
         [ (opts_param).cli_desc = "Number of dropped events" ];
 
     int64 queueCount = 9 [ (opts_param).cli_desc = "Number of IO queues" ];
+
+    string label = 10 [ (opts_param).cli_desc = "User defined label" ];
 }

@@ -71,6 +71,7 @@ void InterfaceTraceManagementImpl::listTraces(
                 auto trace = response->add_trace();
                 trace->set_tracepath(dir);
                 trace->set_state(summary.state());
+                trace->set_label(summary.label());
             }
         }
     }
