@@ -18,7 +18,8 @@ ParsedIoTraceEventHandlerPrinter::ParsedIoTraceEventHandlerPrinter(
     m_jsonOptions.always_print_primitive_fields = true;
 }
 
-void ParsedIoTraceEventHandlerPrinter::handleIO(proto::trace::ParsedEvent &io) {
+void ParsedIoTraceEventHandlerPrinter::handleIO(
+        const proto::trace::ParsedEvent &io) {
     switch (m_format) {
     case proto::OutputFormat::CSV: {
         m_table[0].clear();

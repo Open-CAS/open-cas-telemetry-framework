@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_EXAMPLES_CLI_INTERFACEHELLOWORLDIMPL_H
-#define SOURCE_EXAMPLES_CLI_INTERFACEHELLOWORLDIMPL_H
+#ifndef SOURCE_EXAMPLES_AUTO_CLI_INTERFACEHELLOWORLDIMPL_H
+#define SOURCE_EXAMPLES_AUTO_CLI_INTERFACEHELLOWORLDIMPL_H
 
 #include "InterfaceHelloWorld.pb.h"
 
@@ -19,4 +19,4 @@ public:
                             ::google::protobuf::Closure *done) override;
 };
 
-#endif  // SOURCE_EXAMPLES_CLI_INTERFACEHELLOWORLDIMPL_H
+#endif  // SOURCE_EXAMPLES_AUTO_CLI_INTERFACEHELLOWORLDIMPL_H

@@ -1,0 +1,147 @@
+/*
+ * Copyright(c) 2012-2018 Intel Corporation
+ * SPDX-License-Identifier: BSD-3-Clause-Clear
+ */
+
+syntax = "proto3";
+option cc_generic_services = true;
+import "trace.proto";
+package octf.proto;
+
+/**
+ * Distribution of values. It provides info about: maximum value, minimum value,
+ * average value, etc.
+ */
+message Distribution {
+    /**
+     * Unit for values of this distribution
+     */
+    string unit = 1;
+
+    /**
+     * Average value of distribution's items
+     */
+    uint64 avarage = 2;
+
+    /**
+     * Minimum value of distribution's items
+     */
+    uint64 min = 3;
+
+    /**
+     * Maximum value of distribution's items
+     */
+    uint64 max = 4;
+
+    /**
+     * Count of items in this distribution
+     */
+    uint64 count = 5;
+
+    /**
+     * Total sum of items in this distribution
+     */
+    uint64 total = 6;
+}
+
+/**
+ * IO statistics metric
+ */
+message IoStatisticsMetric {
+    /**
+     * Metric name
+     */
+    string name = 1;
+    /**
+     * Metric Unit
+     */
+    string unit = 2;
+    /**
+     * Metric value
+     */
+    double value = 3;
+}
+
+message IoStatisticsEntry {
+    /**
+     * Size distribution
+     */
+    Distribution size = 1;
+
+    /**
+     * Latency distribution
+     */
+    Distribution latency = 2;
+
+    /**
+     * Reserve fields for other distribution
+     */
+    reserved 3 to 10;
+
+    /**
+     * Metrics
+     */
+    repeated IoStatisticsMetric metrics = 11;
+
+    /**
+     * Reserve fields for other metrics
+     */
+    reserved 12 to 100;
+
+    /**
+     * Number of IO errors
+     */
+    uint64 errors = 101;
+}
+
+/**
+ * Description of IO statistics
+ */
+message IoStatisticsDescription {
+    /**
+     * Device for which statistics belongs to
+     */
+    trace.EventDeviceDescription device = 1;
+}
+
+/**
+ * IO statistics for a device
+ */
+message IoStatistics {
+    /**
+     * Description for this statistics
+     */
+    IoStatisticsDescription desc = 1;
+
+    /**
+     * Reservation for other descriptions
+     */
+    reserved 2 to 10;
+
+    /**
+     * duration
+     */
+    uint64 duration = 11;
+
+    /**
+     * Reserved for other simple metrics
+     */
+    reserved 12 to 100;
+
+    IoStatisticsEntry read = 101;
+
+    IoStatisticsEntry write = 102;
+
+    IoStatisticsEntry discard = 103;
+
+    IoStatisticsEntry flush = 104;
+
+    IoStatisticsEntry total = 105;
+}
+
+/**
+ * Set of statistics grouped by devices
+ */
+message IoStatisticsSet {
+    repeated IoStatistics statistics = 1;
+}

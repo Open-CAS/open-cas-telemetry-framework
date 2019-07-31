@@ -7,6 +7,7 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandler.h
     ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerPrinter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerStatistics.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandler.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerCsvPrinter.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerJsonPrinter.h

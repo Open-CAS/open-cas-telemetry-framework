@@ -23,7 +23,7 @@ public:
 
     virtual ~ParsedIoTraceEventHandlerPrinter() = default;
 
-    void handleIO(proto::trace::ParsedEvent &io) override;
+    void handleIO(const proto::trace::ParsedEvent &io) override;
 
     void processEvents() override;
 

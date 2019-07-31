@@ -4,10 +4,11 @@
  */
 
 #include <octf/interface/InterfaceTraceParsingImpl.h>
-#include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 
+#include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
+#include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
 #include <octf/utils/Exception.h>
 
 namespace octf {
@@ -22,19 +23,35 @@ void InterfaceTraceParsingImpl::ParseTrace(
     try {
         if (request->raw()) {
             if (request->format() == proto::OutputFormat::JSON) {
-                IoTraceEventHandlerJsonPrinter parser(request->tracepath());
-                parser.processEvents();
+                IoTraceEventHandlerJsonPrinter handler(request->tracepath());
+                handler.processEvents();
             } else if (request->format() == proto::OutputFormat::CSV) {
-                IoTraceEventHandlerCsvPrinter parser(request->tracepath());
-                parser.processEvents();
+                IoTraceEventHandlerCsvPrinter handler(request->tracepath());
+                handler.processEvents();
             } else {
                 throw Exception("Invalid output format");
             }
         } else {
-            ParsedIoTraceEventHandlerPrinter parser(request->tracepath(),
-                                                    request->format());
-            parser.processEvents();
+            ParsedIoTraceEventHandlerPrinter handler(request->tracepath(),
+                                                     request->format());
+            handler.processEvents();
         }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
+void InterfaceTraceParsingImpl::GetTraceStatistics(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::IoStatisticsSet *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+        handler.processEvents();
+        handler.getStatisticsSet().getIoStatisticsSet(response);
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());
     }

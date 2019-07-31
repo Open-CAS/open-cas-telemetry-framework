@@ -3,24 +3,23 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/c/iotrace_plugin.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>
 #include <pthread.h>
 #include <signal.h>
-#include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <octf/c/iotrace_plugin.h>
 
-static void trace_io(octf_iotrace_plugin_context_t context)
-{
+static void trace_io(octf_iotrace_plugin_context_t context) {
     // Define IO trace event
     struct iotrace_event ev = {};
 
     // Initialize trace header
     octf_iotrace_plugin_init_trace_header(context, &ev.hdr,
-            iotrace_event_type_io, sizeof(ev));
+                                          iotrace_event_type_io, sizeof(ev));
 
     // Fill IO trace
     ev.lba = random();
@@ -37,8 +36,7 @@ static void trace_io(octf_iotrace_plugin_context_t context)
 
 volatile bool thread_stop;
 
-static void* thread_function(void *data)
-{
+static void *thread_function(void *data) {
     octf_iotrace_plugin_context_t context = data;
 
     while (!thread_stop) {
@@ -52,8 +50,7 @@ static void* thread_function(void *data)
     return NULL;
 }
 
-void signal_handler(int signal_no)
-{
+void signal_handler(int signal_no) {
     printf("Interrupt signal received\n");
     thread_stop = true;
 }
@@ -69,8 +66,8 @@ int main() {
     };
 
     // Register signals
-    if (signal(SIGINT, signal_handler) == SIG_ERR
-            || signal(SIGTERM, signal_handler) == SIG_ERR) {
+    if (signal(SIGINT, signal_handler) == SIG_ERR ||
+        signal(SIGTERM, signal_handler) == SIG_ERR) {
         // Cannot register handler for signals
         return errno;
     }
