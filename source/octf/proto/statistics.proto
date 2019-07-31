@@ -74,14 +74,24 @@ message IoStatisticsEntry {
     Distribution latency = 2;
 
     /**
+     * Reserve fields for other distribution
+     */
+    reserved 3 to 10;
+
+    /**
      * Metrics
      */
-    repeated IoStatisticsMetric metrics = 3;
+    repeated IoStatisticsMetric metrics = 11;
+
+    /**
+     * Reserve fields for other metrics
+     */
+    reserved 12 to 100;
 
     /**
      * Number of IO errors
      */
-    uint64 errors = 100;
+    uint64 errors = 101;
 }
 
 /**
@@ -104,9 +114,19 @@ message IoStatistics {
     IoStatisticsDescription desc = 1;
 
     /**
+     * Reservation for other descriptions
+     */
+    reserved 2 to 10;
+
+    /**
      * duration
      */
-    uint64 duration = 10;
+    uint64 duration = 11;
+
+    /**
+     * Reserved for other simple metrics
+     */
+    reserved 12 to 100;
 
     IoStatisticsEntry read = 101;
 
