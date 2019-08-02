@@ -8,6 +8,7 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
@@ -28,11 +29,7 @@ class ParsedIoTraceEventHandler
         : public TraceEventHandler<proto::trace::Event> {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
-    virtual ~ParsedIoTraceEventHandler() {
-        if (m_cache.size()) {
-            abort();
-        }
-    }
+    virtual ~ParsedIoTraceEventHandler();
 
     /**
      * @brief Handles parsed IO
@@ -70,11 +67,20 @@ private:
 
     void flushEvents();
 
+    void pushOutEvent(proto::trace::ParsedEvent &event);
+
 private:
-    std::map<uint64_t, proto::trace::ParsedEvent> m_cache;
+    struct Key;
+    class Map;
+    struct IoQueueDepth;
+    std::queue<proto::trace::ParsedEvent> m_queue;
+    std::unique_ptr<Map> m_lbaMapping;
+    std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
     std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
     uint64_t m_timestampOffset;
-    uint64_t m_ioQueueDepth;
+    uint64_t m_sidOffset;
+    uint64_t m_limit;
+    std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
 };
 
 }  // namespace octf
