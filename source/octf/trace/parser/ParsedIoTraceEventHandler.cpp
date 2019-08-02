@@ -6,9 +6,9 @@
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
 #include <list>
+#include <map>
 #include <octf/utils/Exception.h>
 #include <octf/utils/NonCopyable.h>
-#include <octf/utils/container/IContainer.h>
 
 namespace octf {
 
@@ -158,16 +158,13 @@ void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
 
-    auto timestamp = traceEvent->header().timestamp();
     if (!m_timestampOffset) {
         // This event handler presents traces from time '0', and SID '0',
         // we remember the first event time stamp and SID and the subtract
         // by those values for each event
-        m_timestampOffset = timestamp;
+        m_timestampOffset = traceEvent->header().timestamp();
         m_sidOffset = traceEvent->header().sid();
     }
-    // traceEvent->mutable_header()->set_timestamp(timestamp -
-    // m_timestampOffset);
 
     switch (traceEvent->EventType_case()) {
     case Event::EventTypeCase::kDeviceDescription: {
@@ -344,7 +341,7 @@ void ParsedIoTraceEventHandler::pushOutEvent(proto::trace::ParsedEvent &event) {
     if (qd.Adjustment < ioqd) {
         ioqd -= qd.Adjustment;
     } else {
-        abort();
+        ioqd = 1;
     }
     event.mutable_io()->set_qd(ioqd);
 
