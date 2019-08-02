@@ -72,8 +72,9 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     google::protobuf::util::Status status;
     google::protobuf::util::JsonParseOptions opts;
 
-    // We want to have exact fields, when unknown one then we except error
-    opts.ignore_unknown_fields = false;
+    // Allow unknown fields - to allow forward compability (e.g. when summary
+    // contains a new field created by a newer version of library)
+    opts.ignore_unknown_fields = true;
 
     status = google::protobuf::util::JsonStringToMessage(fileContent, &message,
                                                          opts);
