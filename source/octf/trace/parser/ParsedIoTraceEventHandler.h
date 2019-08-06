@@ -67,14 +67,14 @@ private:
 
     void flushEvents();
 
-    void pushOutEvent(proto::trace::ParsedEvent &event);
+    void pushOutEvent();
 
 private:
     struct Key;
     class Map;
     struct IoQueueDepth;
     std::queue<proto::trace::ParsedEvent> m_queue;
-    std::unique_ptr<Map> m_lbaMapping;
+    std::unique_ptr<Map> m_eventMapping;
     std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
     std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
     uint64_t m_timestampOffset;

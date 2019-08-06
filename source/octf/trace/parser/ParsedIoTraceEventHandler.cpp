@@ -89,8 +89,8 @@ public:
     void add(const Key &key, MapEvent event) {
         auto iter = m_map.find(key);
         if (iter == m_map.end()) {
-            auto pair = std::make_pair(key, std::list<MapEvent>());
-            auto result = m_map.emplace(pair);
+            auto result =
+                    m_map.emplace(std::make_pair(key, std::list<MapEvent>()));
             if (!result.second || result.first == m_map.end()) {
                 throw Exception(
                         "Error during trace parsing, cannot cache trace event");
@@ -101,12 +101,20 @@ public:
         iter->second.push_back(event);
     }
 
+    /**
+     * @brief Gets MapEvent for specified key and for which latency has not been
+     * set
+     *
+     * @param key Key of requested MapEvent
+     * @return MapEvent
+     */
     MapEvent get(const Key &key) {
         auto iter = m_map.find(key);
 
         if (iter != m_map.end()) {
             for (auto event : iter->second) {
                 if (0 == event->io().latency()) {
+                    // latency equals zero means not set yet
                     return event;
                 }
             }
@@ -145,7 +153,7 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         const std::string &tracePath)
         : TraceEventHandler<proto::trace::Event>(tracePath)
         , m_queue()
-        , m_lbaMapping(new ParsedIoTraceEventHandler::Map())
+        , m_eventMapping(new ParsedIoTraceEventHandler::Map())
         , m_devices()
         , m_timestampOffset(0)
         , m_sidOffset(0)
@@ -207,11 +215,11 @@ void ParsedIoTraceEventHandler::handleEvent(
         cachedEvent.mutable_device()->set_id(deviceId);
 
         // Create LBA mapping
-        m_lbaMapping->add(key, &cachedEvent);
+        m_eventMapping->add(key, &cachedEvent);
 
         // Create SID mapping
-        auto sidPair = std::make_pair(traceEvent->header().sid(), &cachedEvent);
-        auto sidResult = m_sidMapping.emplace(sidPair);
+        auto sidResult = m_sidMapping.emplace(
+                std::make_pair(traceEvent->header().sid(), &cachedEvent));
         if (!sidResult.second || sidResult.first == m_sidMapping.end()) {
             throw Exception(
                     "Error during trace parsing, cannot cache trace event");
@@ -230,7 +238,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Find in map which IO has been completed. We match by IO LBA, IO
         // length, and IO device
 
-        auto event = m_lbaMapping->get(key);
+        auto event = m_eventMapping->get(key);
         if (nullptr != event) {
             auto io = event->mutable_io();
             uint64_t submissionTime = event->header().timestamp();
@@ -292,10 +300,8 @@ ParsedIoTraceEventHandler::getEventMessagePrototype() {
 
 void ParsedIoTraceEventHandler::flushEvents() {
     while (m_queue.size()) {
-        auto &event = m_queue.front();
-        if (event.io().latency()) {
-            pushOutEvent(event);
-            m_queue.pop();
+        if (m_queue.front().io().latency()) {
+            pushOutEvent();
         } else {
             break;
         }
@@ -310,9 +316,7 @@ void ParsedIoTraceEventHandler::flushEvents() {
     // Cache exceeds some number,
     // or every parser finished its job, then flush IOs
     while (m_queue.size()) {
-        auto &event = m_queue.front();
-        pushOutEvent(event);
-        m_queue.pop();
+        pushOutEvent();
 
         if (!isFinished && m_queue.size() < m_limit) {
             break;
@@ -320,7 +324,9 @@ void ParsedIoTraceEventHandler::flushEvents() {
     }
 }
 
-void ParsedIoTraceEventHandler::pushOutEvent(proto::trace::ParsedEvent &event) {
+void ParsedIoTraceEventHandler::pushOutEvent() {
+    auto &event = m_queue.front();
+
     // Get SID
     auto sid = event.header().sid();
 
@@ -329,7 +335,7 @@ void ParsedIoTraceEventHandler::pushOutEvent(proto::trace::ParsedEvent &event) {
 
     // Remove LBA mapping
     Key key(event);
-    m_lbaMapping->erase(key, sid);
+    m_eventMapping->erase(key, sid);
 
     // Update SID
     event.mutable_header()->set_sid(sid - m_sidOffset);
@@ -361,6 +367,8 @@ void ParsedIoTraceEventHandler::pushOutEvent(proto::trace::ParsedEvent &event) {
         // Set queue depth adjustment
         qd.Adjustment++;
     }
+
+    m_queue.pop();
 }
 
 }  // namespace octf
