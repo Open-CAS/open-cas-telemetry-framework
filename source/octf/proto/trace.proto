@@ -77,6 +77,9 @@ message EventIoCompletion {
 
     /** Flags indicates if IO ended with an error */
     bool error = 3;
+
+    /** Device ID */
+    uint64 deviceId = 4;
 }
 
 /**

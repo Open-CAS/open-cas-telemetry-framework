@@ -154,6 +154,9 @@ struct iotrace_event_completion {
      * Otherwise IO ended with an error.
      */
     int32_t error;
+
+    /** Device ID */
+    uint32_t dev_id;
 } __attribute__((packed, aligned(8)));
 
 /**
