@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <octf/analytics/statistics/Distribution.h>
+#include <octf/analytics/statistics/WorksetCalculator.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/statistics.pb.h>
 

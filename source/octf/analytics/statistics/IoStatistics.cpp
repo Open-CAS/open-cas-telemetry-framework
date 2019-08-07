@@ -12,7 +12,8 @@ struct IoStatistics::Stats {
     Stats()
             : SizeDistribution("sector", 4096, 2)
             , LatencyDistribution("ns", 100, 10)
-            , Errors(0) {}
+            , Errors(0)
+            , Wc() {}
 
     Stats(const Stats &other)
             : SizeDistribution(other.SizeDistribution)
@@ -64,11 +65,19 @@ struct IoStatistics::Stats {
                 metric->set_value(bandwidth);
             }
         }
+        {
+            uint64_t workset = Wc.getWorkset();
+            auto metric = entry->add_metrics();
+            metric->set_name("workset");
+            metric->set_unit("sector");
+            metric->set_value(workset);
+        }
     }
 
     Distribution SizeDistribution;
     Distribution LatencyDistribution;
     uint64_t Errors;
+    WorksetCalculator Wc;
 };
 
 IoStatistics::IoStatistics()
@@ -131,6 +140,7 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
 
     stats->SizeDistribution += len;
     stats->LatencyDistribution += latency;
+    stats->Wc.insertRange(io.lba(), len);
 
     if (io.error()) {
         stats->Errors++;
