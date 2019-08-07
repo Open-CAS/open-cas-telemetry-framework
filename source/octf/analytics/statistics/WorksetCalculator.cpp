@@ -99,11 +99,23 @@ void WorksetCalculator::mergeRanges(const Range &newRange,
     uint64_t minBegin = std::min(overlapIter->begin, newRange.begin);
     uint64_t maxEnd = std::max(overlapIter->end, newRange.end);
 
+    // If new range is subrange of existing range, return
+    if (newRange.begin >= overlapIter->begin &&
+        newRange.end <= overlapIter->end) {
+        return;
+    }
+
     // Delete the overlapping ranges
     overlapIter = m_hitRanges.erase(overlapIter);
 
     while (overlapIter != m_hitRanges.end() &&
            Range::doRangesOverlap(newRange, *overlapIter)) {
+        if (newRange.begin >= overlapIter->begin &&
+            newRange.end <= overlapIter->end) {
+            // If new range is subrange of existing range, return
+            return;
+        }
+
         maxEnd = std::max(maxEnd, overlapIter->end);
         overlapIter = m_hitRanges.erase(overlapIter);
     }
