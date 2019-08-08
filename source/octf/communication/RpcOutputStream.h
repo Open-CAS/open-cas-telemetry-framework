@@ -15,7 +15,7 @@ namespace octf {
 /**
  * @brief Output stream for RPC
  *
- * It allows to stream output from an interface method to a RPC caller
+ * It allows to stream output from an interface method to an RPC caller
  */
 class RpcOutputStream : public NonCopyable {
 public:

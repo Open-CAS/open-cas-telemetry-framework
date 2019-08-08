@@ -81,7 +81,7 @@ message IoStatisticsEntry {
     /**
      * Metrics
      */
-    repeated IoStatisticsMetric metrics = 11;
+    map<string, IoStatisticsMetric> metrics = 11;
 
     /**
      * Reserve fields for other metrics
