@@ -14,4 +14,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/RpcControllerImpl.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerServer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Method.h
+	${CMAKE_CURRENT_LIST_DIR}/RpcOutputStream.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/RpcOutputStream.h
 )
