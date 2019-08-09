@@ -6,25 +6,24 @@
 
 namespace octf {
 
-WorksetCalculator::Range::Range() {
-    this->begin = 0;
-    this->end = 0;
-}
+WorksetCalculator::Range::Range()
+        : begin(0)
+        , end(0) {}
 
-WorksetCalculator::Range::Range(uint64_t _begin, uint64_t _end) {
-    this->begin = _begin;
-    this->end = _end;
-}
+WorksetCalculator::Range::Range(uint64_t begin, uint64_t end)
+        : begin(begin)
+        , end(end) {}
 
-WorksetCalculator::Range::Range(const Range &other) {
-    this->begin = other.begin;
-    this->end = other.end;
-}
+WorksetCalculator::Range::Range(const Range &other)
+        : begin(other.begin)
+        , end(other.end) {}
 
 WorksetCalculator::Range &WorksetCalculator::Range::operator=(
         const Range &other) {
-    this->begin = other.begin;
-    this->end = other.end;
+    if (this != &other) {
+        this->begin = other.begin;
+        this->end = other.end;
+    }
     return *this;
 }
 
@@ -110,12 +109,6 @@ void WorksetCalculator::mergeRanges(const Range &newRange,
 
     while (overlapIter != m_hitRanges.end() &&
            Range::doRangesOverlap(newRange, *overlapIter)) {
-        if (newRange.begin >= overlapIter->begin &&
-            newRange.end <= overlapIter->end) {
-            // If new range is subrange of existing range, return
-            return;
-        }
-
         maxEnd = std::max(maxEnd, overlapIter->end);
         overlapIter = m_hitRanges.erase(overlapIter);
     }

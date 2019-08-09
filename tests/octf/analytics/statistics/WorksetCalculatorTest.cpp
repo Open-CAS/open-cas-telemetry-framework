@@ -106,11 +106,11 @@ TEST(WorksetCalculator, adjacentRanges) {
 
     // Add adjacent ranges like so:
     // [0-10], [10-20], [20-30], ...
-    for (; range < ranges; begin += (len - 1), range++) {
+    for (; range < ranges; begin += len, range++) {
         wc.insertRange(begin, len);
     }
 
-    ASSERT_EQ(wc.getWorkset(), ranges * len - ranges * 1 + 1);
+    ASSERT_EQ(wc.getWorkset(), ranges * len);
 }
 
 TEST(WorksetCalculator, overlappingRanges) {
@@ -132,7 +132,7 @@ TEST(WorksetCalculator, overlappingRanges) {
 }
 
 TEST(WorksetCalculator, randomRanges) {
-    // Add lots of random ranges, then add one maximum range
+    // Add lots of random ranges with random length, then add one maximum range
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> rand(
@@ -149,6 +149,33 @@ TEST(WorksetCalculator, randomRanges) {
     for (; range < ranges; range++) {
         begin = rand(rng) - 1;
         len = rand(rng);
+        wc.insertRange(begin, len);
+    }
+
+    begin = 0;
+    len = std::numeric_limits<uint64_t>::max();
+    wc.insertRange(begin, len);
+
+    ASSERT_EQ(wc.getWorkset(), len);
+}
+
+TEST(WorksetCalculator, randomRanges2) {
+    // Add lots of random ranges, with predefined short length
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> rand(
+            1, std::numeric_limits<int>::max());
+
+    WorksetCalculator wc;
+
+    int ranges = 100000;
+    int range = 0;
+
+    uint64_t len = 4096;
+    uint64_t begin;
+
+    for (; range < ranges; range++) {
+        begin = rand(rng) - 1;
         wc.insertRange(begin, len);
     }
 
