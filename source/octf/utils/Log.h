@@ -127,7 +127,7 @@ public:
     OutputStream &operator<<(OutputStreamManipulator manipulator);
 
     template <typename Type>
-    OutputStream &operator<<(Type value) {
+    OutputStream &operator<<(const Type &value) {
         getOutputStream() << value;
         return *this;
     }
@@ -137,7 +137,14 @@ public:
      *
      * @return Stream prefix
      */
-    const std::string &getPrefix();
+    const std::string &getPrefix() const;
+
+    /**
+     * @brief Gets log severity
+     *
+     * @return Log severity
+     */
+    Severity getSeverity() const;
 
 private:
     std::ostream &getOutputStream();

@@ -54,4 +54,24 @@ void RpcControllerImpl::NotifyOnCancel(google::protobuf::Closure *callback) {
     (void) callback;
 }
 
+log::OutputStream &octf::RpcControllerImpl::getOutputStream(
+        log::Severity severity) {
+    switch (severity) {
+    case log::Severity::Information:
+        return log::cout;
+
+    case log::Severity::Verbose:
+        return log::verbose;
+
+    case log::Severity::Critical:
+        return log::critical;
+
+    case log::Severity::Error:
+        return log::cerr;
+        break;
+    default:
+        throw Exception("No RPC output stream for specific severity");
+    }
+}
+
 }  // namespace octf
