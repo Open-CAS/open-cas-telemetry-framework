@@ -18,7 +18,8 @@ struct IoStatistics::Stats {
     Stats(const Stats &other)
             : SizeDistribution(other.SizeDistribution)
             , LatencyDistribution(other.LatencyDistribution)
-            , Errors(other.Errors) {}
+            , Errors(other.Errors)
+            , Wc() {}
 
     Stats &operator=(const Stats &other) {
         if (this != &other) {

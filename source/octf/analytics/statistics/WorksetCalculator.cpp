@@ -63,6 +63,14 @@ bool WorksetCalculator::Range::operator<(const Range &right) const {
 WorksetCalculator::WorksetCalculator()
         : m_hitRanges() {}
 
+WorksetCalculator::WorksetCalculator(const WorksetCalculator &)
+        : m_hitRanges() {}
+
+WorksetCalculator &octf::WorksetCalculator::operator=(
+        const WorksetCalculator &other) {
+    m_hitRanges = other.m_hitRanges;
+    return *this;
+}
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
     if (len == 0) {

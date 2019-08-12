@@ -21,6 +21,8 @@ class WorksetCalculator {
 public:
     WorksetCalculator();
     virtual ~WorksetCalculator() = default;
+    WorksetCalculator(const WorksetCalculator &);
+    WorksetCalculator &operator=(const WorksetCalculator &other);
 
     /**
      * @brief Insert a range to be calculated into workset
