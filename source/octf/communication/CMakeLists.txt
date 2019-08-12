@@ -1,19 +1,19 @@
 add_subdirectory(internal)
 target_sources(octf
 PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/ICommunicationManager.h
-	${CMAKE_CURRENT_LIST_DIR}/RpcControllerImpl.h
-	${CMAKE_CURRENT_LIST_DIR}/Method.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Call.h
-	${CMAKE_CURRENT_LIST_DIR}/RpcChannelImpl.h
-	${CMAKE_CURRENT_LIST_DIR}/IMethodHandler.h
-	${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerServer.h
-	${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerClient.h
-	${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerClient.cpp
-	${CMAKE_CURRENT_LIST_DIR}/RpcChannelImpl.cpp
-	${CMAKE_CURRENT_LIST_DIR}/RpcControllerImpl.cpp
-	${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerServer.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Method.h
-	${CMAKE_CURRENT_LIST_DIR}/RpcOutputStream.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ICommunicationManager.h
+    ${CMAKE_CURRENT_LIST_DIR}/RpcControllerImpl.h
+    ${CMAKE_CURRENT_LIST_DIR}/Method.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Call.h
+    ${CMAKE_CURRENT_LIST_DIR}/RpcChannelImpl.h
+    ${CMAKE_CURRENT_LIST_DIR}/IMethodHandler.h
+    ${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerServer.h
+    ${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerClient.h
+    ${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerClient.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/RpcChannelImpl.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/RpcControllerImpl.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/CommunicationManagerServer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Method.h
+    ${CMAKE_CURRENT_LIST_DIR}/RpcOutputStream.cpp
     ${CMAKE_CURRENT_LIST_DIR}/RpcOutputStream.h
 )
