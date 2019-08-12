@@ -28,8 +28,8 @@ message EventDeviceDescription {
     /** Device Name */
     string name = 2;
 
-    /** Device Size */
-    uint32 size = 3;
+    /** Device size in sectors */
+    uint64 size = 3;
 }
 
 /** @brief IO operation direction */
