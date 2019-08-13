@@ -6,4 +6,6 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/IoStatistics.h
     ${CMAKE_CURRENT_LIST_DIR}/IoStatisticsSet.cpp
     ${CMAKE_CURRENT_LIST_DIR}/IoStatisticsSet.h
+    ${CMAKE_CURRENT_LIST_DIR}/WorksetCalculator.h
+    ${CMAKE_CURRENT_LIST_DIR}/WorksetCalculator.cpp
 )

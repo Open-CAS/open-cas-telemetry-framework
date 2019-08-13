@@ -85,6 +85,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoIo->set_len(event->len);
         protoIo->set_ioclass(event->io_class);
         protoIo->set_deviceid(event->dev_id);
+        protoIo->set_writehint(event->write_hint);
 
         return m_evIO;
     }

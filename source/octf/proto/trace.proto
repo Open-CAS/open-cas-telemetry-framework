@@ -63,6 +63,9 @@ message EventIo {
 
     /** FUA flag */
     bool fua = 7;
+
+    /** Write (lifetime) hint */
+    uint32 writeHint = 8;
 }
 
 /**
