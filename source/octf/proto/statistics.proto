@@ -119,7 +119,7 @@ message IoStatistics {
     reserved 2 to 10;
 
     /**
-     * duration
+     * Duration
      */
     uint64 duration = 11;
 
