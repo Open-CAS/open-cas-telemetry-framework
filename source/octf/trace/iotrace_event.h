@@ -132,6 +132,9 @@ struct iotrace_event {
      * Values according to iotrace_event_flag_t enum
      * are summed (OR-ed) together. */
     uint32_t flags;
+
+    /** Write hint associated with IO */
+    uint8_t write_hint;
 } __attribute__((packed, aligned(8)));
 
 /**
