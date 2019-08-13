@@ -14,19 +14,20 @@ size). Afterwards traces can later be converted to JSON or CSV format and
 consumed by any further analytics. iotrace does it and extends outputs with
 post-processing fields like IO latency, IO queue depth, and more.
 
-iotrace is based on [Open CAS Telemetry Framework (OCTF)](https://github.com/Open-CAS/open-cas-telemetry-framework). Collected traces are stored in format defined by OCTF using google protocol
-buffer description. You can find this definition [here](https://github.com/Open-CAS/open-cas-telemetry-framework/blob/master/source/octf/proto/trace.proto). Such trace format allows to analyze
-it by any kind of tool like Java, C++, Python, etc.,
+iotrace is based on [Open CAS Telemetry Framework (OCTF)](https://github.com/Open-CAS/open-cas-telemetry-framework). Collected traces are stored in format defined by OCTF using Google
+Protocol Buffers description. You can find this definition [here](https://github.com/Open-CAS/open-cas-telemetry-framework/blob/master/source/octf/proto/trace.proto). Such trace format allows to analyze
+it by any kind of tool written in Java, C++, Python, or other languages
+(supported by Protocol Buffer)
 
-The goodness of OCTF can be reused by other storage application for instance
-SKDP, QEMU. They can produce IO traces in the same OCTF traces format, what can
-be used by the same analytics tools. But that's next steps.
+The goodness of OCTF can be reused by other storage applications for instance
+SPDK, QEMU. They can produce IO traces in the same OCTF traces format, which can
+be used by the same analytics tools. But these are next steps.
 
 ## Getting traces
 
 The iotrace [README](https://github.com/Open-CAS/standalone-linux-io-tracer/blob/master/README.md)
 contains basic information how to install iotrace on your machine. Please follow
-this instruction. Let's get a trace. Any time you can call the tool help:
+this instruction. Let's get a trace. Any time you can call the tool's help:
 
 ~~~{.sh}
 iotrace --help
@@ -60,17 +61,17 @@ Options that are valid with {-S | --start-trace}
      -t    --time <1-4294967295>                 Max trace duration time (in seconds) (default: 4294967295)
 ~~~
 
-Let's say, your workload/application is running on top of two two block devices.
+Let's say, your workload/application is running on top of two block devices.
 We would like to trace them for 1 hour, or until trace file is 1GiB. Also you
-can label the trace with you name. We are going to call:
+can label the trace with your name. We are going to call:
 
 ~~~{.sh}
 sudo iotrace --start-trace --devices /dev/nvme0n1,/dev/nvme1n1 --time 3600 --size 1024 --label "My cool first trace"
 ~~~
 
-But any time you can interrupt trace collection by pressing Ctrl+C or sending 
-termination signal to the iotrace process. When stop tracing you should get
-a trace summary: 
+But any time you can interrupt the trace collection by pressing Ctrl+C or sending 
+termination signal to the iotrace process. After the tracing has stopped you
+should get a trace summary: 
 
 ~~~{.sh}
 {
@@ -102,7 +103,7 @@ The iotrace parser converts IO traces from binary format to CSV or JSON format.
 To parse you trace we are going to invoke _--parse-trace_ command.
 
 ~~~{.sh}
-otrce --parse-trace --help
+iotrce --parse-trace --help
 Usage: iotrace --parse-trace  --path <VALUE>  [options...]
 
 Parse trace files to human readable form
@@ -147,61 +148,53 @@ And in case of JSON the output is:
 ...
 ~~~
 
-## What we collect, What we process?
+## What do we collect, What do we process?
 
-The bellow table contains telemetry content which is traces by iotrace. Also we
-included future plans for tracing.
+The below table contains telemetry content which is traced by iotrace. We also
+included our future plans for tracing.
 
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;border-color:#9ABAD9;}
-.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#9ABAD9;color:#444;background-color:#EBF5FF;}
-.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#9ABAD9;color:#fff;background-color:#409cff;}
-.tg .tg-j3py{background-color:#D2E4FC;border-color:#000000;text-align:left;vertical-align:top}
-.tg .tg-mcqj{font-weight:bold;border-color:#000000;text-align:left;vertical-align:top}
-.tg .tg-73oq{border-color:#000000;text-align:left;vertical-align:top}
-</style>
 <table class="tg">
   <tr>
-    <th class="tg-mcqj">Category</th>
-    <th class="tg-mcqj">Telemetry Content</th>
-    <th class="tg-mcqj">Post processing information</th>
-    <th class="tg-mcqj">Status</th>
+    <th>Category</th>
+    <th>Telemetry Content</th>
+    <th>Post processing information</th>
+    <th>Status</th>
   </tr>
   <tr>
-    <td class="tg-j3py">Basic IO metdata</td>
-    <td class="tg-j3py">- Operation Type (Read/Write/Discard/Flush)<br>- IO Address (LBA)<br>- IO Length<br>- IO Result<br>- IO write Hint<br>- IO Class</td>
-    <td class="tg-j3py">- IO Latency<br>- IO Queue Depth</td>
-    <td class="tg-j3py">Implemented</td>
+    <td>Basic IO metadata</td>
+    <td>- Operation Type (Read/Write/Discard/Flush)<br>- IO Address (LBA)<br>- IO Length<br>- IO Result<br>- IO write Hint<br>- IO Class</td>
+    <td>- IO Latency<br>- IO Queue Depth</td>
+    <td>Implemented</td>
   </tr>
   <tr>
-    <td class="tg-73oq">Filesystem metadata</td>
-    <td class="tg-73oq">- File Id<br>- File Offset<br>- File Name</td>
-    <td class="tg-73oq">- File Path</td>
-    <td class="tg-73oq">In Progress</td>
+    <td>Filesystem metadata</td>
+    <td>- File Id<br>- File Offset<br>- File Name</td>
+    <td>- File Path</td>
+    <td>In Progress</td>
   </tr>
   <tr>
-    <td class="tg-j3py">Filesystem events</td>
-    <td class="tg-j3py">- Dirs and files creation, renaming, moving, removal<br>- Dirs and files attributes<br><br></td>
-    <td class="tg-j3py"></td>
-    <td class="tg-j3py">Future</td>
+    <td>Filesystem events</td>
+    <td>- Dirs and files creation, renaming, moving, removal<br>- Dirs and files attributes<br><br></td>
+    <td></td>
+    <td>Future</td>
   </tr>
   <tr>
-    <td class="tg-73oq">Application metadata</td>
-    <td class="tg-73oq">- Process ID<br>- Process Name<br>- Application IO context</td>
-    <td class="tg-73oq"></td>
-    <td class="tg-73oq">Future</td>
+    <td>Application metadata</td>
+    <td>- Process ID<br>- Process Name<br>- Application IO context</td>
+    <td></td>
+    <td>Future</td>
   </tr>
   <tr>
-    <td class="tg-j3py">System Calls</td>
-    <td class="tg-j3py">- Read/Write/Flush/etc. system calls<br></td>
-    <td class="tg-j3py"></td>
-    <td class="tg-j3py">Future</td>
+    <td>System Calls</td>
+    <td>- Read/Write/Flush/etc. system calls<br></td>
+    <td></td>
+    <td>Future</td>
   </tr>
   <tr>
-    <td class="tg-73oq">And many more</td>
-    <td class="tg-73oq"></td>
-    <td class="tg-73oq"></td>
-    <td class="tg-73oq"></td>
+    <td>And many more</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
 </table> 
 
@@ -302,3 +295,5 @@ advanced statistics like: histograms, percentiles, heat maps, timeseries graphs.
 TBD 
 
 ## Integration with other tools
+
+TBD
