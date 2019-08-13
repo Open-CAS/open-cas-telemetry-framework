@@ -45,7 +45,6 @@ struct IoStatistics::Stats {
             double iops = durationS != 0.0 ? count / durationS : 0;
             if (iops != 0.0) {
                 auto &metric = (*entry->mutable_metrics())["throughput"];
-                metric.set_name("throughput");
                 metric.set_unit("IOPS");
                 metric.set_value(iops);
             }
@@ -59,7 +58,6 @@ struct IoStatistics::Stats {
 
             if (bandwidth) {
                 auto &metric = (*entry->mutable_metrics())["bandwidth"];
-                metric.set_name("bandwidth");
                 metric.set_unit("MiB/s");
                 metric.set_value(bandwidth);
             }

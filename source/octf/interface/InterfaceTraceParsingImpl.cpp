@@ -69,6 +69,8 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
             }
 
             cout << table << std::endl;
+            // The CSV output was requested, to prevent print response in JSON
+            // format disable caller output
             cout << log::disable;
         }
     } catch (const Exception &ex) {

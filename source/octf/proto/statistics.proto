@@ -49,10 +49,6 @@ message Distribution {
  */
 message IoStatisticsMetric {
     /**
-     * Metric name
-     */
-    string name = 1;
-    /**
      * Metric Unit
      */
     string unit = 2;
