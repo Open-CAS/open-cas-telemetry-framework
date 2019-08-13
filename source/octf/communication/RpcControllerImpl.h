@@ -5,9 +5,11 @@
 
 #ifndef SOURCE_OCTF_COMMUNICATION_RPCCONTROLLERIMPL_H
 #define SOURCE_OCTF_COMMUNICATION_RPCCONTROLLERIMPL_H
+
 #include <google/protobuf/service.h>
 #include <memory>
 #include <string>
+#include <octf/utils/Log.h>
 
 namespace octf {
 
@@ -88,6 +90,15 @@ public:
      * @deprecated
      */
     void NotifyOnCancel(google::protobuf::Closure *callback) override;
+
+    /**
+     * @brief Gets output stream for speciifed severity
+     *
+     * @param severity Output stream severity
+     *
+     * @return Reference to output stream
+     */
+    virtual log::OutputStream &getOutputStream(log::Severity severity);
 
 private:
     /**
