@@ -19,13 +19,14 @@ struct IoStatistics::Stats {
             : SizeDistribution(other.SizeDistribution)
             , LatencyDistribution(other.LatencyDistribution)
             , Errors(other.Errors)
-            , Wc() {}
+            , Wc(other.Wc) {}
 
     Stats &operator=(const Stats &other) {
         if (this != &other) {
             SizeDistribution = other.SizeDistribution;
             LatencyDistribution = other.LatencyDistribution;
             Errors = other.Errors;
+            Wc = other.Wc;
         }
 
         return *this;
