@@ -206,6 +206,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         dst.set_operation(src.operation());
         dst.set_flush(src.flush());
         dst.set_fua(src.fua());
+        dst.set_writehint(src.writehint());
 
         auto &qd = m_devIoQueueDepth[deviceId];
         qd.Value++;
