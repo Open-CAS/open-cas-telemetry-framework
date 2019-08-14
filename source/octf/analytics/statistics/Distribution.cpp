@@ -148,6 +148,47 @@ void Distribution::getDistribution(proto::Distribution *distribution) const {
     distribution->set_count(m_count);
     distribution->set_total(m_total);
     distribution->set_unit(m_unit);
+
+    if (!m_count) {
+        // Distribution empty no need to setup percentiles and histogram
+        return;
+    }
+
+    const std::vector<double> PERCENTILES{90.00, 99.00, 99.90, 99.99};
+    uint64_t iP = 0;
+    double sum = 0.0;
+
+    for (const auto &bucket : m_histogram) {
+        uint64_t rangeBegin = bucket.Begin;
+        uint64_t rangeEnd = rangeBegin + bucket.RangeSize - 1;
+
+        for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
+            sum += bucket.Sum[range];
+
+            if ((sum > PERCENTILES[iP] * (double) m_total / 100.0) &&
+                (iP < PERCENTILES.size())) {
+                double value = bucket.Begin;
+                value += bucket.RangeSize * range;
+                value += (double) bucket.RangeSize / 2.0;
+
+                auto &map = *distribution->mutable_percentiles();
+                auto &percentile = map[std::to_string(PERCENTILES[iP]) + "th"];
+                percentile = value;
+
+                iP++;
+            }
+
+            if (bucket.Count[range]) {
+                auto histEntry = distribution->add_histogram();
+                histEntry->set_begin(rangeBegin);
+                histEntry->set_end(rangeEnd);
+                histEntry->set_count(bucket.Count[range]);
+            }
+
+            rangeBegin += bucket.RangeSize;
+            rangeEnd += bucket.RangeSize;
+        }
+    }
 }
 
 Distribution::Bucket &Distribution::getBucket(uint64_t value) {

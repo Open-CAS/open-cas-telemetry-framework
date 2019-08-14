@@ -11,7 +11,7 @@ namespace octf {
 struct IoStatistics::Stats {
     Stats()
             : SizeDistribution("sector", 4096, 2)
-            , LatencyDistribution("ns", 100, 10)
+            , LatencyDistribution("ns", 10, 10)
             , Errors(0)
             , Wc() {}
 
