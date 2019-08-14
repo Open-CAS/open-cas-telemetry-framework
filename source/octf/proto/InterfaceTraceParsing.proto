@@ -36,6 +36,8 @@ message GetTraceStatisticsRequest {
         (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Path to trace"
     ];
+
+    OutputFormat format = 2;
 }
 
 service InterfaceTraceParsing {

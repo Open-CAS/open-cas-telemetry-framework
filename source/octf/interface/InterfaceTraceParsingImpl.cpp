@@ -5,11 +5,13 @@
 
 #include <octf/interface/InterfaceTraceParsingImpl.h>
 
+#include <octf/communication/RpcOutputStream.h>
 #include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
 #include <octf/utils/Exception.h>
+#include <octf/utils/table/Table.h>
 
 namespace octf {
 
@@ -52,6 +54,25 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
         ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
         handler.processEvents();
         handler.getStatisticsSet().getIoStatisticsSet(response);
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            RpcOutputStream cout(log::Severity::Information, controller);
+
+            cout << log::reset;
+
+            table::Table table;
+            table::setHeader(table[0], &response->statistics(0));
+
+            int count = response->statistics_size();
+            for (int i = 0; i < count; i++) {
+                table[i + 1] << response->statistics(i);
+            }
+
+            cout << table << std::endl;
+            // The CSV output was requested, to prevent print response in JSON
+            // format disable caller output
+            cout << log::disable;
+        }
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());
     }

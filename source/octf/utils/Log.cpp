@@ -147,7 +147,6 @@ OutputStream &OutputStream::operator<<(OutputStreamManipulator manipulator) {
         m_logger->setJsonFormat(false);
         m_logger->clearPrefix();
         m_logger->setPrintTimestamp(false);
-        m_logger->enable();
         break;
 
     case timestamp:
