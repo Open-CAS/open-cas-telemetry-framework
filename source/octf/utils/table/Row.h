@@ -27,6 +27,8 @@ public:
     Row(index_t id, TableMap &map);
     virtual ~Row();
 
+    void setupHeader();
+
     Addr getAddress(index_t columnIndex) override;
 
     Addr getAddress(const std::string &columnIndex) override;

@@ -53,7 +53,7 @@ service InterfaceTraceParsing {
         option (opts_command).cli_short_key = "P";
 
         option (opts_command).cli_desc =
-            "Parse trace files to human readable form";
+            "Parses trace files to human readable form";
     }
 
     rpc GetTraceStatistics(GetTraceStatisticsRequest)
@@ -64,6 +64,14 @@ service InterfaceTraceParsing {
 
         option (opts_command).cli_short_key = "T";
 
-        option (opts_command).cli_desc = "Get trace statistics";
+        option (opts_command).cli_desc = "Gets trace statistics";
+    }
+
+    rpc GetLatencyHistogram(GetTraceStatisticsRequest) returns (HistogramSet) {
+        option (opts_command).cli = true;
+
+        option (opts_command).cli_long_key = "get-latency-histogram";
+
+        option (opts_command).cli_desc = "Gets latency histogram";
     }
 }

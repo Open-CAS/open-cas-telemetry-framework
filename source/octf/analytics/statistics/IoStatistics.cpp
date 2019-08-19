@@ -35,8 +35,8 @@ struct IoStatistics::Stats {
     void getIoStatisticsEntry(proto::IoStatisticsEntry *entry,
                               uint64_t beginTime,
                               uint64_t endTime) const {
-        SizeDistribution.getDistribution(entry->mutable_size());
-        LatencyDistribution.getDistribution(entry->mutable_latency());
+        SizeDistribution.getStatistics(entry->mutable_size());
+        LatencyDistribution.getStatistics(entry->mutable_latency());
         entry->set_errors(Errors);
 
         double duration = endTime - beginTime;
@@ -74,6 +74,10 @@ struct IoStatistics::Stats {
                 metric.set_value(workset);
             }
         }
+    }
+
+    void getIoLatencyHistogramEntry(proto::HistogramEntry *entry) const {
+        LatencyDistribution.getHistogram(entry);
     }
 
     Distribution SizeDistribution;
@@ -176,6 +180,27 @@ void IoStatistics::getIoStatistics(proto::IoStatistics *stats) const {
     m_total->getIoStatisticsEntry(total, m_startTime, m_endTime);
 
     stats->set_duration(m_endTime - m_startTime);
+}
+
+void octf::IoStatistics::getIoLatencyHistogram(
+        proto::Histogram *histogram) const {
+    auto read = histogram->mutable_read();
+    m_statistics[proto::trace::IoType::Read].getIoLatencyHistogramEntry(read);
+
+    auto write = histogram->mutable_write();
+    m_statistics[proto::trace::IoType::Write].getIoLatencyHistogramEntry(write);
+
+    auto discard = histogram->mutable_discard();
+    m_statistics[proto::trace::IoType::Discard].getIoLatencyHistogramEntry(
+            discard);
+
+    auto flush = histogram->mutable_flush();
+    m_flush->getIoLatencyHistogramEntry(flush);
+
+    auto total = histogram->mutable_total();
+    m_total->getIoLatencyHistogramEntry(total);
+
+    histogram->set_duration(m_endTime - m_startTime);
 }
 
 }  // namespace octf

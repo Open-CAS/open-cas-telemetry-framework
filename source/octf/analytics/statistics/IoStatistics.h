@@ -43,6 +43,14 @@ public:
      */
     void getIoStatistics(proto::IoStatistics *stats) const;
 
+    /**
+     * @brief Copies gathers statistics of IOs latency into protocol buffer IO
+     * histogram object
+     *
+     * @param[out] histogram protocol buffer histogram object to be filled
+     */
+    void getIoLatencyHistogram(proto::Histogram *histogram) const;
+
 private:
     struct Stats;
     /**

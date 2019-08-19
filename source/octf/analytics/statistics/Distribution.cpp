@@ -140,17 +140,18 @@ void Distribution::operator+=(uint64_t value) {
     bucket += value;
 }
 
-void Distribution::getDistribution(proto::Distribution *distribution) const {
-    distribution->Clear();
-    distribution->set_avarage(m_count ? m_total / m_count : 0);
-    distribution->set_min(m_count ? m_min : 0);
-    distribution->set_max(m_max);
-    distribution->set_count(m_count);
-    distribution->set_total(m_total);
-    distribution->set_unit(m_unit);
+void Distribution::getStatistics(
+        proto::StatisticsEntryValues *statistics) const {
+    statistics->Clear();
+    statistics->set_average(m_count ? m_total / m_count : 0);
+    statistics->set_min(m_count ? m_min : 0);
+    statistics->set_max(m_max);
+    statistics->set_count(m_count);
+    statistics->set_total(m_total);
+    statistics->set_unit(m_unit);
 
     if (!m_count) {
-        // Distribution empty no need to setup percentiles and histogram
+        // statistics empty no need to set percentiles
         return;
     }
 
@@ -159,9 +160,6 @@ void Distribution::getDistribution(proto::Distribution *distribution) const {
     double sum = 0.0;
 
     for (const auto &bucket : m_histogram) {
-        uint64_t rangeBegin = bucket.Begin;
-        uint64_t rangeEnd = rangeBegin + bucket.RangeSize - 1;
-
         for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
             sum += bucket.Sum[range];
 
@@ -171,19 +169,34 @@ void Distribution::getDistribution(proto::Distribution *distribution) const {
                 value += bucket.RangeSize * range;
                 value += (double) bucket.RangeSize / 2.0;
 
-                auto &map = *distribution->mutable_percentiles();
+                auto &map = *statistics->mutable_percentiles();
                 auto &percentile = map[std::to_string(PERCENTILES[iP]) + "th"];
                 percentile = value;
 
                 iP++;
             }
+        }
+    }
+}
 
-            if (bucket.Count[range]) {
-                auto histEntry = distribution->add_histogram();
-                histEntry->set_begin(rangeBegin);
-                histEntry->set_end(rangeEnd);
-                histEntry->set_count(bucket.Count[range]);
-            }
+void Distribution::getHistogram(proto::HistogramEntry *histogram) const {
+    histogram->Clear();
+    histogram->set_unit(m_unit);
+
+    if (!m_count) {
+        // statistics empty no need to set histogram
+        return;
+    }
+
+    for (const auto &bucket : m_histogram) {
+        uint64_t rangeBegin = bucket.Begin;
+        uint64_t rangeEnd = rangeBegin + bucket.RangeSize - 1;
+
+        for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
+            auto protoRange = histogram->add_range();
+            protoRange->set_begin(rangeBegin);
+            protoRange->set_end(rangeEnd);
+            protoRange->set_count(bucket.Count[range]);
 
             rangeBegin += bucket.RangeSize;
             rangeEnd += bucket.RangeSize;

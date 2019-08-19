@@ -29,6 +29,12 @@ public:
             const ::octf::proto::GetTraceStatisticsRequest *request,
             ::octf::proto::IoStatisticsSet *response,
             ::google::protobuf::Closure *done) override;
+
+    virtual void GetLatencyHistogram(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::HistogramSet *response,
+            ::google::protobuf::Closure *done) override;
 };
 
 }  // namespace octf

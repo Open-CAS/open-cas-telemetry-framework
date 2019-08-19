@@ -61,16 +61,73 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
             cout << log::reset;
 
             table::Table table;
-            table::setHeader(table[0], &response->statistics(0));
 
             int count = response->statistics_size();
             for (int i = 0; i < count; i++) {
+                table::setHeader(table[0], &response->statistics(i));
                 table[i + 1] << response->statistics(i);
             }
 
             cout << table << std::endl;
-            // The CSV output was requested, to prevent print response in JSON
-            // format disable caller output
+            // The CSV output was requested, to prevent printing response in
+            // JSON format disable caller output
+            cout << log::disable;
+        }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
+void octf::InterfaceTraceParsingImpl::GetLatencyHistogram(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::HistogramSet *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+        handler.processEvents();
+        handler.getStatisticsSet().getIoLatencyHistogramSet(response);
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            RpcOutputStream cout(log::Severity::Information, controller);
+
+            cout << log::reset;
+
+            table::Table table;
+            auto &hdr = table[0];
+
+            auto setter = [&table](const std::string &operation,
+                                   const proto::IoStatisticsDescription &desc,
+                                   const proto::HistogramEntry &entry) {
+                auto &row = table[table.size()];
+
+                row << desc;
+                row["operation"] = operation;
+                for (int i = 0; i < entry.range_size(); i++) {
+                    auto end = entry.range(i).end();
+                    auto count = entry.range(i).count();
+                    row[std::to_string(end)] = count;
+                }
+            };
+
+            int count = response->histogram_size();
+            for (int i = 0; i < count; i++) {
+                const auto &histogram = response->histogram(i);
+                const auto &desc = histogram.desc();
+
+                setter("read", desc, histogram.read());
+                setter("write", desc, histogram.write());
+                setter("discard", desc, histogram.discard());
+                setter("flush", desc, histogram.flush());
+                setter("total", desc, histogram.total());
+            }
+
+            hdr.setupHeader();
+            cout << table << std::endl;
+            // The CSV output was requested, to prevent printing response in
+            // JSON format disable caller output
             cout << log::disable;
         }
     } catch (const Exception &ex) {
