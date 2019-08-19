@@ -14,8 +14,8 @@
 
 namespace octf {
 
+struct SocketConfig;
 class IConnectionTransceiverListener;
-class SocketConfig;
 class Packetizer;
 
 /**

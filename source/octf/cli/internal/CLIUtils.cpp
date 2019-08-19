@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-using namespace std;
-
 #include <octf/cli/internal/CLIUtils.h>
 
 #include <google/protobuf/util/json_util.h>

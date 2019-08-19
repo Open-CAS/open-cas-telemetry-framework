@@ -62,14 +62,14 @@ public:
 
     void setHidden(bool hidden) override;
 
-    virtual void setValueSet();
+    virtual void setValueSet() override;
 
     virtual void setOptions(
             const google::protobuf::FieldDescriptor *fieldDesc) override;
 
     virtual void parseToProtobuf(
             google::protobuf::Message *message,
-            const google::protobuf::FieldDescriptor *fieldDescriptor) {
+            const google::protobuf::FieldDescriptor *fieldDescriptor) override {
         // void cast in order to omit compilation warning
         (void) message;
         (void) fieldDescriptor;

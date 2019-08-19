@@ -111,7 +111,7 @@ public:
      * @brief Get description of this enum
      * @param desc
      */
-    void setDesc(const std::string &desc);
+    void setDesc(const std::string &desc) override;
 
     virtual void setOptions(
             const google::protobuf::FieldDescriptor *fieldDesc) override;
