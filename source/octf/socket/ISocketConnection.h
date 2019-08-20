@@ -14,7 +14,7 @@
 namespace octf {
 
 class ISocketConnection;
-class SocketConfig;
+struct SocketConfig;
 
 /** Connection Reference */
 typedef std::shared_ptr<ISocketConnection> SocketConnectionShRef;

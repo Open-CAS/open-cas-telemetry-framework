@@ -16,8 +16,8 @@
 
 namespace octf {
 
+struct SocketConfig;
 class SocketManager;
-class SocketConfig;
 class IClientEventHandler;
 
 /**

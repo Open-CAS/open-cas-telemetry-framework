@@ -18,7 +18,7 @@ public:
             , m_statisticsSet() {}
     virtual ~ParsedIoTraceEventHandlerStatistics() = default;
 
-    void handleIO(const proto::trace::ParsedEvent &io) {
+    void handleIO(const proto::trace::ParsedEvent &io) override {
         m_statisticsSet.count(io);
     }
 

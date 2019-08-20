@@ -118,7 +118,8 @@ public:
      */
     std::string toString() const;
 
-    virtual void setOptions(const google::protobuf::FieldDescriptor *fieldDesc);
+    virtual void setOptions(
+            const google::protobuf::FieldDescriptor *fieldDesc) override;
 
     void parseToProtobuf(
             google::protobuf::Message *message,

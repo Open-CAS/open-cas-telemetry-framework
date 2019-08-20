@@ -18,8 +18,8 @@
 
 namespace octf {
 
+struct SocketConfig;
 class SocketManager;
-class SocketConfig;
 class ConnectionContextDeleter;
 class IMethodHandler;
 

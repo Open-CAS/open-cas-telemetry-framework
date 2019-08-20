@@ -46,6 +46,11 @@ public:
      */
     bool isFinished();
 
+    /**
+     * @return Queue id associated with this reader
+     */
+    uint32_t getQueue() const;
+
 private:
     /**
      * @brief Input file descriptor

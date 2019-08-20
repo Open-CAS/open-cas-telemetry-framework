@@ -114,4 +114,8 @@ bool TraceFileReader::isFinished() {
     return true;
 }
 
+uint32_t TraceFileReader::getQueue() const {
+    return m_queue;
+}
+
 }  // namespace octf

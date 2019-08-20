@@ -50,7 +50,7 @@ public:
         return m_id;
     }
 
-    const NodePath &getNodePath() const {
+    const NodePath &getNodePath() const override {
         return m_path;
     }
 

@@ -22,10 +22,10 @@
 
 namespace octf {
 
+struct SocketConfig;
 class ICommunicationManager;
 class ConnectionTransceiver;
 class ConnectionContext;
-class SocketConfig;
 class MethodClient;
 class Method;
 

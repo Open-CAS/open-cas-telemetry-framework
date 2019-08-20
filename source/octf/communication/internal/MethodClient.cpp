@@ -21,7 +21,6 @@ MethodClient::MethodClient(const NodeWeakRef &node,
         , m_mId(methodId)
         , m_node(node)
         , m_sid()
-        , m_methodDescriptor(nullptr)
         , m_rpcController(controller)
         , m_request(request)
         , m_response(response)

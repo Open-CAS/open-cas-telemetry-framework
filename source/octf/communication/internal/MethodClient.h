@@ -125,11 +125,6 @@ private:
     uint32_t m_sid;
 
     /**
-     * Method descriptor
-     */
-    const google::protobuf::MethodDescriptor *m_methodDescriptor;
-
-    /**
      * RPC controller
      */
     google::protobuf::RpcController *m_rpcController;
