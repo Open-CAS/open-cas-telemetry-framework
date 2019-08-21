@@ -60,7 +60,7 @@ public:
      *
      * @param[out] set protocol buffer IO histogram object to be filled
      */
-    void getIoLatencyHistogramSet(proto::HistogramSet *set) const;
+    void getIoLatencyHistogramSet(proto::IoHistogramSet *set) const;
 
 private:
     struct Key;

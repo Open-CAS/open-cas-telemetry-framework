@@ -83,7 +83,7 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
 void octf::InterfaceTraceParsingImpl::GetLatencyHistogram(
         ::google::protobuf::RpcController *controller,
         const ::octf::proto::GetTraceStatisticsRequest *request,
-        ::octf::proto::HistogramSet *response,
+        ::octf::proto::IoHistogramSet *response,
         ::google::protobuf::Closure *done) {
     try {
         ParsedIoTraceEventHandlerStatistics handler(request->tracepath());

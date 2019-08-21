@@ -67,7 +67,8 @@ service InterfaceTraceParsing {
         option (opts_command).cli_desc = "Gets trace statistics";
     }
 
-    rpc GetLatencyHistogram(GetTraceStatisticsRequest) returns (HistogramSet) {
+    rpc GetLatencyHistogram(GetTraceStatisticsRequest)
+        returns (IoHistogramSet) {
         option (opts_command).cli = true;
 
         option (opts_command).cli_long_key = "get-latency-histogram";

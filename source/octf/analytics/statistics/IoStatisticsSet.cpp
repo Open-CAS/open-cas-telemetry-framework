@@ -136,7 +136,8 @@ void IoStatisticsSet::getIoStatisticsSet(proto::IoStatisticsSet *set) const {
     }
 }
 
-void IoStatisticsSet::getIoLatencyHistogramSet(proto::HistogramSet *set) const {
+void IoStatisticsSet::getIoLatencyHistogramSet(
+        proto::IoHistogramSet *set) const {
     // For each pair in map
     for (const auto &stats : m_map) {
         auto dst = set->add_histogram();

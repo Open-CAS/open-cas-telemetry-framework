@@ -225,6 +225,6 @@ message IoHistogram {
 /**
  * Set of histograms grouped by devices
  */
-message HistogramSet {
+message IoHistogramSet {
     repeated IoHistogram histogram = 1;
 }
