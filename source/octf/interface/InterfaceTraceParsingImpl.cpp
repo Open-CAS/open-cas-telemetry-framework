@@ -100,7 +100,7 @@ void octf::InterfaceTraceParsingImpl::GetLatencyHistogram(
 
             auto setter = [&table](const std::string &operation,
                                    const proto::IoStatisticsDescription &desc,
-                                   const proto::HistogramEntry &entry) {
+                                   const proto::Histogram &entry) {
                 auto &row = table[table.size()];
 
                 row << desc;

@@ -75,10 +75,9 @@ public:
      * @brief Copies distribution histogram into protocol buffer histogram
      * object
      *
-     * @param[out] statistics Protocol buffer statistics values object to be
-     * filled
+     * @param[out] statistics Protocol buffer histogram object to be filled
      */
-    void getHistogram(proto::HistogramEntry *histogram) const;
+    void getHistogram(proto::Histogram *histogram) const;
 
     /**
      * Gets count of items in this distribution

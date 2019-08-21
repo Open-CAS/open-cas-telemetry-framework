@@ -156,30 +156,36 @@ void Distribution::getStatistics(
     }
 
     const std::vector<double> PERCENTILES{90.00, 99.00, 99.90, 99.99};
-    uint64_t iP = 0;
+    uint64_t iPercentile = 0;
     double sum = 0.0;
+    double total = m_total;
 
     for (const auto &bucket : m_histogram) {
         for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
             sum += bucket.Sum[range];
 
-            if ((sum > PERCENTILES[iP] * (double) m_total / 100.0) &&
-                (iP < PERCENTILES.size())) {
+            // Check if cumulative sum of occurrences in buckets exceeds
+            // given percentile
+            if ((sum > PERCENTILES[iPercentile] * total / 100.0) &&
+                (iPercentile < PERCENTILES.size())) {
+                // Because we put values into ranges, let's calculate the
+                // middle of the range as approximation of given percentile
                 double value = bucket.Begin;
                 value += bucket.RangeSize * range;
                 value += (double) bucket.RangeSize / 2.0;
 
                 auto &map = *statistics->mutable_percentiles();
-                auto &percentile = map[std::to_string(PERCENTILES[iP]) + "th"];
+                auto &percentile =
+                        map[std::to_string(PERCENTILES[iPercentile]) + "th"];
                 percentile = value;
 
-                iP++;
+                iPercentile++;
             }
         }
     }
 }
 
-void Distribution::getHistogram(proto::HistogramEntry *histogram) const {
+void Distribution::getHistogram(proto::Histogram *histogram) const {
     histogram->Clear();
     histogram->set_unit(m_unit);
 
@@ -192,7 +198,7 @@ void Distribution::getHistogram(proto::HistogramEntry *histogram) const {
         uint64_t rangeBegin = bucket.Begin;
         uint64_t rangeEnd = rangeBegin + bucket.RangeSize - 1;
 
-        for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
+        for (uint64_t range = 0; range < bucket.Count.size(); range++) {
             auto protoRange = histogram->add_range();
             protoRange->set_begin(rangeBegin);
             protoRange->set_end(rangeEnd);

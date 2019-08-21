@@ -175,9 +175,9 @@ message HistogramRange {
 /**
  * Histogram entry
  */
-message HistogramEntry {
+message Histogram {
     /**
-     * Histogram values unit
+     * Histogram ranges unit
      */
     string unit = 1;
 
@@ -190,7 +190,7 @@ message HistogramEntry {
 /**
  * IO histogram for a device
  */
-message Histogram {
+message IoHistogram {
     /**
      * Device description for this statistics
      */
@@ -211,20 +211,20 @@ message Histogram {
      */
     reserved 12 to 100;
 
-    HistogramEntry read = 101;
+    Histogram read = 101;
 
-    HistogramEntry write = 102;
+    Histogram write = 102;
 
-    HistogramEntry discard = 103;
+    Histogram discard = 103;
 
-    HistogramEntry flush = 104;
+    Histogram flush = 104;
 
-    HistogramEntry total = 105;
+    Histogram total = 105;
 }
 
 /**
  * Set of histograms grouped by devices
  */
 message HistogramSet {
-    repeated Histogram histogram = 1;
+    repeated IoHistogram histogram = 1;
 }
