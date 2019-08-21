@@ -11,6 +11,8 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandler.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerCsvPrinter.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerJsonPrinter.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerWorkset.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerWorkset.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
