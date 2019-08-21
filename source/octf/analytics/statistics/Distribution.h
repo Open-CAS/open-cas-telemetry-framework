@@ -64,12 +64,20 @@ public:
     void operator+=(uint64_t value);
 
     /**
-     * @brief Copies distribution of values into protocol buffer distribution
+     * @brief Copies distribution's values into protocol buffer object
+     *
+     * @param[out] statistics Protocol buffer statistics values object to be
+     * filled
+     */
+    void getStatistics(proto::StatisticsEntryValues *statistics) const;
+
+    /**
+     * @brief Copies distribution histogram into protocol buffer histogram
      * object
      *
-     * @param[out] distribution Protocol buffer distribution object to be filled
+     * @param[out] statistics Protocol buffer histogram object to be filled
      */
-    void getDistribution(proto::Distribution *distribution) const;
+    void getHistogram(proto::Histogram *histogram) const;
 
     /**
      * Gets count of items in this distribution

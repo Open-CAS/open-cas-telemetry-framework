@@ -140,14 +140,74 @@ void Distribution::operator+=(uint64_t value) {
     bucket += value;
 }
 
-void Distribution::getDistribution(proto::Distribution *distribution) const {
-    distribution->Clear();
-    distribution->set_avarage(m_count ? m_total / m_count : 0);
-    distribution->set_min(m_count ? m_min : 0);
-    distribution->set_max(m_max);
-    distribution->set_count(m_count);
-    distribution->set_total(m_total);
-    distribution->set_unit(m_unit);
+void Distribution::getStatistics(
+        proto::StatisticsEntryValues *statistics) const {
+    statistics->Clear();
+    statistics->set_average(m_count ? m_total / m_count : 0);
+    statistics->set_min(m_count ? m_min : 0);
+    statistics->set_max(m_max);
+    statistics->set_count(m_count);
+    statistics->set_total(m_total);
+    statistics->set_unit(m_unit);
+
+    if (!m_count) {
+        // statistics empty no need to set percentiles
+        return;
+    }
+
+    const std::vector<double> PERCENTILES{90.00, 99.00, 99.90, 99.99};
+    uint64_t iPercentile = 0;
+    double sum = 0.0;
+    double total = m_total;
+
+    for (const auto &bucket : m_histogram) {
+        for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
+            sum += bucket.Sum[range];
+
+            // Check if cumulative sum of occurrences in buckets exceeds
+            // given percentile
+            if ((sum > PERCENTILES[iPercentile] * total / 100.0) &&
+                (iPercentile < PERCENTILES.size())) {
+                // Because we put values into ranges, let's calculate the
+                // middle of the range as approximation of given percentile
+                double value = bucket.Begin;
+                value += bucket.RangeSize * range;
+                value += (double) bucket.RangeSize / 2.0;
+
+                auto &map = *statistics->mutable_percentiles();
+                auto &percentile =
+                        map[std::to_string(PERCENTILES[iPercentile]) + "th"];
+                percentile = value;
+
+                iPercentile++;
+            }
+        }
+    }
+}
+
+void Distribution::getHistogram(proto::Histogram *histogram) const {
+    histogram->Clear();
+    histogram->set_unit(m_unit);
+
+    if (!m_count) {
+        // statistics empty no need to set histogram
+        return;
+    }
+
+    for (const auto &bucket : m_histogram) {
+        uint64_t rangeBegin = bucket.Begin;
+        uint64_t rangeEnd = rangeBegin + bucket.RangeSize - 1;
+
+        for (uint64_t range = 0; range < bucket.Count.size(); range++) {
+            auto protoRange = histogram->add_range();
+            protoRange->set_begin(rangeBegin);
+            protoRange->set_end(rangeEnd);
+            protoRange->set_count(bucket.Count[range]);
+
+            rangeBegin += bucket.RangeSize;
+            rangeEnd += bucket.RangeSize;
+        }
+    }
 }
 
 Distribution::Bucket &Distribution::getBucket(uint64_t value) {

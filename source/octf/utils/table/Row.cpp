@@ -61,5 +61,12 @@ bool Row::empty() const {
     return 0 == m_map.getColumnCount();
 }
 
+void octf::table::Row::setupHeader() {
+    for (const auto &association : m_map.getColumnsAssociation()) {
+        const auto &name = association.first;
+        (*this)[name] = name;
+    }
+}
+
 }  // namespace table
 }  // namespace octf

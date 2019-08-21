@@ -54,6 +54,14 @@ public:
      */
     void getIoStatisticsSet(proto::IoStatisticsSet *set) const;
 
+    /**
+     * @brief Copies gathered IO latency statistics into protocol buffer
+     * histogram set object
+     *
+     * @param[out] set protocol buffer IO histogram object to be filled
+     */
+    void getIoLatencyHistogramSet(proto::IoHistogramSet *set) const;
+
 private:
     struct Key;
     /**

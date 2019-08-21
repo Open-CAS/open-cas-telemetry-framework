@@ -9,10 +9,10 @@ import "trace.proto";
 package octf.proto;
 
 /**
- * Distribution of values. It provides info about: maximum value, minimum value,
- * average value, etc.
+ * Values of statistics entry. It provides info about: maximum value, minimum
+ * value, average value, etc.
  */
-message Distribution {
+message StatisticsEntryValues {
     /**
      * Unit for values of this distribution
      */
@@ -21,7 +21,7 @@ message Distribution {
     /**
      * Average value of distribution's items
      */
-    uint64 avarage = 2;
+    uint64 average = 2;
 
     /**
      * Minimum value of distribution's items
@@ -42,12 +42,22 @@ message Distribution {
      * Total sum of items in this distribution
      */
     uint64 total = 6;
+
+    /**
+     * Reserve fields for other distribution's items
+     */
+    reserved 7 to 10;
+
+    /**
+     * Map of percentiles values
+     */
+    map<string, double> percentiles = 11;
 }
 
 /**
- * IO statistics metric
+ * A statistics metric
  */
-message IoStatisticsMetric {
+message StatisticsMetric {
     /**
      * Metric Unit
      */
@@ -62,12 +72,12 @@ message IoStatisticsEntry {
     /**
      * Size distribution
      */
-    Distribution size = 1;
+    StatisticsEntryValues size = 1;
 
     /**
      * Latency distribution
      */
-    Distribution latency = 2;
+    StatisticsEntryValues latency = 2;
 
     /**
      * Reserve fields for other distribution
@@ -77,7 +87,7 @@ message IoStatisticsEntry {
     /**
      * Metrics
      */
-    map<string, IoStatisticsMetric> metrics = 11;
+    map<string, StatisticsMetric> metrics = 11;
 
     /**
      * Reserve fields for other metrics
@@ -140,4 +150,81 @@ message IoStatistics {
  */
 message IoStatisticsSet {
     repeated IoStatistics statistics = 1;
+}
+
+/**
+ * Histogram range
+ */
+message HistogramRange {
+    /**
+     * Begin of histogram entry range
+     */
+    uint64 begin = 1;
+
+    /**
+     * End of histogram entry range
+     */
+    uint64 end = 2;
+
+    /**
+     * Count of values within histogram entry range
+     */
+    uint64 count = 3;
+}
+
+/**
+ * Histogram entry
+ */
+message Histogram {
+    /**
+     * Histogram ranges unit
+     */
+    string unit = 1;
+
+    /**
+     * Histogram ranges
+     */
+    repeated HistogramRange range = 2;
+}
+
+/**
+ * IO histogram for a device
+ */
+message IoHistogram {
+    /**
+     * Device description for this statistics
+     */
+    IoStatisticsDescription desc = 1;
+
+    /**
+     * Reservation for other descriptions
+     */
+    reserved 2 to 10;
+
+    /**
+     * Duration
+     */
+    uint64 duration = 11;
+
+    /**
+     * Reserved for other simple metrics
+     */
+    reserved 12 to 100;
+
+    Histogram read = 101;
+
+    Histogram write = 102;
+
+    Histogram discard = 103;
+
+    Histogram flush = 104;
+
+    Histogram total = 105;
+}
+
+/**
+ * Set of histograms grouped by devices
+ */
+message IoHistogramSet {
+    repeated IoHistogram histogram = 1;
 }
