@@ -17,7 +17,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 1
+#define IOTRACE_EVENT_VERSION_MAJOR 2
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
@@ -36,8 +36,11 @@ typedef enum {
     /** IO completion event */
     iotrace_event_type_io_cmpl = 'C',
 
-    /** IO queue event */
+    /** Filesystem meta information event */
     iotrace_event_type_fs_meta = 'F',
+
+    /** File name event */
+    iotrace_event_type_fs_file_name = 'N',
 } iotrace_event_type;
 
 /**
@@ -182,14 +185,29 @@ struct iotrace_event_fs_meta {
     /** File ID */
     uint64_t file_id;
 
-    /** File parent ID */
-    uint64_t file_parent_id;
-
     /** File offset in sectors */
     uint64_t file_offset;
 
     /** File size in sectors */
     uint64_t file_size;
+} __attribute__((packed, aligned(8)));
+
+struct iotrace_event_fs_file_name {
+    /** Trace event header */
+    struct iotrace_event_hdr hdr;
+
+    /** Device Id */
+    uint64_t device_id;
+
+    /** File ID */
+    uint64_t file_id;
+
+    /** File parent ID */
+    uint64_t file_parent_id;
+
+    /** File name */
+    char file_name[64];
+    // TODO (mariuszbarczak) Make file name size dynamic
 } __attribute__((packed, aligned(8)));
 
 #ifdef __cplusplus

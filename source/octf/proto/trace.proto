@@ -102,15 +102,26 @@ message EventIoFilesystemMeta {
     /** File ID */
     uint64 fileId = 2;
 
+    /** File offset in sectors */
+    uint64 fileOffset = 3;
+
+    /** File size in sectors */
+    uint64 fileSize = 4;
+};
+
+message EventIoFilesystemFileName {
+    /** Device ID */
+    uint64 deviceId = 1;
+
+    /** File ID */
+    uint64 fileId = 2;
+
     /** File parent ID */
     uint64 fileParentId = 3;
 
-    /** File offset in sectors */
-    uint64 fileOffset = 4;
-
-    /** File size in sectors */
-    uint64 fileSize = 5;
-};
+    /** File Name */
+    string fileName = 4;
+}
 
 message Event {
     /** Trace event header */
@@ -121,5 +132,6 @@ message Event {
         EventDeviceDescription deviceDescription = 3;
         EventIoFilesystemMeta filesystemMeta = 4;
         EventIoCompletion ioCompletion = 5;
+        EventIoFilesystemFileName filesystemFileName = 6;
     }
 }

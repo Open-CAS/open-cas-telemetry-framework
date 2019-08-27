@@ -15,7 +15,8 @@ TraceConverter::TraceConverter()
         : m_evDesc(std::make_shared<proto::trace::Event>())
         , m_evIO(std::make_shared<proto::trace::Event>())
         , m_evIOCmpl(std::make_shared<proto::trace::Event>())
-        , m_evFsMeta(std::make_shared<proto::trace::Event>()) {}
+        , m_evFsMeta(std::make_shared<proto::trace::Event>())
+        , m_evFsFileName(std::make_shared<proto::trace::Event>()) {}
 
 std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         const void *trace,
@@ -129,6 +130,26 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsMeta->set_filesize(event->file_size);
 
         return m_evFsMeta;
+    }
+
+    case iotrace_event_type_fs_file_name: {
+        if (size != sizeof(struct iotrace_event_fs_file_name)) {
+            return nullptr;
+        }
+        auto event =
+                static_cast<const struct iotrace_event_fs_file_name *>(trace);
+
+        protobufHdr = m_evFsFileName->mutable_header();
+        protobufHdr->set_sid(hdr->sid);
+        protobufHdr->set_timestamp(hdr->timestamp);
+
+        auto protoFsFileName = m_evFsFileName->mutable_filesystemfilename();
+        protoFsFileName->set_deviceid(event->device_id);
+        protoFsFileName->set_fileid(event->file_id);
+        protoFsFileName->set_fileparentid(event->file_parent_id);
+        protoFsFileName->set_filename(event->file_name);
+
+        return m_evFsFileName;
     }
 
     default:

@@ -31,6 +31,7 @@ private:
     std::shared_ptr<proto::trace::Event> m_evIO;
     std::shared_ptr<proto::trace::Event> m_evIOCmpl;
     std::shared_ptr<proto::trace::Event> m_evFsMeta;
+    std::shared_ptr<proto::trace::Event> m_evFsFileName;
 };
 
 }  // namespace octf
