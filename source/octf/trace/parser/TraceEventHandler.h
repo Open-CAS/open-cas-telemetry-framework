@@ -97,6 +97,8 @@ public:
         return true;
     }
 
+    typedef EventType eventType;
+
 protected:
     /**
      * @brief Checks if cancel of event processing has been requested.

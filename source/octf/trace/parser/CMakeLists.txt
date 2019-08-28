@@ -17,4 +17,5 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.h
+    ${CMAKE_CURRENT_LIST_DIR}/HandlerRunner.h
 )
