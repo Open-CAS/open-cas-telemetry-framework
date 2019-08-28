@@ -147,6 +147,13 @@ private:
     std::map<Key, std::list<MapEvent>> m_map;
 };
 
+/**
+ * Tiny structure of file name containing device id, file id, parent file id,
+ * and name
+ *
+ * To reduced memory overhead, we introduced own version of FileName,
+ * instead of using protocol buffer one
+ */
 struct ParsedIoTraceEventHandler::FileName {
     uint64_t DeviceId;
     uint64_t Id;

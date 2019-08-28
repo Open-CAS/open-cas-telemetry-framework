@@ -23,16 +23,13 @@ message ParsedEvent {
         uint32 ioClass = 3;
 
         /** Operation type: read, write, trim */
-        IoType operation = 5;
+        IoType operation = 4;
 
         /** Flush flag */
-        bool flush = 6;
+        bool flush = 5;
 
         /** FUA flag */
-        bool fua = 7;
-
-        /** Reserve not presented fields of EventIo */
-        reserved 4;
+        bool fua = 6;
 
         /** Flags indicates if IO ended with an error */
         bool error = 10000;
@@ -53,23 +50,17 @@ message ParsedEvent {
 
         /** Device Name */
         string name = 2;
-
-        /** Reserve not presented fields of EventDeviceDescription */
-        reserved 3;
     }
 
     message FileInfo {
         /** File ID */
-        uint64 id = 2;
+        uint64 id = 1;
 
         /** File offset in sectors */
-        uint64 offset = 3;
+        uint64 offset = 2;
 
         /** File size in sectors */
-        uint64 size = 4;
-
-        /** Reserve not presented fields of EventIoFilesystemMeta */
-        reserved 1;
+        uint64 size = 3;
 
         /** File path */
         string path = 1000;
