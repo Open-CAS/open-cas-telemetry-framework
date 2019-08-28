@@ -27,6 +27,14 @@ WorksetCalculator::Range &WorksetCalculator::Range::operator=(
     return *this;
 }
 
+WorksetCalculator::Range &WorksetCalculator::Range::operator=(Range &&other) {
+    if (this != &other) {
+        this->begin = other.begin;
+        this->end = other.end;
+    }
+    return *this;
+}
+
 /**
  * @brief Ranges are equal if they overlap
  */
@@ -73,6 +81,10 @@ WorksetCalculator &octf::WorksetCalculator::operator=(
     }
     return *this;
 }
+
+WorksetCalculator::WorksetCalculator(WorksetCalculator &&other)
+        : m_hitRanges(std::move(other.m_hitRanges)) {}
+
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
     if (len == 0) {

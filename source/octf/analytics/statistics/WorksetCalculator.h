@@ -22,6 +22,7 @@ public:
     WorksetCalculator();
     virtual ~WorksetCalculator() = default;
     WorksetCalculator(const WorksetCalculator &);
+    WorksetCalculator(WorksetCalculator &&other);
     WorksetCalculator &operator=(const WorksetCalculator &other);
 
     /**
@@ -48,6 +49,7 @@ private:
         Range(uint64_t _begin, uint64_t _end);
         Range(const Range &other);
         Range &operator=(const Range &other);
+        Range &operator=(Range &&other);
         bool operator==(const Range &other) const;
         bool operator<(const Range &right) const;
         static bool doRangesOverlap(const Range &r1, const Range &r2);
