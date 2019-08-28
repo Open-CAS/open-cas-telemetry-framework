@@ -18,11 +18,23 @@ WorksetCalculator::Range::Range(const Range &other)
         : begin(other.begin)
         , end(other.end) {}
 
+WorksetCalculator::Range::Range(Range &&other)
+        : begin(std::move(other.begin))
+        , end(std::move(other.end)) {}
+
 WorksetCalculator::Range &WorksetCalculator::Range::operator=(
         const Range &other) {
     if (this != &other) {
         this->begin = other.begin;
         this->end = other.end;
+    }
+    return *this;
+}
+
+WorksetCalculator::Range &WorksetCalculator::Range::operator=(Range &&other) {
+    if (this != &other) {
+        this->begin = std::move(other.begin);
+        this->end = std::move(other.end);
     }
     return *this;
 }
@@ -73,6 +85,18 @@ WorksetCalculator &octf::WorksetCalculator::operator=(
     }
     return *this;
 }
+
+WorksetCalculator &octf::WorksetCalculator::operator=(
+        WorksetCalculator &&other) {
+    if (this != &other) {
+        m_hitRanges = std::move(other.m_hitRanges);
+    }
+    return *this;
+}
+
+WorksetCalculator::WorksetCalculator(WorksetCalculator &&other)
+        : m_hitRanges(std::move(other.m_hitRanges)) {}
+
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
     if (len == 0) {
