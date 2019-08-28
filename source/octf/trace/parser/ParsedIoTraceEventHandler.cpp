@@ -147,6 +147,58 @@ private:
     std::map<Key, std::list<MapEvent>> m_map;
 };
 
+struct ParsedIoTraceEventHandler::FileName {
+    uint64_t DeviceId;
+    uint64_t Id;
+    uint64_t ParentId;
+    std::string Name;
+
+    FileName()
+            : DeviceId(0)
+            , Id(0)
+            , ParentId(0)
+            , Name() {}
+
+    FileName(const proto::trace::EventIoFilesystemFileName &event)
+            : DeviceId(event.deviceid())
+            , Id(event.fileid())
+            , ParentId(event.fileparentid())
+            , Name(event.filename()) {}
+
+    FileName(const FileName &other)
+            : DeviceId(other.DeviceId)
+            , Id(other.Id)
+            , ParentId(other.ParentId)
+            , Name(other.Name) {}
+
+    FileName &operator=(const FileName &other) {
+        if (this != &other) {
+            DeviceId = other.DeviceId;
+            Id = other.Id;
+            ParentId = other.ParentId;
+            Name = other.Name;
+        }
+
+        return *this;
+    }
+
+    bool operator==(const FileName &other) const {
+        return Id == other.Id && DeviceId == other.DeviceId;
+    }
+
+    bool operator!=(const FileName &other) const {
+        return !(*this == other);
+    }
+
+    bool operator<(const FileName &other) const {
+        if (DeviceId != other.DeviceId) {
+            return DeviceId < other.DeviceId;
+        } else {
+            return Id < other.Id;
+        }
+    }
+};
+
 constexpr uint64_t ParsedIoTraceEventHandler_QueueLimit = 10000;
 
 ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
@@ -155,6 +207,7 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         , m_queue()
         , m_eventMapping(new ParsedIoTraceEventHandler::Map())
         , m_devices()
+        , m_fileNames()
         , m_timestampOffset(0)
         , m_sidOffset(0)
         , m_limit(ParsedIoTraceEventHandler_QueueLimit)
@@ -291,6 +344,28 @@ void ParsedIoTraceEventHandler::handleEvent(
         }
     } break;
 
+    case Event::kFilesystemFileNameFieldNumber: {
+        // TODO (mariuszbarczak) set limit on m_fileNames
+
+        // Create SID mapping
+        auto sidResult =
+                m_fileNames.emplace(FileName(traceEvent->filesystemfilename()));
+
+        if (!sidResult.second) {
+            // Equivalent element already exist
+
+            if (sidResult.first == m_fileNames.end()) {
+                // Iterator shall point at the existing element
+                throw Exception(
+                        "Error during trace parsing, cannot cache file name");
+            }
+
+            // Exchange old one with new one
+            m_fileNames.erase(sidResult.first);
+            m_fileNames.insert(FileName(traceEvent->filesystemfilename()));
+        }
+    } break;
+
     default: { } break; }
 }
 
@@ -360,6 +435,11 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
         event.mutable_header()->set_timestamp(0);
     }
 
+    if (event.has_file()) {
+        getFilePath(devId, event.file().id(),
+                    *event.mutable_file()->mutable_path());
+    }
+
     // Call handler
     handleIO(event);
 
@@ -370,6 +450,31 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     }
 
     m_queue.pop();
+}
+
+void ParsedIoTraceEventHandler::getFilePath(uint64_t devId,
+                                            uint64_t id,
+                                            std::string &path) {
+    // TODO (mariuszbarczak) Provide path caching with limit
+
+    FileName key;
+    key.Id = id;
+    key.DeviceId = devId;
+
+    auto iter = m_fileNames.find(key);
+    if (iter != m_fileNames.end()) {
+        const auto &name = *iter;
+
+        if (name.Id != name.ParentId) {
+            getFilePath(devId, name.ParentId, path);
+            path += "/";
+            path += name.Name;
+        }
+    } else {
+        if (path != "") {
+            path += "../";
+        }
+    }
 }
 
 }  // namespace octf
