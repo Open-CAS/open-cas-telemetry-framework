@@ -1,4 +1,5 @@
 /*
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #ifndef SOURCE_OCTF_TRACE_PARSER_HANDLERRUNNER_H
@@ -29,7 +30,7 @@ public:
     virtual ~HandlerRunner() = default;
 
     /**
-     * @brief Add handler to runner
+     * @brief Adds handler to runner
      * @param handler Handler to be run
      */
     void addHandler(std::shared_ptr<Handler> handler) {
@@ -38,7 +39,7 @@ public:
 
     // TODO (trybicki) Limit thread number based on available cpus and/or memory
     /**
-     * @brief Run all added handlers
+     * @brief Runs all added handlers
      */
     void run() {
         for (auto &handler : m_handlers) {
@@ -54,7 +55,7 @@ public:
     }
 
     /**
-     * @brief Get a list of handlers which finished processing
+     * @brief Gets a list of handlers which finished processing
      *
      * @note Call this function only after run() has finished
      */
