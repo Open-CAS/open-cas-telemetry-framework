@@ -24,9 +24,10 @@ public:
     WorksetCalculator(const WorksetCalculator &);
     WorksetCalculator(WorksetCalculator &&other);
     WorksetCalculator &operator=(const WorksetCalculator &other);
+    WorksetCalculator &operator=(WorksetCalculator &&other);
 
     /**
-     * @brief Insert a range to be calculated into workset
+     * @brief Inserts a range to be calculated into workset
      *
      * @note Range with a length of zero is ignored
      *
@@ -48,6 +49,7 @@ private:
         Range();
         Range(uint64_t _begin, uint64_t _end);
         Range(const Range &other);
+        Range(Range &&other);
         Range &operator=(const Range &other);
         Range &operator=(Range &&other);
         bool operator==(const Range &other) const;
