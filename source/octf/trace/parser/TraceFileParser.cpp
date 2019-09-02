@@ -81,6 +81,7 @@ void TraceFileParser::deinit() {
         reader->deinit();
     }
     m_readers.clear();
+    m_events.clear();
 }
 
 void TraceFileParser::parseTraceEvent(google::protobuf::Message *traceEvent) {
