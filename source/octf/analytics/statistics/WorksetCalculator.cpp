@@ -97,14 +97,14 @@ WorksetCalculator &octf::WorksetCalculator::operator=(
         WorksetCalculator &&other) {
     if (this != &other) {
         m_hitRanges = std::move(other.m_hitRanges);
-        m_max = std::move(m_max);
+        m_max = std::move(other.m_max);
     }
     return *this;
 }
 
 WorksetCalculator::WorksetCalculator(WorksetCalculator &&other)
         : m_hitRanges(std::move(other.m_hitRanges))
-        , m_max(std::move(m_max)) {}
+        , m_max(std::move(other.m_max)) {}
 
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
