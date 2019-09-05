@@ -36,6 +36,8 @@ public:
      */
     void insertRange(uint64_t begin, uint64_t length);
 
+    void removeRange(uint64_t begin, uint64_t length);
+
     /**
      * @return Workset of all given ranges
      */
@@ -64,6 +66,7 @@ private:
      * Set of ranges
      */
     std::set<Range> m_hitRanges;
+    uint64_t m_max;
 };
 
 }  // namespace octf

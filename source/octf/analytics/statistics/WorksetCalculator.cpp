@@ -73,15 +73,18 @@ bool WorksetCalculator::Range::operator<(const Range &right) const {
 }
 
 WorksetCalculator::WorksetCalculator()
-        : m_hitRanges() {}
+        : m_hitRanges()
+        , m_max(0) {}
 
 WorksetCalculator::WorksetCalculator(const WorksetCalculator &other)
-        : m_hitRanges(other.m_hitRanges) {}
+        : m_hitRanges(other.m_hitRanges)
+        , m_max(other.m_max) {}
 
 WorksetCalculator &octf::WorksetCalculator::operator=(
         const WorksetCalculator &other) {
     if (this != &other) {
         m_hitRanges = other.m_hitRanges;
+        m_max = other.m_max;
     }
     return *this;
 }
@@ -90,12 +93,14 @@ WorksetCalculator &octf::WorksetCalculator::operator=(
         WorksetCalculator &&other) {
     if (this != &other) {
         m_hitRanges = std::move(other.m_hitRanges);
+        m_max = std::move(m_max);
     }
     return *this;
 }
 
 WorksetCalculator::WorksetCalculator(WorksetCalculator &&other)
-        : m_hitRanges(std::move(other.m_hitRanges)) {}
+        : m_hitRanges(std::move(other.m_hitRanges))
+        , m_max(std::move(m_max)) {}
 
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
@@ -124,7 +129,7 @@ uint64_t WorksetCalculator::getWorkset() const {
         workset += (range.end - range.begin);
     }
 
-    return workset;
+    return std::max(m_max, workset);
 }
 
 void WorksetCalculator::mergeRanges(const Range &newRange,
@@ -147,13 +152,49 @@ void WorksetCalculator::mergeRanges(const Range &newRange,
         overlapIter = m_hitRanges.erase(overlapIter);
     }
 
-    // Remember the first range which does not overlap wih newRange
+    // Remember the first range which does not overlap with newRange
     // - we will insert the merged range right before it
     std::set<Range>::const_iterator insertHint = overlapIter;
 
     // Insert a new range merged from deleted ranges
     Range merged(minBegin, maxEnd);
     m_hitRanges.insert(insertHint, std::move(merged));
+}
+
+void WorksetCalculator::removeRange(uint64_t begin, uint64_t length) {
+    // Create range to be removed
+    Range newRange(begin, begin + length);
+    Range splitBegin, splitEnd;
+
+    auto iter = m_hitRanges.find(newRange);
+    if (iter == m_hitRanges.end()) {
+        return;
+    }
+
+    m_max = std::max(getWorkset(), m_max);
+
+    while (iter != m_hitRanges.end() &&
+           Range::doRangesOverlap(newRange, *iter)) {
+        if (iter->begin < newRange.begin) {
+            splitBegin.begin = iter->begin;
+            splitBegin.end = newRange.begin - 1;
+        }
+
+        if (iter->end > newRange.end) {
+            splitEnd.begin = newRange.end + 1;
+            splitEnd.end = iter->end;
+        }
+
+        iter = m_hitRanges.erase(iter);
+    }
+
+    if (splitBegin.begin != splitBegin.end) {
+        m_hitRanges.insert(splitBegin);
+    }
+
+    if (splitEnd.begin != splitEnd.end) {
+        m_hitRanges.insert(splitEnd);
+    }
 }
 
 }  // namespace octf
