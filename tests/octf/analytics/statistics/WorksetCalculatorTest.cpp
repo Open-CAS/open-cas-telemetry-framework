@@ -14,7 +14,7 @@ using namespace octf;
 TEST(WorksetCalculator, exclusiveRanges) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int len = 10;
@@ -32,7 +32,7 @@ TEST(WorksetCalculator, exclusiveRanges) {
 TEST(WorksetCalculator, identicalRanges) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int len = 10;
@@ -48,7 +48,7 @@ TEST(WorksetCalculator, identicalRanges) {
 TEST(WorksetCalculator, subRanges) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int maxLen = ranges * 2 + 2;
@@ -75,7 +75,7 @@ TEST(WorksetCalculator, subRanges) {
 TEST(WorksetCalculator, subRanges2) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int currentLen = 1;
@@ -98,7 +98,7 @@ TEST(WorksetCalculator, subRanges2) {
 TEST(WorksetCalculator, adjacentRanges) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int len = 10;
@@ -116,7 +116,7 @@ TEST(WorksetCalculator, adjacentRanges) {
 TEST(WorksetCalculator, overlappingRanges) {
     WorksetCalculator wc;
 
-    int ranges = 100000;
+    int ranges = 10000;
     int range = 0;
 
     int len = 11;
@@ -184,4 +184,86 @@ TEST(WorksetCalculator, randomRanges2) {
     wc.insertRange(begin, len);
 
     ASSERT_EQ(wc.getWorkset(), len);
+}
+
+TEST(WorksetCalculator, removeRanges) {
+    WorksetCalculator wc;
+
+    int ranges = 10000;
+    int range = 0;
+
+    int len = 11;
+    int begin = 0;
+
+    // Overlap ranges like so:
+    // [0-11], [10-21], [20-31], ...
+    for (; range < ranges; begin += (len - 1), range++) {
+        wc.insertRange(begin, len);
+    }
+
+    uint64_t worksetAfterInserts = ranges * len - ranges * 1 + 1;
+    ASSERT_EQ(wc.getWorkset(), worksetAfterInserts);
+
+    // Remove every second range:
+    // [0-11], [20-31], ...
+    range = 0;
+    begin = 0;
+    for (; range < ranges; begin += 2 * (len - 1), range += 2) {
+        wc.insertRange(begin, len);
+    }
+
+    // Workset should be the same
+    ASSERT_EQ(wc.getWorkset(), worksetAfterInserts);
+
+    // Add ranges again
+    range = 0;
+    begin = 0;
+    for (; range < ranges; begin += (len - 1), range++) {
+        wc.insertRange(begin, len);
+    }
+
+    // Workset should be the same
+    ASSERT_EQ(wc.getWorkset(), worksetAfterInserts);
+}
+
+TEST(WorksetCalculator, removeRanges2) {
+    WorksetCalculator wc;
+
+    int ranges = 10000;
+    int range = 0;
+
+    int len = 11;
+    int begin = 0;
+
+    // Overlap ranges like so:
+    // [0-11], [10-21], [20-31], ...
+    // And remove them right after adding
+    for (; range < ranges; begin += (len - 1), range++) {
+        wc.insertRange(begin, len);
+        wc.removeRange(begin, len);
+    }
+
+    uint64_t workset = len;
+
+    // Workset should be equal to just one range
+    ASSERT_EQ(wc.getWorkset(), workset);
+}
+
+TEST(WorksetCalculator, removeAndSplitRanges) {
+    WorksetCalculator wc;
+
+    // Add [0;100] and [200;300]
+    wc.insertRange(0, 100);
+    wc.insertRange(200, 100);
+
+    // Remove [50;250]
+    wc.removeRange(50, 200);
+
+    uint64_t workset = 200;
+    ASSERT_EQ(wc.getWorkset(), workset);
+
+    // Insert [100;210]
+    wc.insertRange(100, 110);
+    workset = 210;
+    ASSERT_EQ(wc.getWorkset(), workset);
 }
