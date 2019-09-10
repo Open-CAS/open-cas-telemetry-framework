@@ -14,6 +14,9 @@
 
 namespace octf {
 
+/** Default size of LBA hit map range in sectors == 10 MiB */
+constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
+
 /**
  * @defgroup Statistics Statistics
  * Statistics utilities
@@ -27,7 +30,7 @@ namespace octf {
  */
 class IoStatisticsSet {
 public:
-    IoStatisticsSet();
+    IoStatisticsSet(uint64_t lbaHitRangeSize = DEFAULT_LBA_HIT_MAP_RANGE_SIZE);
     IoStatisticsSet(IoStatisticsSet const &other);
     IoStatisticsSet &operator=(IoStatisticsSet const &other);
     virtual ~IoStatisticsSet();
@@ -62,6 +65,14 @@ public:
      */
     void getIoLatencyHistogramSet(proto::IoHistogramSet *set) const;
 
+    /**
+     * @brief Copies gathered IO LBA hits statistics into protocol buffer
+     * histogram set object
+     *
+     * @param[out] set protocol buffer IO histogram object to be filled
+     */
+    void getIoLbaHistogramSet(proto::IoHistogramSet *set) const;
+
 private:
     struct Key;
     /**
@@ -77,6 +88,11 @@ private:
      * @return IO Statistics for a specified key
      */
     IoStatistics &getIoStatistics(const Key &key);
+
+    /**
+     * @brief Size of range, in which lba hits are aggregated
+     */
+    uint64_t m_lbaHitRangeSize;
 };
 
 }  // namespace octf

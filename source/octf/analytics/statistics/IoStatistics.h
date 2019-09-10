@@ -23,7 +23,11 @@ namespace octf {
  */
 class IoStatistics {
 public:
-    IoStatistics();
+    /**
+     * @param lbaHitMapRangeSize Size in sectors of range in which LBA hits are
+     * aggregated
+     */
+    IoStatistics(uint64_t lbaHitMapRangeSize);
     IoStatistics(IoStatistics const &other);
     IoStatistics &operator=(IoStatistics const &other);
     virtual ~IoStatistics();
@@ -51,6 +55,14 @@ public:
      */
     void getIoLatencyHistogram(proto::IoHistogram *histogram) const;
 
+    /**
+     * @brief Copies gathered statistics of IOs LBA hits into protocol buffer IO
+     * histogram object
+     *
+     * @param[out] histogram protocol buffer histogram object to be filled
+     */
+    void getIoLbaHistogram(proto::IoHistogram *histogram) const;
+
 private:
     struct Stats;
     /**
@@ -74,6 +86,11 @@ private:
      * latency
      */
     std::unique_ptr<Stats> m_invalid;
+
+    /**
+     * @brief Size of range, in which lba hits are aggregated
+     */
+    uint64_t m_lbaHitMapRangeSize;
 
     /**
      * @brief Start time
