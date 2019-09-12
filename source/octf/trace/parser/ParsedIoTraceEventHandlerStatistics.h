@@ -11,11 +11,16 @@
 
 namespace octf {
 
+/** Default size of LBA hit map range in sectors == 10 MiB */
+constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
+
 class ParsedIoTraceEventHandlerStatistics : public ParsedIoTraceEventHandler {
 public:
-    ParsedIoTraceEventHandlerStatistics(const std::string &tracePath)
+    ParsedIoTraceEventHandlerStatistics(
+            const std::string &tracePath,
+            uint64_t lbaHitRangeSize = DEFAULT_LBA_HIT_MAP_RANGE_SIZE)
             : ParsedIoTraceEventHandler(tracePath)
-            , m_statisticsSet() {}
+            , m_statisticsSet(lbaHitRangeSize) {}
     virtual ~ParsedIoTraceEventHandlerStatistics() = default;
 
     void handleIO(const proto::trace::ParsedEvent &io) override {

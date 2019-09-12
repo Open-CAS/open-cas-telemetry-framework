@@ -14,9 +14,6 @@
 
 namespace octf {
 
-/** Default size of LBA hit map range in sectors == 10 MiB */
-constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
-
 /**
  * @defgroup Statistics Statistics
  * Statistics utilities
@@ -30,7 +27,7 @@ constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
  */
 class IoStatisticsSet {
 public:
-    IoStatisticsSet(uint64_t lbaHitRangeSize = DEFAULT_LBA_HIT_MAP_RANGE_SIZE);
+    IoStatisticsSet(uint64_t lbaHitRangeSize);
     IoStatisticsSet(IoStatisticsSet const &other);
     IoStatisticsSet &operator=(IoStatisticsSet const &other);
     virtual ~IoStatisticsSet();
