@@ -97,6 +97,9 @@ struct IoStatistics::Stats {
     Distribution latencyDistribution;
     uint64_t errors;
     WorksetCalculator wc;
+    /**
+     * Map of chunks with aggregated LBA hits. The key is the range start LBA
+     */
     std::map<uint64_t, uint64_t> lbaHitMap;
     uint64_t lbaHitMapRangeSize;
 };
@@ -155,10 +158,27 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto latency = io.latency();
 
     // Update LBA hit maps
-    uint64_t startRange =
-            (io.lba() / m_lbaHitMapRangeSize) * m_lbaHitMapRangeSize;
-    stats->lbaHitMap[startRange]++;
-    m_total->lbaHitMap[startRange]++;
+    if (io.len() != 0) {
+        // Beggining LBAs of ranges where io begins and ends
+        uint64_t ioBeginRangeStart =
+                (io.lba() / m_lbaHitMapRangeSize) * m_lbaHitMapRangeSize;
+        uint64_t ioEndRangeStart =
+                ((io.lba() + io.len() - 1) / m_lbaHitMapRangeSize) *
+                m_lbaHitMapRangeSize;
+
+        // How many ranges does this IO span
+        uint64_t rangeSpan =
+                (ioEndRangeStart - ioBeginRangeStart) / m_lbaHitMapRangeSize +
+                1;
+
+        // Update each range
+        for (uint64_t range = 0; range < rangeSpan; range++) {
+            uint64_t rangeToUpdate =
+                    range * m_lbaHitMapRangeSize + ioBeginRangeStart;
+            stats->lbaHitMap[rangeToUpdate]++;
+            m_total->lbaHitMap[rangeToUpdate]++;
+        }
+    }
 
     if (latency) {
         m_total->sizeDistribution += len;

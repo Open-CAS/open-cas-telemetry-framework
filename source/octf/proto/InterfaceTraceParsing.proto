@@ -40,7 +40,7 @@ message GetLbaHistogramRequest {
     OutputFormat format = 2;
 
     uint32 bucketSize = 3 [
-        (opts_param).cli_required = false,
+        (opts_param).cli_required = true,
         (opts_param).cli_long_key = "bucket-size",
         (opts_param).cli_short_key = "b",
         (opts_param).cli_desc =
