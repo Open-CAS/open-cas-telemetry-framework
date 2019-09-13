@@ -103,6 +103,10 @@ void IoStatisticsSet::addDevice(
         if (!result.second || result.first == m_map.end()) {
             throw Exception("Cannot allocate IO statistics");
         }
+
+        if (m_lbaHistEnabled) {
+            result.first->second.enableLbaHistogram();
+        }
     } else {
         // Key doesn't exist add it and allocate for them IO statistics
         getIoStatistics(key);
@@ -166,6 +170,10 @@ void IoStatisticsSet::getIoLbaHistogramSet(proto::IoHistogramSet *set) const {
 
         stats.second.getIoLbaHistogram(dst);
     }
+}
+
+void IoStatisticsSet::enableLbaHistogram() {
+    m_lbaHistEnabled = true;
 }
 
 }  // namespace octf

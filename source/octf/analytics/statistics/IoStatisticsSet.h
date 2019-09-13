@@ -70,6 +70,12 @@ public:
      */
     void getIoLbaHistogramSet(proto::IoHistogramSet *set) const;
 
+    /**
+     * @brief Enables creation of LBA histogram.
+     * This needs to be enabled because keeping LBA histogram is expensive
+     */
+    void enableLbaHistogram();
+
 private:
     struct Key;
     /**
@@ -90,6 +96,8 @@ private:
      * @brief Size of range, in which lba hits are aggregated
      */
     uint64_t m_lbaHitRangeSize;
+
+    bool m_lbaHistEnabled;
 };
 
 }  // namespace octf

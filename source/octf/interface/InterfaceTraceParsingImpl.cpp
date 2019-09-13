@@ -145,8 +145,17 @@ void InterfaceTraceParsingImpl::GetLbaHistogram(
         ::octf::proto::IoHistogramSet *response,
         ::google::protobuf::Closure *done) {
     try {
+        uint64_t bucketSize;
+        if (request->bucketsize() != 0) {
+            bucketSize = request->bucketsize();
+        } else {
+            bucketSize = ParsedIoTraceEventHandlerStatistics::
+                    DEFAULT_LBA_HIT_MAP_RANGE_SIZE;
+        }
+
         ParsedIoTraceEventHandlerStatistics handler(request->tracepath(),
-                                                    request->bucketsize());
+                                                    bucketSize);
+        handler.enableLbaHistogram();
         handler.processEvents();
         handler.getStatisticsSet().getIoLbaHistogramSet(response);
 

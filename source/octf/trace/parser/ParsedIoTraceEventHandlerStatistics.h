@@ -11,9 +11,6 @@
 
 namespace octf {
 
-/** Default size of LBA hit map range in sectors == 10 MiB */
-constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
-
 class ParsedIoTraceEventHandlerStatistics : public ParsedIoTraceEventHandler {
 public:
     ParsedIoTraceEventHandlerStatistics(
@@ -30,6 +27,17 @@ public:
     const IoStatisticsSet &getStatisticsSet() const {
         return m_statisticsSet;
     }
+
+    /**
+     * @brief Enables creation of LBA histogram.
+     * This needs to be enabled because keeping LBA histogram is expensive
+     */
+    void enableLbaHistogram() {
+        m_statisticsSet.enableLbaHistogram();
+    }
+
+    /** Default size of LBA hit map range in sectors == 10 MiB */
+    static constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
 
 protected:
     void handleDeviceDescription(

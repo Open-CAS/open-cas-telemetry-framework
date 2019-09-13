@@ -110,18 +110,20 @@ IoStatistics::IoStatistics(uint64_t lbaHitMapRangeSize)
         , m_total(new IoStatistics::Stats(lbaHitMapRangeSize))
         , m_flush(new IoStatistics::Stats(lbaHitMapRangeSize))
         , m_invalid(new IoStatistics::Stats(lbaHitMapRangeSize))
-        , m_lbaHitMapRangeSize(lbaHitMapRangeSize)
+        , m_lbaHistRangeSize(lbaHitMapRangeSize)
         , m_startTime(0)
-        , m_endTime(0) {}
+        , m_endTime(0)
+        , m_lbaHistEnabled(false) {}
 
 IoStatistics::IoStatistics(const IoStatistics &other)
         : m_statistics(other.m_statistics)
         , m_total(new Stats(*other.m_total))
         , m_flush(new Stats(*other.m_flush))
         , m_invalid(new Stats(*other.m_invalid))
-        , m_lbaHitMapRangeSize(other.m_lbaHitMapRangeSize)
+        , m_lbaHistRangeSize(other.m_lbaHistRangeSize)
         , m_startTime(other.m_startTime)
-        , m_endTime(other.m_endTime) {}
+        , m_endTime(other.m_endTime)
+        , m_lbaHistEnabled(other.m_lbaHistEnabled) {}
 
 IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
     if (this != &other) {
@@ -129,9 +131,10 @@ IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
         *m_total = *other.m_total;
         *m_flush = *other.m_flush;
         *m_invalid = *other.m_invalid;
-        m_lbaHitMapRangeSize = other.m_lbaHitMapRangeSize;
+        m_lbaHistRangeSize = other.m_lbaHistRangeSize;
         m_startTime = other.m_startTime;
         m_endTime = other.m_endTime;
+        m_lbaHistEnabled = other.m_lbaHistEnabled;
     }
 
     return *this;
@@ -161,20 +164,19 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     if (io.len() != 0) {
         // Beggining LBAs of ranges where io begins and ends
         uint64_t ioBeginRangeStart =
-                (io.lba() / m_lbaHitMapRangeSize) * m_lbaHitMapRangeSize;
+                (io.lba() / m_lbaHistRangeSize) * m_lbaHistRangeSize;
         uint64_t ioEndRangeStart =
-                ((io.lba() + io.len() - 1) / m_lbaHitMapRangeSize) *
-                m_lbaHitMapRangeSize;
+                ((io.lba() + io.len() - 1) / m_lbaHistRangeSize) *
+                m_lbaHistRangeSize;
 
         // How many ranges does this IO span
         uint64_t rangeSpan =
-                (ioEndRangeStart - ioBeginRangeStart) / m_lbaHitMapRangeSize +
-                1;
+                (ioEndRangeStart - ioBeginRangeStart) / m_lbaHistRangeSize + 1;
 
         // Update each range
         for (uint64_t range = 0; range < rangeSpan; range++) {
             uint64_t rangeToUpdate =
-                    range * m_lbaHitMapRangeSize + ioBeginRangeStart;
+                    range * m_lbaHistRangeSize + ioBeginRangeStart;
             stats->lbaHitMap[rangeToUpdate]++;
             m_total->lbaHitMap[rangeToUpdate]++;
         }
@@ -249,6 +251,10 @@ void octf::IoStatistics::getIoLatencyHistogram(
 }
 
 void IoStatistics::getIoLbaHistogram(proto::IoHistogram *histogram) const {
+    if (!m_lbaHistEnabled) {
+        return;
+    }
+
     auto discard = histogram->mutable_discard();
     m_statistics[proto::trace::IoType::Discard].getLbaHistogramEntry(discard);
 
@@ -262,6 +268,10 @@ void IoStatistics::getIoLbaHistogram(proto::IoHistogram *histogram) const {
     m_total->getLbaHistogramEntry(total);
 
     histogram->set_duration(m_endTime - m_startTime);
+}
+
+void IoStatistics::enableLbaHistogram() {
+    m_lbaHistEnabled = true;
 }
 
 }  // namespace octf
