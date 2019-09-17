@@ -35,6 +35,12 @@ public:
             const ::octf::proto::GetTraceStatisticsRequest *request,
             ::octf::proto::IoHistogramSet *response,
             ::google::protobuf::Closure *done) override;
+
+    virtual void GetLbaHistogram(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetLbaHistogramRequest *request,
+            ::octf::proto::IoHistogramSet *response,
+            ::google::protobuf::Closure *done) override;
 };
 
 }  // namespace octf

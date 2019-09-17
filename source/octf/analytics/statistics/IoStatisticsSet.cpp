@@ -56,8 +56,9 @@ struct IoStatisticsSet::Key {
     std::string Name;
 };
 
-IoStatisticsSet::IoStatisticsSet()
-        : m_map() {}
+IoStatisticsSet::IoStatisticsSet(uint64_t lbaHitRangeSize)
+        : m_map()
+        , m_lbaHitRangeSize(lbaHitRangeSize) {}
 
 IoStatisticsSet::~IoStatisticsSet() {}
 
@@ -69,11 +70,13 @@ void IoStatisticsSet::count(const proto::trace::ParsedEvent &event) {
 }
 
 IoStatisticsSet::IoStatisticsSet(const IoStatisticsSet &other)
-        : m_map(other.m_map) {}
+        : m_map(other.m_map)
+        , m_lbaHitRangeSize(other.m_lbaHitRangeSize) {}
 
 IoStatisticsSet &IoStatisticsSet::operator=(const IoStatisticsSet &other) {
     if (this != &other) {
         m_map = other.m_map;
+        m_lbaHitRangeSize = other.m_lbaHitRangeSize;
     }
 
     return *this;
@@ -100,6 +103,10 @@ void IoStatisticsSet::addDevice(
         if (!result.second || result.first == m_map.end()) {
             throw Exception("Cannot allocate IO statistics");
         }
+
+        if (m_lbaHistEnabled) {
+            result.first->second.enableLbaHistogram();
+        }
     } else {
         // Key doesn't exist add it and allocate for them IO statistics
         getIoStatistics(key);
@@ -109,7 +116,7 @@ void IoStatisticsSet::addDevice(
 IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
     auto iter = m_map.find(key);
     if (iter == m_map.end()) {
-        auto pair = std::make_pair(Key(key), IoStatistics());
+        auto pair = std::make_pair(Key(key), IoStatistics(m_lbaHitRangeSize));
 
         auto result = m_map.emplace(pair);
         if (!result.second || result.first == m_map.end()) {
@@ -149,6 +156,24 @@ void IoStatisticsSet::getIoLatencyHistogramSet(
 
         stats.second.getIoLatencyHistogram(dst);
     }
+}
+
+void IoStatisticsSet::getIoLbaHistogramSet(proto::IoHistogramSet *set) const {
+    // For each pair in map
+    for (const auto &stats : m_map) {
+        auto dst = set->add_histogram();
+
+        auto device = dst->mutable_desc()->mutable_device();
+        device->set_id(stats.first.Id);
+        device->set_name(stats.first.Name);
+        device->set_size(stats.first.Size);
+
+        stats.second.getIoLbaHistogram(dst);
+    }
+}
+
+void IoStatisticsSet::enableLbaHistogram() {
+    m_lbaHistEnabled = true;
 }
 
 }  // namespace octf

@@ -29,6 +29,25 @@ message ParseTraceRequest {
     ];
 }
 
+message GetLbaHistogramRequest {
+    string tracePath = 1 [
+        (opts_param).cli_required = true,
+        (opts_param).cli_long_key = "path",
+        (opts_param).cli_short_key = "p",
+        (opts_param).cli_desc = "Path to trace"
+    ];
+
+    OutputFormat format = 2;
+
+    uint32 bucketSize = 3 [
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "bucket-size",
+        (opts_param).cli_short_key = "b",
+        (opts_param).cli_desc =
+            "Size of bucket in which lba hits are aggregated"
+    ];
+}
+
 message GetTraceStatisticsRequest {
     string tracePath = 1 [
         (opts_param).cli_required = true,
@@ -74,5 +93,13 @@ service InterfaceTraceParsing {
         option (opts_command).cli_long_key = "get-latency-histogram";
 
         option (opts_command).cli_desc = "Gets latency histogram";
+    }
+
+    rpc GetLbaHistogram(octf.proto.GetLbaHistogramRequest)
+        returns (IoHistogramSet) {
+        option (octf.proto.opts_command).cli = true;
+        option (octf.proto.opts_command).cli_long_key = "get-lba-histogram";
+        option (octf.proto.opts_command).cli_desc =
+            "Returns a histogram of LBA hits";
     }
 }

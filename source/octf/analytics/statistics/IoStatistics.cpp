@@ -9,24 +9,28 @@
 namespace octf {
 
 struct IoStatistics::Stats {
-    Stats()
-            : SizeDistribution("sector", 4096, 2)
-            , LatencyDistribution("ns", 1, 2)
-            , Errors(0)
-            , Wc() {}
+    Stats(uint64_t lbaHitMapRangeSize)
+            : sizeDistribution("sector", 4096, 2)
+            , latencyDistribution("ns", 1, 2)
+            , errors(0)
+            , wc()
+            , lbaHitMap()
+            , lbaHitMapRangeSize(lbaHitMapRangeSize) {}
 
     Stats(const Stats &other)
-            : SizeDistribution(other.SizeDistribution)
-            , LatencyDistribution(other.LatencyDistribution)
-            , Errors(other.Errors)
-            , Wc(other.Wc) {}
+            : sizeDistribution(other.sizeDistribution)
+            , latencyDistribution(other.latencyDistribution)
+            , errors(other.errors)
+            , wc(other.wc)
+            , lbaHitMap(other.lbaHitMap)
+            , lbaHitMapRangeSize(other.lbaHitMapRangeSize) {}
 
     Stats &operator=(const Stats &other) {
         if (this != &other) {
-            SizeDistribution = other.SizeDistribution;
-            LatencyDistribution = other.LatencyDistribution;
-            Errors = other.Errors;
-            Wc = other.Wc;
+            sizeDistribution = other.sizeDistribution;
+            latencyDistribution = other.latencyDistribution;
+            errors = other.errors;
+            wc = other.wc;
         }
 
         return *this;
@@ -35,16 +39,16 @@ struct IoStatistics::Stats {
     void getIoStatisticsEntry(proto::IoStatisticsEntry *entry,
                               uint64_t beginTime,
                               uint64_t endTime) const {
-        SizeDistribution.getStatistics(entry->mutable_size());
-        LatencyDistribution.getStatistics(entry->mutable_latency());
-        entry->set_errors(Errors);
+        sizeDistribution.getStatistics(entry->mutable_size());
+        latencyDistribution.getStatistics(entry->mutable_latency());
+        entry->set_errors(errors);
 
         double duration = endTime - beginTime;
         double durationS = duration / 1000.0 / 1000.0 / 1000.0;
 
         {
             // Set IOPS
-            double count = SizeDistribution.getCount();
+            double count = sizeDistribution.getCount();
             double iops = durationS != 0.0 ? count / durationS : 0;
             if (iops != 0.0) {
                 auto &metric = (*entry->mutable_metrics())["throughput"];
@@ -54,7 +58,7 @@ struct IoStatistics::Stats {
         }
         {
             // Set bandwidth in sectors
-            double total = SizeDistribution.getTotal();
+            double total = sizeDistribution.getTotal();
             // Convert to MiB
             total *= 512.0 / 1024.0 / 1024.0;
             double bandwidth = durationS != 0.0 ? total / durationS : 0;
@@ -66,7 +70,7 @@ struct IoStatistics::Stats {
             }
         }
         {
-            auto workset = Wc.getWorkset();
+            auto workset = wc.getWorkset();
 
             if (workset) {
                 auto &metric = (*entry->mutable_metrics())["workset"];
@@ -77,30 +81,49 @@ struct IoStatistics::Stats {
     }
 
     void getLatencyHistogramEntry(proto::Histogram *entry) const {
-        LatencyDistribution.getHistogram(entry);
+        latencyDistribution.getHistogram(entry);
     }
 
-    Distribution SizeDistribution;
-    Distribution LatencyDistribution;
-    uint64_t Errors;
-    WorksetCalculator Wc;
+    void getLbaHistogramEntry(proto::Histogram *entry) const {
+        for (auto &range : lbaHitMap) {
+            auto protoRange = entry->add_range();
+            protoRange->set_begin(range.first);
+            protoRange->set_end(range.first + lbaHitMapRangeSize - 1);
+            protoRange->set_count(range.second);
+        }
+    }
+
+    Distribution sizeDistribution;
+    Distribution latencyDistribution;
+    uint64_t errors;
+    WorksetCalculator wc;
+    /**
+     * Map of chunks with aggregated LBA hits. The key is the range start LBA
+     */
+    std::map<uint64_t, uint64_t> lbaHitMap;
+    uint64_t lbaHitMapRangeSize;
 };
 
-IoStatistics::IoStatistics()
-        : m_statistics(proto::trace::IoType_ARRAYSIZE)
-        , m_total(new IoStatistics::Stats())
-        , m_flush(new IoStatistics::Stats())
-        , m_invalid(new IoStatistics::Stats())
+IoStatistics::IoStatistics(uint64_t lbaHitMapRangeSize)
+        : m_statistics(proto::trace::IoType_ARRAYSIZE,
+                       Stats(lbaHitMapRangeSize))
+        , m_total(new IoStatistics::Stats(lbaHitMapRangeSize))
+        , m_flush(new IoStatistics::Stats(lbaHitMapRangeSize))
+        , m_invalid(new IoStatistics::Stats(lbaHitMapRangeSize))
+        , m_lbaHistRangeSize(lbaHitMapRangeSize)
         , m_startTime(0)
-        , m_endTime(0) {}
+        , m_endTime(0)
+        , m_lbaHistEnabled(false) {}
 
 IoStatistics::IoStatistics(const IoStatistics &other)
         : m_statistics(other.m_statistics)
         , m_total(new Stats(*other.m_total))
         , m_flush(new Stats(*other.m_flush))
         , m_invalid(new Stats(*other.m_invalid))
+        , m_lbaHistRangeSize(other.m_lbaHistRangeSize)
         , m_startTime(other.m_startTime)
-        , m_endTime(other.m_endTime) {}
+        , m_endTime(other.m_endTime)
+        , m_lbaHistEnabled(other.m_lbaHistEnabled) {}
 
 IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
     if (this != &other) {
@@ -108,8 +131,10 @@ IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
         *m_total = *other.m_total;
         *m_flush = *other.m_flush;
         *m_invalid = *other.m_invalid;
+        m_lbaHistRangeSize = other.m_lbaHistRangeSize;
         m_startTime = other.m_startTime;
         m_endTime = other.m_endTime;
+        m_lbaHistEnabled = other.m_lbaHistEnabled;
     }
 
     return *this;
@@ -135,22 +160,44 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto len = io.len();
     auto latency = io.latency();
 
+    // Update LBA hit maps
+    if (io.len() != 0) {
+        // Beggining LBAs of ranges where io begins and ends
+        uint64_t ioBeginRangeStart =
+                (io.lba() / m_lbaHistRangeSize) * m_lbaHistRangeSize;
+        uint64_t ioEndRangeStart =
+                ((io.lba() + io.len() - 1) / m_lbaHistRangeSize) *
+                m_lbaHistRangeSize;
+
+        // How many ranges does this IO span
+        uint64_t rangeSpan =
+                (ioEndRangeStart - ioBeginRangeStart) / m_lbaHistRangeSize + 1;
+
+        // Update each range
+        for (uint64_t range = 0; range < rangeSpan; range++) {
+            uint64_t rangeToUpdate =
+                    range * m_lbaHistRangeSize + ioBeginRangeStart;
+            stats->lbaHitMap[rangeToUpdate]++;
+            m_total->lbaHitMap[rangeToUpdate]++;
+        }
+    }
+
     if (latency) {
-        m_total->SizeDistribution += len;
-        m_total->LatencyDistribution += latency;
-        m_total->Wc.insertRange(io.lba(), len);
+        m_total->sizeDistribution += len;
+        m_total->latencyDistribution += latency;
+        m_total->wc.insertRange(io.lba(), len);
     } else {
         // Zero latency in nanoscend is impossible, treat it as an invalid IO
         stats = m_invalid.get();
         // TODO (mariuszbarczak) consider if print invalid IOs statistics
     }
 
-    stats->SizeDistribution += len;
-    stats->LatencyDistribution += latency;
-    stats->Wc.insertRange(io.lba(), len);
+    stats->sizeDistribution += len;
+    stats->latencyDistribution += latency;
+    stats->wc.insertRange(io.lba(), len);
 
     if (io.error()) {
-        stats->Errors++;
+        stats->errors++;
     }
 
     // Update time
@@ -201,6 +248,30 @@ void octf::IoStatistics::getIoLatencyHistogram(
     m_total->getLatencyHistogramEntry(total);
 
     histogram->set_duration(m_endTime - m_startTime);
+}
+
+void IoStatistics::getIoLbaHistogram(proto::IoHistogram *histogram) const {
+    if (!m_lbaHistEnabled) {
+        return;
+    }
+
+    auto discard = histogram->mutable_discard();
+    m_statistics[proto::trace::IoType::Discard].getLbaHistogramEntry(discard);
+
+    auto write = histogram->mutable_write();
+    m_statistics[proto::trace::IoType::Write].getLbaHistogramEntry(write);
+
+    auto read = histogram->mutable_read();
+    m_statistics[proto::trace::IoType::Read].getLbaHistogramEntry(read);
+
+    auto total = histogram->mutable_total();
+    m_total->getLbaHistogramEntry(total);
+
+    histogram->set_duration(m_endTime - m_startTime);
+}
+
+void IoStatistics::enableLbaHistogram() {
+    m_lbaHistEnabled = true;
 }
 
 }  // namespace octf

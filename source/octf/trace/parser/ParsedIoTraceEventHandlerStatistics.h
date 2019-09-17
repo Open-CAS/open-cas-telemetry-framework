@@ -13,9 +13,11 @@ namespace octf {
 
 class ParsedIoTraceEventHandlerStatistics : public ParsedIoTraceEventHandler {
 public:
-    ParsedIoTraceEventHandlerStatistics(const std::string &tracePath)
+    ParsedIoTraceEventHandlerStatistics(
+            const std::string &tracePath,
+            uint64_t lbaHitRangeSize = DEFAULT_LBA_HIT_MAP_RANGE_SIZE)
             : ParsedIoTraceEventHandler(tracePath)
-            , m_statisticsSet() {}
+            , m_statisticsSet(lbaHitRangeSize) {}
     virtual ~ParsedIoTraceEventHandlerStatistics() = default;
 
     void handleIO(const proto::trace::ParsedEvent &io) override {
@@ -25,6 +27,17 @@ public:
     const IoStatisticsSet &getStatisticsSet() const {
         return m_statisticsSet;
     }
+
+    /**
+     * @brief Enables creation of LBA histogram.
+     * This needs to be enabled because keeping LBA histogram is expensive
+     */
+    void enableLbaHistogram() {
+        m_statisticsSet.enableLbaHistogram();
+    }
+
+    /** Default size of LBA hit map range in sectors == 10 MiB */
+    static constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
 
 protected:
     void handleDeviceDescription(

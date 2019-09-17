@@ -137,4 +137,72 @@ void octf::InterfaceTraceParsingImpl::GetLatencyHistogram(
     done->Run();
 }
 
+// TODO (tomaszrybicki) Separate this code to function
+// TODO (tomaszrybicki) Consider different CSV structure
+void InterfaceTraceParsingImpl::GetLbaHistogram(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetLbaHistogramRequest *request,
+        ::octf::proto::IoHistogramSet *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        uint64_t bucketSize;
+        if (request->bucketsize() != 0) {
+            bucketSize = request->bucketsize();
+        } else {
+            bucketSize = ParsedIoTraceEventHandlerStatistics::
+                    DEFAULT_LBA_HIT_MAP_RANGE_SIZE;
+        }
+
+        ParsedIoTraceEventHandlerStatistics handler(request->tracepath(),
+                                                    bucketSize);
+        handler.enableLbaHistogram();
+        handler.processEvents();
+        handler.getStatisticsSet().getIoLbaHistogramSet(response);
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            RpcOutputStream cout(log::Severity::Information, controller);
+
+            cout << log::reset;
+
+            table::Table table;
+            auto &hdr = table[0];
+
+            auto setter = [&table](const std::string &operation,
+                                   const proto::IoStatisticsDescription &desc,
+                                   const proto::Histogram &entry) {
+                auto &row = table[table.size()];
+
+                row << desc;
+                row["operation"] = operation;
+                for (int i = 0; i < entry.range_size(); i++) {
+                    auto end = entry.range(i).end();
+                    auto count = entry.range(i).count();
+                    row[std::to_string(end)] = count;
+                }
+            };
+
+            int count = response->histogram_size();
+            for (int i = 0; i < count; i++) {
+                const auto &histogram = response->histogram(i);
+                const auto &desc = histogram.desc();
+
+                setter("read", desc, histogram.read());
+                setter("write", desc, histogram.write());
+                setter("discard", desc, histogram.discard());
+                setter("total", desc, histogram.total());
+            }
+
+            hdr.setupHeader();
+            cout << table << std::endl;
+            // The CSV output was requested, to prevent printing response in
+            // JSON format disable caller output
+            cout << log::disable;
+        }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
 }  // namespace octf
