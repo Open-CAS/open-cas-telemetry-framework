@@ -24,8 +24,7 @@ target_include_directories(octf
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
 )
-# Specify libraries to link - specifies dependencies
-# and allows valid concurrent build
+# Specify libraries to link
 target_link_libraries(octf PUBLIC pthread)
 target_link_libraries(octf PUBLIC ${PROTOBUF_LIBRARY})
 
@@ -35,6 +34,30 @@ target_compile_definitions(octf
     OCTF_VERSION=${OCTF_VERSION}
     OCTF_VERSION_LABEL=${OCTF_VERSION_LABEL}
 )
+
+# Define static version of octf library and copy all properties from shared one
+add_library(octf-static STATIC EXCLUDE_FROM_ALL ""
+	 $<TARGET_OBJECTS:protooctf>
+	 $<TARGET_OBJECTS:safestringlib>
+)
+
+get_target_property(OCTF_SRCS octf SOURCES)
+get_target_property(OCTF_LIBS octf LINK_LIBRARIES)
+get_target_property(OCTF_LINKER octf LINKER_LANGUAGE)
+get_target_property(OCTF_INC octf INCLUDE_DIRECTORIES)
+get_target_property(OCTF_OPTS octf COMPILE_OPTIONS)
+get_target_property(OCTF_DEFS octf COMPILE_DEFINITIONS)
+
+set_property(TARGET octf-static PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_sources(octf-static PRIVATE "${OCTF_SRCS}")
+target_link_libraries(octf-static "${OCTF_LIBS}")
+
+set_target_properties(octf-static PROPERTIES LINKER_LANGUAGE "${OCTF_LINKER}")
+set_target_properties(octf-static PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTF_INC}")
+set_target_properties(octf-static PROPERTIES INCLUDE_DIRECTORIES "${OCTF_INC}")
+set_target_properties(octf-static PROPERTIES COMPILE_OPTIONS "${OCTF_OPTS}")
+set_target_properties(octf-static PROPERTIES COMPILE_DEFINITIONS "${OCTF_DEFS}")
+
 
 file(GLOB_RECURSE protoFiles
     ${srcDir}/proto/*.proto)
