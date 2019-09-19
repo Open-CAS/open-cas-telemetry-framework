@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include <octf/communication/RpcOutputStream.h>
 #include <octf/node/INode.h>
 #include <octf/proto/InterfaceTraceParsing.pb.h>
 #include <octf/proto/trace.pb.h>
@@ -41,6 +42,10 @@ public:
             const ::octf::proto::GetLbaHistogramRequest *request,
             ::octf::proto::IoHistogramSet *response,
             ::google::protobuf::Closure *done) override;
+
+private:
+    void printHistogramCsv(::octf::RpcOutputStream &cout,
+                           const ::octf::proto::IoHistogramSet *histogramSet);
 };
 
 }  // namespace octf
