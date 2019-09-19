@@ -31,8 +31,9 @@ namespace table {
  * @ingroup Table
  * @brief A very flexible table
  *
- * The table is capable to keep dynamically rows and columns. It provides double
- * array operator [][] for accessing cells. Cells may stores any type of value.
+ * The table is capable of keeping dynamically rows and columns. It provides
+ * double array operator [][] for accessing cells. Cells may store any type of
+ * value.
  *
  * @code
  * // Define the table
@@ -48,7 +49,7 @@ namespace table {
  * table["Row Name"]["Column Name"] = 2.71;
  *
  * // Print table
- * octf::log << table << std::endl;
+ * octf::log::cout << table << std::endl;
  * @endcode
  */
 class Table : public NonCopyable,
@@ -159,12 +160,12 @@ std::ostream &operator<<(std::ostream &os, const Table &table);
  * table[2] << bar;
  * table[3] << bar << foo;
  *
- * octf::log << table << std::endl;
+ * octf::log::cout << table << std::endl;
  * @endcode
  *
  * will print following:
  * @code
- * timestamp,bar.type,bar.name,type,bar
+ * foo.timestamp,foo.type,foo.name,bar.type,bar.name
  * 100,7,Galaxy,,
  * ,,,33,Star
  * 100,7,Galaxy,33,Star
