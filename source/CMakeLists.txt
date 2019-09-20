@@ -104,7 +104,7 @@ install(FILES ${OCTF_MANIFEST_PREINSTALL}
 add_custom_target(octf-uninstall
 	COMMAND test -f ${OCTF_MANIFEST_POSTINSTALL} &&
 	 xargs rm -vf < ${OCTF_MANIFEST_POSTINSTALL} ||
-	 echo "-- No install manifest found. Nothing to uninstall!"
+	 echo "-- No OCTF install manifest found: ${OCTF_MANIFEST_POSTINSTALL} Nothing to uninstall!"
 )
 
 # Install octf.so library and add octf target to export group 'octf-targets'
