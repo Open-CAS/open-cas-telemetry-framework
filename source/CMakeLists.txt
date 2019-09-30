@@ -88,6 +88,12 @@ add_custom_command(
     COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
 
+add_custom_command(
+    TARGET octf-static
+    PRE_LINK
+    COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
+)
+
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)
 
