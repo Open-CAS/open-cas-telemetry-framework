@@ -46,6 +46,26 @@ message GetLbaHistogramRequest {
         (opts_param).cli_desc =
             "Size of bucket in which lba hits are aggregated"
     ];
+
+    int64 subrangeStart = 4 [
+        (opts_param).cli_num.min = 0,
+        (opts_param).cli_num.max = 9223372036854775807,
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "subrange-start",
+        (opts_param).cli_short_key = "s",
+        (opts_param).cli_desc =
+            "Start of LBA subrange to consider exclusively in histogram"
+    ];
+
+    int64 subrangeEnd = 5 [
+        (opts_param).cli_num.min = 0,
+        (opts_param).cli_num.max = 9223372036854775807,
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "subrange-end",
+        (opts_param).cli_short_key = "e",
+        (opts_param).cli_desc =
+            "End of LBA subrange to consider exclusively in histogram"
+    ];
 }
 
 message GetTraceStatisticsRequest {

@@ -36,6 +36,17 @@ public:
         m_statisticsSet.enableLbaHistogram();
     }
 
+    /**
+     * @brief Skip IO's outside of this defined subrange
+     * @param start LBA of subrange start
+     * @param end LBA of subrange end
+     *
+     * @note any IO's which overlap with this range will also be included
+     */
+    void setExclusiveSubrange(uint64_t start, uint64_t end) {
+        ParsedIoTraceEventHandler::setExclusiveSubrange(start, end);
+    }
+
     /** Default size of LBA hit map range in sectors == 10 MiB */
     static constexpr uint64_t DEFAULT_LBA_HIT_MAP_RANGE_SIZE = 20480;
 
