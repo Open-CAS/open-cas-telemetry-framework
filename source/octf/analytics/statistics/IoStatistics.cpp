@@ -161,7 +161,7 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto latency = io.latency();
 
     // Update LBA hit maps
-    if (io.len() != 0) {
+    if (m_lbaHistEnabled && io.len() != 0) {
         // Beggining LBAs of ranges where io begins and ends
         uint64_t ioBeginRangeStart =
                 (io.lba() / m_lbaHistRangeSize) * m_lbaHistRangeSize;
