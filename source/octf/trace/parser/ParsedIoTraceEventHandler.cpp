@@ -218,6 +218,8 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         , m_timestampOffset(0)
         , m_sidOffset(0)
         , m_limit(ParsedIoTraceEventHandler_QueueLimit)
+        , m_subrangeStart(0)
+        , m_subrangeEnd(0)
         , m_devIoQueueDepth() {}
 
 ParsedIoTraceEventHandler::~ParsedIoTraceEventHandler() {}
@@ -246,6 +248,14 @@ void ParsedIoTraceEventHandler::handleEvent(
     case Event::EventTypeCase::kIo: {
         const auto &io = traceEvent->io();
         auto deviceId = io.deviceid();
+
+        // If subrange is set, skip io events which are outside of it
+        if (m_subrangeEnd != 0) {
+            if (io.lba() + io.len() < m_subrangeStart ||
+                io.lba() > m_subrangeEnd) {
+                return;
+            }
+        }
 
         // Create key
         Key key(*traceEvent);
@@ -289,6 +299,15 @@ void ParsedIoTraceEventHandler::handleEvent(
 
     case Event::EventTypeCase::kIoCompletion: {
         auto devId = traceEvent->iocompletion().deviceid();
+        auto complEvent = traceEvent->iocompletion();
+
+        // If subrange is set, skip events which are outside of it
+        if (m_subrangeEnd != 0) {
+            if (complEvent.lba() + complEvent.len() < m_subrangeStart ||
+                complEvent.lba() > m_subrangeEnd) {
+                return;
+            }
+        }
 
         // Create key
         Key key(traceEvent->iocompletion());
@@ -457,6 +476,12 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     }
 
     m_queue.pop();
+}
+
+void ParsedIoTraceEventHandler::setExclusiveSubrange(uint64_t start,
+                                                     uint64_t end) {
+    m_subrangeStart = start;
+    m_subrangeEnd = end;
 }
 
 void ParsedIoTraceEventHandler::getFilePath(uint64_t devId,

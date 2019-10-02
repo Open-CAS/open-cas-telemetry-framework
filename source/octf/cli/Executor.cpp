@@ -259,29 +259,19 @@ int Executor::execute(CLIList &cliList) {
 int Executor::execute(int argc, char *argv[]) {
     int result = 1;
 
-    try {
-        if (argc > 1) {
-            // Parse application input
-            vector<string> arguments(argv, argv + argc);
-            CLIList cliList;
-            cliList.create(arguments);
+    if (argc > 1) {
+        // Parse application input
+        vector<string> arguments(argv, argv + argc);
+        CLIList cliList;
+        cliList.create(arguments);
 
-            // Execute command
-            result = execute(cliList);
+        // Execute command
+        result = execute(cliList);
 
-        } else {
-            throw InvalidParameterException(
-                    "Specify module or command first. Use '" +
-                    m_cliProperties.getName() + " -H' for help.");
-        }
-
-    } catch (Exception &e) {
-        log::cerr << e.what() << endl;
-        return 1;
-    } catch (std::exception &e) {
-        log::critical << m_cliProperties.getName()
-                      << " execution interrupted: " << e.what() << endl;
-        return 1;
+    } else {
+        throw InvalidParameterException(
+                "Specify module or command first. Use '" +
+                m_cliProperties.getName() + " -H' for help.");
     }
 
     return result;

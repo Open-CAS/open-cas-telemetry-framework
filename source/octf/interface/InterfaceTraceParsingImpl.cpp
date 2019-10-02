@@ -123,6 +123,17 @@ void InterfaceTraceParsingImpl::GetLbaHistogram(
 
         ParsedIoTraceEventHandlerStatistics handler(request->tracepath(),
                                                     bucketSize);
+
+        if (request->subrangestart() || request->subrangeend()) {
+            if (request->subrangestart() < request->subrangeend() &&
+                request->subrangestart() >= 0) {
+                handler.setExclusiveSubrange(request->subrangestart(),
+                                             request->subrangeend());
+            } else {
+                throw Exception("Invalid values given for subrange");
+            }
+        }
+
         handler.enableLbaHistogram();
         handler.processEvents();
         handler.getStatisticsSet().getIoLbaHistogramSet(response);
