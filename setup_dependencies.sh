@@ -37,10 +37,18 @@ function detect_distribution ()
 {
     if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]
     then
-        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release 7." &>/dev/null ) || \
-                ( cat /etc/centos-release | grep "CentOS Linux release 7." &>/dev/null )
+        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release 7." &>/dev/null )
         then
             echo RHEL7
+            return 0
+        fi
+    fi
+
+    if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]
+    then
+        if ( cat /etc/centos-release | grep "CentOS Linux release 7." &>/dev/null )
+        then
+            echo CENTOS7
             return 0
         fi
     fi
@@ -146,6 +154,15 @@ distro=$(detect_distribution)
 packages=""
 installer=""
 distro_setup=""
+
+# check for protoc version
+# if os is ok i versje to z paczki
+# cmake tak samo
+# gtest - wywalic test z all, nie ma fpica
+# protobuf do opta
+# slit - kernel header slub linux headers
+# po instalacji sprawdzic uname'a czy /linux/srcs/kernels/$uname istnieje
+# sprawdzic czy protobuf nie jest w opt/octf/protobuf
 
 case "${distro}" in
 "RHEL7")
