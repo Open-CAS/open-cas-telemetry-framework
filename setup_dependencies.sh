@@ -3,6 +3,11 @@
 # Copyright(c) 2012-2018 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
+MIN_PROTOBUF_VER_MAJOR=3
+MIN_PROTOBUF_VER_MINOR=0
+
+#TODO: check min proto version needed
+
 #
 # Usage: check_result <RESULT> <ERROR_MESSAGE>
 #
@@ -150,6 +155,45 @@ function setup_ubuntu18 ()
     rm -rf "${build_dir}"
 }
 
+function protobuf_found ()
+{
+    info "Looking for protobuf"
+
+    if command -v protoc >/dev/null
+    then
+        # Check existing protobuf version
+        local protoc_version=$(protoc --version | awk {'print $2'})
+        local protoc_version_major=$(printf "${protoc_version}" | awk -F '.' {'print $1'})
+        local protoc_version_minor=$(printf "${protoc_version}" | awk -F '.' {'print $2'})
+
+        if [ "$protoc_version_major" -lt "$MIN_PROTOBUF_VER_MAJOR" ]
+        then
+            info "Insufficent protobuf version found"
+            return 1
+        fi
+
+        if [ "$protoc_version_minor" -lt "$MIN_PROTOBUF_VER_MINOR" ]
+        then
+            info "Insufficent protobuf version found"
+            return 1
+        fi
+
+        info "Found protobuf, version: ${protoc_version}"
+        return 0
+    fi
+
+    info "No protobuf found"
+    return 1
+}
+
+function install_protobuf ()
+{
+    yes
+}
+
+protobuf_found
+exit $?
+
 distro=$(detect_distribution)
 packages=""
 installer=""
@@ -170,6 +214,8 @@ case "${distro}" in
     packages="cmake autoconf automake libtool curl make gcc-c++ unzip"
     installer="yum"
     distro_setup=setup_rhel7
+    ;;
+"CENTOS7")
     ;;
 "UBUNTU18")
     info "Ubuntu 18 detected"
