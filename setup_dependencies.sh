@@ -3,10 +3,16 @@
 # Copyright(c) 2012-2018 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
+# Minimal versions required
 MIN_PROTOBUF_VER_MAJOR=3
 MIN_PROTOBUF_VER_MINOR=0
 
-#TODO: check min proto version needed
+MIN_CMAKE_VER_MAJOR=3
+MIN_CMAKE_VER_MINOR=9
+
+# Location for installing dependencies
+OPT_DIR=/opt/octf
+
 
 #
 # Usage: check_result <RESULT> <ERROR_MESSAGE>
@@ -37,6 +43,15 @@ function error () {
 function info () {
     echo "[OCTF][INFO] $*" 1>&2
 }
+
+function setup_opt_dir
+{
+    if [ ! -d ${OPT_DIR} ]
+    then
+        mkdir -p ${OPT_DIR}
+    fi
+}
+
 
 function detect_distribution ()
 {
@@ -70,36 +85,72 @@ function detect_distribution ()
     return 1
 }
 
-function setup_protocol_buffer
+function setup_cmake
 {
-    local build_dir="$(dirname $0)/octf-build"
+    info "Installing cmake to ${OPT_DIR}/cmake"
 
-    info "Setup google protocol buffer"
+    local cmake_link="https://github.com/Kitware/CMake/releases/download/v3.15.3/cmake-3.15.3-Linux-x86_64.tar.gz"
+    local cmake_sha256="020812a9f87293482cec51fdf44f41cc47e794de568f945a8175549d997e1760"
+    local cmake_version="3.15.3-Linux-x86_64"
+
+    local build_dir="$(dirname $0)/setup-dependencies-build"
+    rm -rf "${build_dir}"
+    mkdir -p "${build_dir}"
+    pushd "${build_dir}"
+
+	wget "${cmake_link}"
+    check_result $? "Can't download CMake"
+
+	echo "${cmake_sha256}  ./cmake-${cmake_version}.tar.gz" | sha256sum -c
+    check_result $? "Invalid SHA256 sum for downloaded file! Aborting."
+
+    setup_opt_dir
+    mkdir -p ${OPT_DIR}/cmake
+
+    tar -xzf ./cmake-${cmake_version}.tar.gz -C ${OPT_DIR}/cmake --strip-components=1
+    check_result $? "Can't unpack CMake tarball"
+
+    popd
+
+    rm -rf "${build_dir}"
+}
+
+function setup_protobuf
+{
+    info "Installing Google Protocol Buffers to ${OPT_DIR}/protobuf"
+
+    local build_dir="$(dirname $0)/setup-dependencies-build"
     rm -rf "${build_dir}"
     mkdir -p "${build_dir}"
     pushd "${build_dir}"
 
     git clone https://github.com/protocolbuffers/protobuf.git
-    check_result $? "Cannot clone google protocol buffer"
+    check_result $? "Cannot clone Google Protocol Buffers"
     pushd protobuf
 
     latest_release=$(curl --silent "https://github.com/protocolbuffers/protobuf/releases/latest" | sed 's#.*tag/\(.*\)\".*#\1#')
     if [ "${latest_release}" == "" ]
     then
-        error "Cannot get latest version of google protocol buffer"
+        error "Cannot get the latest version of Google Protocol Buffers"
     fi
 
     git checkout ${latest_release}
     check_result $? "Cannot checkout version ${latest_release}"
 
+    setup_opt_dir
+    mkdir -p ${OPT_DIR}/protobuf
+
     git submodule update --init --recursive && \
         ./autogen.sh && \
-        ./configure --prefix=/usr && \
+        ./configure --prefix=${OPT_DIR}/protobuf && \
         make -j$(nproc) && \
-        make check -j$(nproc) && \
+        # TODO
+        # make check -j$(nproc) && \
         make install -j$(nproc) && \
-        ldconfig
-    check_result $? "Cannot setup google protocol buffer"
+    check_result $? "Cannot setup Google Protocol Buffers"
+
+    ldconfig
+    check_result $? "Cannot run ldconfig after installing Google Protocol Buffers"
 
     popd
     popd
@@ -109,55 +160,55 @@ function setup_protocol_buffer
 
 function setup_rhel7 ()
 {
-    info "Install EPEL repository"
-    yum -y install epel-release
-    check_result $? "Cannot Install EPEL repository"
-
-    info "Setup gtest"
-    yum -y install gtest gtest-devel
-    check_result $? "Cannot setup gtest"
-
-    info "Setup cmake 3"
-    yum -y install cmake3 && \
-    alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
-        --slave /usr/local/bin/ctest ctest /usr/bin/ctest \
-        --slave /usr/local/bin/cpack cpack /usr/bin/cpack \
-        --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake \
-        --family cmake \
-    && \
-    alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-        --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-        --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-        --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-        --family cmake
-
-    check_result $? "Cannot setup alternative for cmake 3"
-
-    setup_protocol_buffer
 }
 
-function setup_ubuntu18 ()
+
+function cmake_found
 {
-    local build_dir="$(dirname $0)/octf-build/gtest"
+    info "Looking for cmake ${MIN_CMAKE_VER_MAJOR}.${MIN_CMAKE_VER_MINOR} or newer..."
 
-    info "Setup google test"
+    if [ -f ${OPT_DIR}/cmake/bin/cmake ]
+    then
+        local cmake_version=$(${OPT_DIR}/cmake/bin/cmake --version | awk /1/{'print $3'})
+        info "Found cmake  in ${OPT_DIR}, version: ${cmake_version}"
+        return 0
+    fi
 
-    rm -rf "${build_dir}"
-    mkdir -p "${build_dir}"
+    if command -v cmake >/dev/null
+    then
+        # Check existing cmake version
+        local cmake_version=$(cmake --version | awk /1/{'print $3'})
+        local cmake_version_major=$(printf "${cmake_version}" | awk -F '.' {'print $1'})
+        local cmake_version_minor=$(printf "${cmake_version}" | awk -F '.' {'print $2'})
 
-    pushd "${build_dir}"
-    cmake /usr/src/gtest && \
-    make -j$(nproc) && \
-    make install -j$(nproc)
-    check_result $? "Cannot setup google test"
+        if [ "$cmake_version_major" -lt "$MIN_CMAKE_VER_MAJOR" ]
+        then
+            info "Insufficent cmake version found"
+            return 1
+        fi
 
-    popd
-    rm -rf "${build_dir}"
+        if [ "$cmake_version_minor" -lt "$MIN_CMAKE_VER_MINOR" ]
+        then
+            info "Insufficent cmake version found"
+            return 1
+        fi
+
+        info "Found cmake, version: ${cmake_version}"
+        return 0
+    fi
 }
 
-function protobuf_found ()
+#TODO: find_package(Protobuf VERSION 3.0), use cmake from opt unless empty, then system one
+function protobuf_found
 {
-    info "Looking for protobuf"
+    info "Looking for protobuf ${MIN_PROTOBUF_VER_MAJOR}.${MIN_PROTOBUF_VER_MINOR} or newer..."
+
+    if [ -f ${OPT_DIR}/protobuf/bin/protoc ]
+    then
+        local protoc_version=$(${OPT_DIR}/protobuf/bin/protoc --version | awk {'print $2'})
+        info "Found protobuf in ${OPT_DIR}, version: ${protoc_version}"
+        return 0
+    fi
 
     if command -v protoc >/dev/null
     then
@@ -186,12 +237,13 @@ function protobuf_found ()
     return 1
 }
 
-function install_protobuf ()
-{
-    yes
-}
+if [ "$EUID" -ne 0 ]
+then
+    echo "Please run as root to alllow using apt/yum and installing to /opt"
+    exit 1
+fi
 
-protobuf_found
+setup_cmake
 exit $?
 
 distro=$(detect_distribution)
@@ -199,7 +251,6 @@ packages=""
 installer=""
 distro_setup=""
 
-# check for protoc version
 # if os is ok i versje to z paczki
 # cmake tak samo
 # gtest - wywalic test z all, nie ma fpica
@@ -210,12 +261,18 @@ distro_setup=""
 
 case "${distro}" in
 "RHEL7")
-    info "RHEL7.x/CentOS7.x detected"
+    info "RHEL7.x detected"
     packages="cmake autoconf automake libtool curl make gcc-c++ unzip"
     installer="yum"
-    distro_setup=setup_rhel7
+    setup_cmake
+    setup_protobuf
     ;;
 "CENTOS7")
+    info "CentOS7.x detected"
+    packages="cmake autoconf automake libtool curl make gcc-c++ unzip"
+    installer="yum"
+    setup_cmake
+    setup_protobuf
     ;;
 "UBUNTU18")
     info "Ubuntu 18 detected"
