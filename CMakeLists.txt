@@ -5,8 +5,9 @@ project(octf VERSION ${OCTF_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
+# Look in our directory for installed protobuf first
+set(CMAKE_PREFIX_PATH "/opt/octf/protobuf;${CMAKE_MODULE_PATH}")
+find_package(Protobuf 3.0 REQUIRED)
 
 include(octf-paths.cmake)
 include(octf-defenses.cmake)

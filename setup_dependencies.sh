@@ -158,11 +158,6 @@ function setup_protobuf
     rm -rf "${build_dir}"
 }
 
-function setup_rhel7 ()
-{
-}
-
-
 function cmake_found
 {
     info "Looking for cmake ${MIN_CMAKE_VER_MAJOR}.${MIN_CMAKE_VER_MINOR} or newer..."
@@ -198,7 +193,6 @@ function cmake_found
     fi
 }
 
-#TODO: find_package(Protobuf VERSION 3.0), use cmake from opt unless empty, then system one
 function protobuf_found
 {
     info "Looking for protobuf ${MIN_PROTOBUF_VER_MAJOR}.${MIN_PROTOBUF_VER_MINOR} or newer..."
@@ -243,7 +237,7 @@ then
     exit 1
 fi
 
-setup_cmake
+setup_protobuf
 exit $?
 
 distro=$(detect_distribution)
