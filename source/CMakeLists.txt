@@ -17,13 +17,16 @@ set_target_properties(octf PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_options(octf PRIVATE -Wall -Wextra)
 target_include_directories(octf
 	PUBLIC
-	${PROTOBUF_INCLUDE_DIR}
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
 )
+target_include_directories(octf
+	SYSTEM PUBLIC ${PROTOBUF_INCLUDE_DIR}
+)
+
 # Specify libraries to link
 target_link_libraries(octf PUBLIC pthread)
 target_link_libraries(octf PUBLIC ${PROTOBUF_LIBRARY})
