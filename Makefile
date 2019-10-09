@@ -8,6 +8,8 @@ CMAKE_FILE=CMakeLists.txt
 TEST_DIR=build/test
 TEST_PREFIX=./rootfs
 
+OPT_DIR=/opt/octf
+
 ifdef DEBUG
 	ifndef BUILD_DIR
 		BUILD_DIR=build/debug
@@ -26,13 +28,21 @@ else
 		RUN_LD_CONFIG=1
 	endif
 endif
+
+ifneq ("$(wildcard $(OPT_DIR)/cmake/bin/cmake)","")
+	# Found our installation of cmake in opt dir
+	CMAKE=$(OPT_DIR)/cmake/bin/cmake
+else
+	CMAKE=cmake
+endif
+
 SOURCE_PATH:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: init all install uninstall reinstall package clean doc
 
 init:
 	mkdir -p $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake $(SOURCE_PATH) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_INSTALL_PREFIX=$(PREFIX)
+	cd $(BUILD_DIR) && $(CMAKE) $(SOURCE_PATH) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_INSTALL_PREFIX=$(PREFIX)
 
 all: init
 	$(MAKE) -C $(BUILD_DIR) all
@@ -41,7 +51,7 @@ doc: init
 	$(MAKE) -C $(BUILD_DIR) doc
 
 install: all
-	cmake -DCOMPONENT=octf-install -P $(BUILD_DIR)/cmake_install.cmake
+	$(CMAKE)  -DCOMPONENT=octf-install -P $(BUILD_DIR)/cmake_install.cmake
 
 uninstall:
 	xargs rm -f < $(BUILD_DIR)/install_manifest_octf-install.txt
