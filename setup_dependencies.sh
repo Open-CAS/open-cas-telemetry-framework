@@ -44,15 +44,6 @@ function info () {
     echo "[OCTF][INFO] $*" 1>&2
 }
 
-function setup_opt_dir
-{
-    if [ ! -d ${OPT_DIR} ]
-    then
-        mkdir -p ${OPT_DIR}
-    fi
-}
-
-
 function detect_distribution ()
 {
     if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]
@@ -85,8 +76,57 @@ function detect_distribution ()
     return 1
 }
 
+function setup_gtest
+{
+    if gtest_found
+    then
+        return
+    fi
+
+    info "Installing gtest to ${OPT_DIR}/gtest"
+
+    local build_dir="$(dirname $0)/setup-dependencies-build"
+    rm -rf "${build_dir}"
+    mkdir -p "${build_dir}"
+    pushd "${build_dir}"
+
+    git clone https://github.com/google/googletest
+    check_result $? "Cannot clone Google Test"
+    pushd googletest
+
+    git checkout release-1.8.0
+    check_result $? "Cannot checkout version GTest 1.8.0"
+
+    mkdir -p build
+    pushd build
+
+    # CMake may be in opt
+    export PATH="$PATH:${OPT_DIR}/cmake/bin/"
+
+    cmake .. -DCMAKE_CXX_FLAGS=-fPIC && make -j$(nproc)
+    check_result $? "Cannot compile GTest"
+
+    mkdir -p ${OPT_DIR}/gtest/include
+    cp -r ../googletest/include/* ${OPT_DIR}/gtest/include && \
+    cp -r ./googlemock/gtest/libgtest*.a ${OPT_DIR}/gtest && \
+    cp -r ./googlemock/libgmock*.a ${OPT_DIR}/gtest
+    check_result $? "Cannot install gtest to ${OPT_DIR}"
+
+    popd
+    popd
+    popd
+    rm -rf "${build_dir}"
+
+    info "Installed gtest to ${OPT_DIR}/gtest"
+}
+
 function setup_cmake
 {
+    if cmake_found
+    then
+        return
+    fi
+
     info "Installing cmake to ${OPT_DIR}/cmake"
 
     local cmake_link="https://github.com/Kitware/CMake/releases/download/v3.15.3/cmake-3.15.3-Linux-x86_64.tar.gz"
@@ -104,7 +144,6 @@ function setup_cmake
 	echo "${cmake_sha256}  ./cmake-${cmake_version}.tar.gz" | sha256sum -c
     check_result $? "Invalid SHA256 sum for downloaded file! Aborting."
 
-    setup_opt_dir
     mkdir -p ${OPT_DIR}/cmake
 
     tar -xzf ./cmake-${cmake_version}.tar.gz -C ${OPT_DIR}/cmake --strip-components=1
@@ -113,10 +152,16 @@ function setup_cmake
     popd
 
     rm -rf "${build_dir}"
+    info "Installed cmake to ${OPT_DIR}/cmake"
 }
 
 function setup_protobuf
 {
+    if protobuf_found
+    then
+        return
+    fi
+
     info "Installing Google Protocol Buffers to ${OPT_DIR}/protobuf"
 
     local build_dir="$(dirname $0)/setup-dependencies-build"
@@ -137,15 +182,13 @@ function setup_protobuf
     git checkout ${latest_release}
     check_result $? "Cannot checkout version ${latest_release}"
 
-    setup_opt_dir
     mkdir -p ${OPT_DIR}/protobuf
 
     git submodule update --init --recursive && \
         ./autogen.sh && \
         ./configure --prefix=${OPT_DIR}/protobuf && \
         make -j$(nproc) && \
-        # TODO
-        # make check -j$(nproc) && \
+        make check -j$(nproc) && \
         make install -j$(nproc) && \
     check_result $? "Cannot setup Google Protocol Buffers"
 
@@ -156,6 +199,16 @@ function setup_protobuf
     popd
 
     rm -rf "${build_dir}"
+}
+
+function gtest_found
+{
+    if [ -d ${OPT_DIR}/gtest ]
+    then
+        info "Found Google Test  in ${OPT_DIR}"
+        return 0
+    fi
+
 }
 
 function cmake_found
@@ -231,49 +284,48 @@ function protobuf_found
     return 1
 }
 
+
 if [ "$EUID" -ne 0 ]
 then
     echo "Please run as root to alllow using apt/yum and installing to /opt"
     exit 1
 fi
 
-setup_protobuf
-exit $?
-
 distro=$(detect_distribution)
-packages=""
-installer=""
-distro_setup=""
-
-# if os is ok i versje to z paczki
-# cmake tak samo
-# gtest - wywalic test z all, nie ma fpica
-# protobuf do opta
-# slit - kernel header slub linux headers
-# po instalacji sprawdzic uname'a czy /linux/srcs/kernels/$uname istnieje
-# sprawdzic czy protobuf nie jest w opt/octf/protobuf
-
 case "${distro}" in
 "RHEL7")
     info "RHEL7.x detected"
-    packages="cmake autoconf automake libtool curl make gcc-c++ unzip"
-    installer="yum"
+    packages="autoconf automake libtool curl make gcc-c++ unzip"
+
+    info "Installing packages: ${packages}"
+    yum -y install ${packages}
+    check_result $? "Cannot install required dependencies"
+
     setup_cmake
     setup_protobuf
+    setup_gtest
     ;;
 "CENTOS7")
     info "CentOS7.x detected"
-    packages="cmake autoconf automake libtool curl make gcc-c++ unzip"
-    installer="yum"
+    packages="autoconf automake libtool curl make gcc-c++ unzip"
+
+    info "Installing packages: ${packages}"
+    yum -y install ${packages}
+    check_result $? "Cannot install required dependencies"
+
     setup_cmake
     setup_protobuf
+    setup_gtest
     ;;
 "UBUNTU18")
     info "Ubuntu 18 detected"
-    packages="cmake autoconf automake libtool curl make g++ unzip
-        libprotobuf-dev protobuf-compiler libgtest-dev"
-    installer="apt-get"
-    distro_setup=setup_ubuntu18
+    packages="cmake autoconf automake libtool curl make g++ unzip protobuf-compiler libprotobuf-dev"
+
+    info "Installing packages: ${packages}"
+    apt-get -y install ${packages}
+    check_result $? "Cannot install required dependencies"
+
+    setup_gtest
     ;;
 *)
     error "Unknown linux distribution"
@@ -281,8 +333,3 @@ case "${distro}" in
     ;;
 esac
 
-info "Install pacakges: ${packages}"
-${installer} -y install ${packages}
-check_result $? "Cannot install required dependencies"
-
-${distro_setup}

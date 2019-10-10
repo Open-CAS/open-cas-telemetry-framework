@@ -3,8 +3,15 @@ project(test LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 enable_testing()
-find_package(GTest REQUIRED)
+
+set(CMAKE_PREFIX_PATH "/opt/octf/gtest;${CMAKE_PREFIX_PATH}")
+find_package(GTest)
 find_package (Threads)
+
+# This is needed due to a possible bug in FinGTest.cmake module
+# which is not able to find gtest_main library installed locally when linking
+link_directories("/opt/octf/gtest")
+
 add_executable(octf-tests "")
 
 add_subdirectory(octf)
@@ -19,7 +26,8 @@ target_include_directories(octf-tests
 )
 
 target_link_libraries(octf-tests
-    ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} gtest_main octf)
+    ${GTEST_BOTH_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} gtest_main octf
+)
 
 add_custom_target(run-unit-tests
     COMMAND octf-tests

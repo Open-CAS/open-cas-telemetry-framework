@@ -45,7 +45,7 @@ init:
 	cd $(BUILD_DIR) && $(CMAKE) $(SOURCE_PATH) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_INSTALL_PREFIX=$(PREFIX)
 
 all: init
-	$(MAKE) -C $(BUILD_DIR) all
+	$(MAKE) -C $(BUILD_DIR) octf
 
 doc: init
 	$(MAKE) -C $(BUILD_DIR) doc
