@@ -73,6 +73,15 @@ function detect_distribution ()
         fi
     fi
 
+    if [ -f /etc/os-release ]
+    then
+        if ( cat /etc/os-release | grep "Ubuntu 16" &>/dev/null )
+        then
+            echo UBUNTU16
+            return 0
+        fi
+    fi
+
     return 1
 }
 
@@ -203,12 +212,15 @@ function setup_protobuf
 
 function gtest_found
 {
+    info "Looking for gtest in ${OPT_DIR}"
     if [ -d ${OPT_DIR}/gtest ]
     then
         info "Found Google Test  in ${OPT_DIR}"
         return 0
     fi
 
+    info "No gtest found"
+    return 1
 }
 
 function cmake_found
@@ -244,6 +256,9 @@ function cmake_found
         info "Found cmake, version: ${cmake_version}"
         return 0
     fi
+
+    info "No cmake found"
+    return 1;
 }
 
 function protobuf_found
@@ -325,6 +340,18 @@ case "${distro}" in
     apt-get -y install ${packages}
     check_result $? "Cannot install required dependencies"
 
+    setup_gtest
+    ;;
+"UBUNTU16")
+    info "Ubuntu 16 detected"
+    packages="autoconf automake libtool curl make g++ unzip"
+
+    info "Installing packages: ${packages}"
+    apt-get -y install ${packages}
+    check_result $? "Cannot install required dependencies"
+
+    setup_cmake
+    setup_protobuf
     setup_gtest
     ;;
 *)
