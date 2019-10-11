@@ -87,7 +87,6 @@ add_custom_command(
     PRE_LINK
     COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
-
 add_custom_command(
     TARGET octf-static
     PRE_LINK
@@ -112,6 +111,7 @@ add_custom_target(octf-uninstall
 	 xargs rm -vf < ${OCTF_MANIFEST_POSTINSTALL} ||
 	 echo "-- No OCTF install manifest found: ${OCTF_MANIFEST_POSTINSTALL} Nothing to uninstall!"
 )
+
 
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)
