@@ -40,7 +40,8 @@ all: init
 doc: init
 	$(MAKE) -C $(BUILD_DIR) doc
 
-install: | uninstall all
+install: all
+	$(MAKE) uninstall
 	cmake -DCOMPONENT=octf-install -P $(BUILD_DIR)/cmake_install.cmake
 	cmake -DCOMPONENT=octf-post-install -P $(BUILD_DIR)/cmake_install.cmake
 
