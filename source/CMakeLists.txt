@@ -88,6 +88,12 @@ add_custom_command(
     COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
 
+add_custom_command(
+    TARGET octf-static
+    PRE_LINK
+    COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
+)
+
 # Install install-manifest with list of installed files, to allow uninstalling
 # Append install-manifest to itself
 install(CODE

@@ -55,6 +55,17 @@ protected:
         (void) devDesc;
     }
 
+    /**
+     * @brief Skip IO's outside of this defined subrange
+     * @param start LBA of subrange start
+     * @param end LBA of subrange end
+     *
+     * @note any IO's which overlap with this range will also be included
+     * @note when subrange is set, queue depth may be meaningless - use this
+     *  only when queue depth is not considered - also that's why it's protected
+     */
+    void setExclusiveSubrange(uint64_t start, uint64_t end);
+
 private:
     bool compareEvents(const proto::trace::Event *a,
                        const proto::trace::Event *b) override {
@@ -85,6 +96,8 @@ private:
     uint64_t m_timestampOffset;
     uint64_t m_sidOffset;
     uint64_t m_limit;
+    uint64_t m_subrangeStart;
+    uint64_t m_subrangeEnd;
     std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
 };
 
