@@ -46,7 +46,7 @@ function info () {
 
 function detect_distribution ()
 {
-    if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]
+    if [ -f /etc/redhat-release ]
     then
         if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release 7." &>/dev/null )
         then
@@ -55,7 +55,7 @@ function detect_distribution ()
         fi
     fi
 
-    if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]
+    if [ -f /etc/centos-release ]
     then
         if ( cat /etc/centos-release | grep "CentOS Linux release 7." &>/dev/null )
         then

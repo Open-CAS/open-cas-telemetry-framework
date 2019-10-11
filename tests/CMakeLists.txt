@@ -13,6 +13,7 @@ find_package (Threads)
 link_directories("/opt/octf/gtest")
 
 add_executable(octf-tests "")
+set_target_properties(octf-tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 add_subdirectory(octf)
 
