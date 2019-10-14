@@ -52,9 +52,10 @@ doc: init
 
 install: all
 	$(CMAKE)  -DCOMPONENT=octf-install -P $(BUILD_DIR)/cmake_install.cmake
+	$(CMAKE)  -DCOMPONENT=octf-post-install -P $(BUILD_DIR)/cmake_install.cmake
 
-uninstall:
-	xargs rm -f < $(BUILD_DIR)/install_manifest_octf-install.txt
+uninstall: init
+	$(MAKE) -C $(BUILD_DIR) octf-uninstall
 
 reinstall: | uninstall install
 

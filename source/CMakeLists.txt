@@ -90,12 +90,31 @@ add_custom_command(
     PRE_LINK
     COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
-
 add_custom_command(
     TARGET octf-static
     PRE_LINK
     COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
+
+# Install install-manifest with list of installed files, to allow uninstalling
+# Append install-manifest to itself
+install(CODE
+	"file(APPEND ${OCTF_MANIFEST_PREINSTALL} \"\n${OCTF_MANIFEST_POSTINSTALL}\")"
+	COMPONENT octf-post-install
+)
+install(FILES ${OCTF_MANIFEST_PREINSTALL}
+	DESTINATION ${OCTF_DOC_DIR}
+	COMPONENT octf-post-install
+)
+
+# Add a target for uninstallation. It's best done on the CMakeLists.txt level,
+# because we must use GNUUtils to obtain the proper path to install-manifest
+add_custom_target(octf-uninstall
+	COMMAND test -f ${OCTF_MANIFEST_POSTINSTALL} &&
+	 xargs rm -vf < ${OCTF_MANIFEST_POSTINSTALL} ||
+	 echo "-- No OCTF install manifest found: ${OCTF_MANIFEST_POSTINSTALL} Nothing to uninstall!"
+)
+
 
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)

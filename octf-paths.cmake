@@ -25,6 +25,8 @@ set(NOTICE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/NOTICE")
 set(LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/VERSION")
 set(OCTF_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/${configFileName})
+set(OCTF_MANIFEST_PREINSTALL ${CMAKE_BINARY_DIR}/install_manifest_octf-install.txt)
+set(OCTF_MANIFEST_POSTINSTALL ${OCTF_DOC_DIR}/install_manifest_octf-install.txt)
 
 set(socketsPath ${OCTF_RUN_DIR}/sockets)
 set(tracePath ${OCTF_WORK_DIR}/trace)
