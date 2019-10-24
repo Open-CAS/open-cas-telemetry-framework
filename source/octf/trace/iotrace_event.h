@@ -37,10 +37,13 @@ typedef enum {
     iotrace_event_type_io_cmpl = 'C',
 
     /** Filesystem meta information event */
-    iotrace_event_type_fs_meta = 'F',
+    iotrace_event_type_fs_meta = 'M',
 
     /** File name event */
     iotrace_event_type_fs_file_name = 'N',
+
+    /** Filesystem file created, remove, etc event */
+    iotrace_event_type_fs_file_event = 'F'
 } iotrace_event_type;
 
 /**
@@ -208,6 +211,50 @@ struct iotrace_event_fs_file_name {
     /** File name */
     char file_name[64];
     // TODO (mariuszbarczak) Make file name size dynamic
+} __attribute__((packed, aligned(8)));
+
+/**
+ * @brief Type of filesystem file event
+ */
+typedef enum {
+    /** File created */
+    iotrace_fs_event_create = 0,
+
+    /** File deleted */
+    iotrace_fs_event_delete,
+
+    /** File moved to */
+    iotrace_fs_event_move_to,
+
+    /** File moved from */
+    iotrace_fs_event_move_from
+} iotrace_fs_event_type;
+
+/**
+ * @brief Event relating to filesystem event such as create, delete, etc.
+ *
+ * Events are created only when a directory with given file is 'marked'.
+ * Directories are 'marked' upon opening them from another 'marked' directory,
+ * or when bio is sent to file in given directory.
+ * Note that until first bio is sent, no events are created, as no directory is
+ * marked.
+ */
+struct iotrace_event_fs_file_event {
+    /** Trace event header */
+    struct iotrace_event_hdr hdr;
+
+    /** Device Id */
+    uint64_t device_id;
+
+    /** Event type */
+    iotrace_fs_event_type fs_event_type;
+
+    /** File ID */
+    uint64_t file_id;
+
+    /** Parent directory ID */
+    uint64_t parent_id;
+
 } __attribute__((packed, aligned(8)));
 
 #ifdef __cplusplus

@@ -39,6 +39,13 @@ enum IoType {
     Discard = 2;
 }
 
+enum FsEventType {
+    Create = 0;
+    Delete = 1;
+    MoveTo = 2;
+    MoveFrom = 3;
+}
+
 /**
  * @brief IO trace event
  */
@@ -123,6 +130,20 @@ message EventIoFilesystemFileName {
     string fileName = 4;
 }
 
+message EventIoFilesystemFileEvent {
+    /** Device ID */
+    uint64 deviceId = 1;
+
+    /** File ID */
+    uint64 fileId = 2;
+
+    /** Parent directory ID */
+    uint64 parentId = 3;
+
+    /** Type of FS event */
+    FsEventType fsEventType = 4;
+}
+
 message Event {
     /** Trace event header */
     EventHeader header = 1;
@@ -133,5 +154,6 @@ message Event {
         EventIoFilesystemMeta filesystemMeta = 4;
         EventIoCompletion ioCompletion = 5;
         EventIoFilesystemFileName filesystemFileName = 6;
+        EventIoFilesystemFileEvent filesystemFileEvent = 7;
     }
 }
