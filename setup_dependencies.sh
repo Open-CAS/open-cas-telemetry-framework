@@ -310,7 +310,7 @@ distro=$(detect_distribution)
 case "${distro}" in
 "RHEL7")
     info "RHEL7.x detected"
-    packages="autoconf automake libtool curl make gcc-c++ unzip"
+    packages="autoconf automake libtool curl make gcc-c++ unzip git"
 
     info "Installing packages: ${packages}"
     yum -y install ${packages}
@@ -322,7 +322,7 @@ case "${distro}" in
     ;;
 "CENTOS7")
     info "CentOS7.x detected"
-    packages="autoconf automake libtool curl make gcc-c++ unzip"
+    packages="autoconf automake libtool curl make gcc-c++ unzip git"
 
     info "Installing packages: ${packages}"
     yum -y install ${packages}
@@ -334,7 +334,7 @@ case "${distro}" in
     ;;
 "UBUNTU18")
     info "Ubuntu 18 detected"
-    packages="cmake autoconf automake libtool curl make g++ unzip protobuf-compiler libprotobuf-dev"
+    packages="cmake autoconf automake libtool curl make g++ unzip protobuf-compiler libprotobuf-dev git"
 
     info "Installing packages: ${packages}"
     apt-get -y install ${packages}
@@ -344,7 +344,7 @@ case "${distro}" in
     ;;
 "UBUNTU16")
     info "Ubuntu 16 detected"
-    packages="autoconf automake libtool curl make g++ unzip"
+    packages="autoconf automake libtool curl make g++ unzip git"
 
     info "Installing packages: ${packages}"
     apt-get -y install ${packages}
