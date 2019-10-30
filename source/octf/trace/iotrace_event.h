@@ -17,7 +17,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 2
+#define IOTRACE_EVENT_VERSION_MAJOR 3
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
@@ -28,22 +28,22 @@ typedef uint64_t log_sid_t;
 typedef enum {
     /** Device description, providing mapping between device id and path for
      * subsequent traces */
-    iotrace_event_type_device_desc = 0x00,
+    iotrace_event_type_device_desc,
 
     /** IO queue event */
-    iotrace_event_type_io = 'Q',
+    iotrace_event_type_io,
 
     /** IO completion event */
-    iotrace_event_type_io_cmpl = 'C',
+    iotrace_event_type_io_cmpl,
 
     /** Filesystem meta information event */
-    iotrace_event_type_fs_meta = 'M',
+    iotrace_event_type_fs_meta,
 
     /** File name event */
-    iotrace_event_type_fs_file_name = 'N',
+    iotrace_event_type_fs_file_name,
 
     /** Filesystem file created, remove, etc event */
-    iotrace_event_type_fs_file_event = 'F'
+    iotrace_event_type_fs_file_event
 } iotrace_event_type;
 
 /**
