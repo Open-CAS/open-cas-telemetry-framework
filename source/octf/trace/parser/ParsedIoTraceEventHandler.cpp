@@ -370,6 +370,24 @@ void ParsedIoTraceEventHandler::handleEvent(
         }
     } break;
 
+    case Event::EventTypeCase::kFilesystemFileEvent: {
+        auto fsEvent = traceEvent->filesystemfileevent();
+
+        // Allocate new parsed IO event in the queue
+        m_queue.emplace(ParsedEvent());
+        auto &cachedEvent = m_queue.back();
+
+        // Setup parsed IO
+        cachedEvent.mutable_header()->CopyFrom(traceEvent->header());
+
+        // Setup file event type and parent id
+        auto &dstFileInfo = *cachedEvent.mutable_file();
+        dstFileInfo.set_eventtype(fsEvent.fseventtype());
+        dstFileInfo.set_parentid(fsEvent.parentid());
+        dstFileInfo.set_id(fsEvent.fileid());
+
+    } break;
+
     case Event::kFilesystemFileNameFieldNumber: {
         // TODO (mariuszbarczak) set limit on m_fileNames
 
