@@ -39,6 +39,10 @@ struct IoStatistics::Stats {
     void getIoStatisticsEntry(proto::IoStatisticsEntry *entry,
                               uint64_t beginTime,
                               uint64_t endTime) const {
+        if (!sizeDistribution.getCount()) {
+            // No IOs, don't fill entry
+        }
+
         sizeDistribution.getStatistics(entry->mutable_size());
         latencyDistribution.getStatistics(entry->mutable_latency());
         entry->set_errors(errors);
@@ -185,7 +189,6 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     if (latency) {
         m_total->sizeDistribution += len;
         m_total->latencyDistribution += latency;
-        m_total->wc.insertRange(io.lba(), len);
     } else {
         // Zero latency in nanoscend is impossible, treat it as an invalid IO
         stats = m_invalid.get();
@@ -194,10 +197,22 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
 
     stats->sizeDistribution += len;
     stats->latencyDistribution += latency;
-    stats->wc.insertRange(io.lba(), len);
 
+    // Update error
     if (io.error()) {
         stats->errors++;
+        m_total->errors++;
+    }
+
+    // update working set
+    if (proto::trace::Discard == io.operation()) {
+        for (auto &s : m_statistics) {
+            s.wc.removeRange(io.lba(), len);
+        }
+        m_total->wc.removeRange(io.lba(), len);
+    } else {
+        stats->wc.insertRange(io.lba(), len);
+        m_total->wc.insertRange(io.lba(), len);
     }
 
     // Update time

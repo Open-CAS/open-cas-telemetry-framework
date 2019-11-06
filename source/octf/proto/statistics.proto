@@ -228,3 +228,25 @@ message IoHistogram {
 message IoHistogramSet {
     repeated IoHistogram histogram = 1;
 }
+
+/**
+ * Filesystem statistics
+ */
+message FilesystemStatisticsEntry {
+    uint64 partitionId = 1;
+
+    oneof name {
+        string directory = 11;
+        string basename = 12;
+        string extension = 13;
+    }
+
+    IoStatistics statistics = 101;
+}
+
+/**
+ * Filesystem statistics
+ */
+message FilesystemStatistics {
+    repeated FilesystemStatisticsEntry entries = 1;
+}
