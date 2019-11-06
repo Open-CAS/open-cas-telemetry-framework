@@ -1,11 +1,13 @@
 /*
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-
 #ifndef SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
 #define SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
+
 #include <string>
+
 namespace octf {
 
 /**
@@ -71,8 +73,6 @@ public:
     virtual std::string getDirPath(uint64_t id) const = 0;
 };
 
-} /* namespace octf */
-
-        */
+}  // namespace octf
 
 #endif  // SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
