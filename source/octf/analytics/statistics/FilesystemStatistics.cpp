@@ -43,21 +43,22 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
         const auto &file = event.file();
         auto id = file.id();
 
-        auto &statistics = get(viewer, viewer->getParentId(id), event);
-        statistics.count(event);
+        auto &statistics =
+                getFilesystemStatisticsById(viewer, viewer->getParentId(id));
+        statistics.updateIoStats(event);
 
         {
             // Update statistics by file extension
             auto ext = viewer->getFileExtension(id);
             if (ext != "") {
-                m_children["*." + ext].count(event);
+                m_children["*." + ext].updateIoStats(event);
             }
         }
         {
             // Update statistics by base name
             auto basename = viewer->getBaseName(id);
             if (basename != "") {
-                m_children[basename + ".*"].count(event);
+                m_children[basename + ".*"].updateIoStats(event);
             }
         }
     }
@@ -68,17 +69,16 @@ void FilesystemStatistics::getFilesystemStatistics(
     fill(statistics, "");
 }
 
-FilesystemStatistics &FilesystemStatistics::get(
+FilesystemStatistics &FilesystemStatistics::getFilesystemStatisticsById(
         IFileSystemViewer *viewer,
-        uint64_t id,
-        const proto::trace::ParsedEvent &event) {
+        uint64_t id) {
     FilesystemStatistics *statistics = NULL;
     uint64_t parentId = viewer->getParentId(id);
 
     if (parentId == id) {
         statistics = this;
     } else {
-        statistics = &get(viewer, parentId, event);
+        statistics = &getFilesystemStatisticsById(viewer, parentId);
     }
 
     std::string name = viewer->getFileName(id);
@@ -112,6 +112,8 @@ void FilesystemStatistics::fill(proto::FilesystemStatistics *statistics,
                                      ->mutable_metrics();
 
             if (metrics[WIF_METRIC_NAME].value() <= 1.0) {
+                // To minimize output, avoid printing statistics with low
+                // write invalidation factor
                 continue;
             }
         }
@@ -156,11 +158,16 @@ void FilesystemStatistics::fill(proto::FilesystemStatisticsEntry *entry,
     double written =
             pStats->write().size().total() + pStats->discard().size().total();
 
-    double wif = written / workset;
+    double wif = 0.0;
+    if (workset != 0.0l) {
+        wif = written / workset;
+    }
+
     (*metrics)[WIF_METRIC_NAME].set_value(wif);
 }
 
-void FilesystemStatistics::count(const proto::trace::ParsedEvent &event) {
+void FilesystemStatistics::updateIoStats(
+        const proto::trace::ParsedEvent &event) {
     auto partId = event.file().partitionid();
     m_ioStats[partId].count(event);
 }

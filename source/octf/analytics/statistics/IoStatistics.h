@@ -90,12 +90,6 @@ private:
     std::unique_ptr<Stats> m_flush;
 
     /**
-     * @brief IO statistics summary for invalid IOs, e.g. an IO with zero
-     * latency
-     */
-    std::unique_ptr<Stats> m_invalid;
-
-    /**
      * @brief Size of range, in which lba hits are aggregated
      */
     uint64_t m_lbaHistRangeSize;

@@ -45,9 +45,8 @@ public:
     void getFilesystemStatistics(proto::FilesystemStatistics *statistics) const;
 
 private:
-    FilesystemStatistics &get(IFileSystemViewer *viewer,
-                              uint64_t id,
-                              const proto::trace::ParsedEvent &event);
+    FilesystemStatistics &getFilesystemStatisticsById(IFileSystemViewer *viewer,
+                                                      uint64_t id);
 
     void fill(proto::FilesystemStatistics *statistics,
               const std::string &dir) const;
@@ -55,7 +54,7 @@ private:
     void fill(proto::FilesystemStatisticsEntry *entry,
               const IoStatistics &ioStats) const;
 
-    void count(const proto::trace::ParsedEvent &event);
+    void updateIoStats(const proto::trace::ParsedEvent &event);
 
     void discard(const proto::trace::ParsedEvent &event);
 
