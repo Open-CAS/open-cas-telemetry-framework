@@ -233,7 +233,9 @@ message IoHistogramSet {
  * Filesystem statistics
  */
 message FilesystemStatisticsEntry {
-    uint64 partitionId = 1;
+    uint64 deviceId = 1;
+
+    uint64 partitionId = 2;
 
     oneof name {
         string directory = 11;
