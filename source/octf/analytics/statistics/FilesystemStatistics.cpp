@@ -178,8 +178,10 @@ void FilesystemStatistics::fillProtoStatistics(
                                      ->mutable_write()
                                      ->mutable_metrics();
 
-            if (metrics[WIF_METRIC_NAME].value() > 1.0l) {
-                // To minimize output, copy statistics with a invalidation only
+            if (metrics[WIF_METRIC_NAME].value() > 1.0L) {
+                // For non-directory stats, add only statistics which have write
+                // invalidation factor greater than 1.0. It minimize output
+                // size.
                 statistics->add_entries()->CopyFrom(entry);
             }
         } else {
@@ -226,8 +228,8 @@ void FilesystemStatistics::fillProtoStatisticsEntry(
     double written =
             pStats->write().size().total() + pStats->discard().size().total();
 
-    double wif = 0.0;
-    if (workset != 0.0l) {
+    double wif = 0.0L;
+    if (workset != 0.0L) {
         wif = written / workset;
     }
 
