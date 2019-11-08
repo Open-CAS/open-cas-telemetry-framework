@@ -9,21 +9,81 @@ namespace octf {
 
 static constexpr auto WIF_METRIC_NAME = "write invalidation factor";
 
+struct FilesystemStatistics::Key {
+    Key()
+            : name()
+            , devId()
+            , partId() {}
+
+    Key(const std::string &name, uint64_t devId, uint64_t partId)
+            : name(name)
+            , devId(devId)
+            , partId(partId) {}
+
+    virtual ~Key() {}
+
+    Key(const Key &other)
+            : name(other.name)
+            , devId(other.devId)
+            , partId(other.partId) {}
+
+    Key &operator=(const Key &other) {
+        if (this != &other) {
+            name = other.name;
+            devId = other.devId;
+            partId = other.partId;
+        }
+
+        return *this;
+    }
+
+    bool operator==(const Key &other) const {
+        return name == other.name && devId == other.devId &&
+               partId == other.partId;
+    }
+
+    bool operator!=(const Key &other) const {
+        return !(*this == other);
+    }
+
+    bool operator<(const Key &other) const {
+        int result = name.compare(other.name);
+        if (0 == result) {
+            if (devId != other.devId) {
+                return devId < other.devId;
+            }
+            return partId < other.partId;
+        }
+
+        return result < 0;
+    }
+
+    std::string name;
+    uint64_t devId;
+    uint64_t partId;
+};
+
 FilesystemStatistics::FilesystemStatistics()
         : m_children()
-        , m_ioStats() {}
+        , m_ioStats()
+        , m_devId()
+        , m_partId() {}
 
 FilesystemStatistics::~FilesystemStatistics() {}
 
 FilesystemStatistics::FilesystemStatistics(const FilesystemStatistics &other)
         : m_children(other.m_children)
-        , m_ioStats(other.m_ioStats) {}
+        , m_ioStats(other.m_ioStats)
+        , m_devId(other.m_devId)
+        , m_partId(other.m_partId) {}
 
 FilesystemStatistics &FilesystemStatistics::operator=(
         const FilesystemStatistics &other) {
     if (&other != this) {
         m_children = other.m_children;
         m_ioStats = other.m_ioStats;
+        m_devId = other.m_devId;
+        m_partId = other.m_partId;
     }
 
     return *this;
@@ -41,24 +101,27 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
 
     if (event.has_file()) {
         const auto &file = event.file();
+        const auto &device = event.device();
         auto id = file.id();
 
-        auto &statistics =
-                getFilesystemStatisticsById(viewer, viewer->getParentId(id));
+        auto &statistics = getStatisticsByIds(viewer, viewer->getParentId(id),
+                                              device.id(), file.partitionid());
         statistics.updateIoStats(event);
 
         {
             // Update statistics by file extension
             auto ext = viewer->getFileExtension(id);
             if (ext != "") {
-                m_children["*." + ext].updateIoStats(event);
+                Key key("*." + ext, device.id(), file.partitionid());
+                getStatisticsByKey(key).updateIoStats(event);
             }
         }
         {
             // Update statistics by base name
             auto basename = viewer->getBaseName(id);
             if (basename != "") {
-                m_children[basename + ".*"].updateIoStats(event);
+                Key key(basename + ".*", device.id(), file.partitionid());
+                getStatisticsByKey(key).updateIoStats(event);
             }
         }
     }
@@ -66,34 +129,38 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
 
 void FilesystemStatistics::getFilesystemStatistics(
         proto::FilesystemStatistics *statistics) const {
-    fill(statistics, "");
+    fillProtoStatistics(statistics, "");
 }
 
-FilesystemStatistics &FilesystemStatistics::getFilesystemStatisticsById(
+FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
         IFileSystemViewer *viewer,
-        uint64_t id) {
+        uint64_t dirId,
+        uint64_t devId,
+        uint64_t partId) {
     FilesystemStatistics *statistics = NULL;
-    uint64_t parentId = viewer->getParentId(id);
+    uint64_t parentId = viewer->getParentId(dirId);
 
-    if (parentId == id) {
+    if (parentId == dirId) {
         statistics = this;
     } else {
-        statistics = &getFilesystemStatisticsById(viewer, parentId);
+        statistics = &getStatisticsByIds(viewer, parentId, devId, partId);
     }
 
-    std::string name = viewer->getFileName(id);
-    return statistics->m_children[name];
+    std::string name = viewer->getFileName(dirId);
+    Key key(name, devId, partId);
+
+    return statistics->getStatisticsByKey(key);
 }
 
-void FilesystemStatistics::fill(proto::FilesystemStatistics *statistics,
-                                const std::string &dir) const {
-    for (const auto &part : m_ioStats) {
-        bool checkWif = false;
-        proto::FilesystemStatisticsEntry entry;
+void FilesystemStatistics::fillProtoStatistics(
+        proto::FilesystemStatistics *statistics,
+        const std::string &dir) const {
+    bool checkWif = false;
+    proto::FilesystemStatisticsEntry entry;
 
-        entry.set_partitionid(part.first);
-        fill(&entry, part.second);
+    fillProtoStatisticsEntry(&entry);
 
+    if (dir != "") {
         if (dir.front() == '*') {
             // Extension case
             entry.set_extension(dir);
@@ -111,18 +178,17 @@ void FilesystemStatistics::fill(proto::FilesystemStatistics *statistics,
                                      ->mutable_write()
                                      ->mutable_metrics();
 
-            if (metrics[WIF_METRIC_NAME].value() <= 1.0) {
-                // To minimize output, avoid printing statistics with low
-                // write invalidation factor
-                continue;
+            if (metrics[WIF_METRIC_NAME].value() > 1.0l) {
+                // To minimize output, copy statistics with a invalidation only
+                statistics->add_entries()->CopyFrom(entry);
             }
+        } else {
+            statistics->add_entries()->CopyFrom(entry);
         }
-
-        statistics->add_entries()->CopyFrom(entry);
     }
 
     for (const auto &child : m_children) {
-        std::string name = child.first;
+        std::string name = child.first.name;
 
         if (name.front() != '*' && name.back() != '*') {
             // Directory case
@@ -133,13 +199,15 @@ void FilesystemStatistics::fill(proto::FilesystemStatistics *statistics,
             }
         }
 
-        child.second.fill(statistics, name);
+        child.second.fillProtoStatistics(statistics, name);
     }
 }
 
-void FilesystemStatistics::fill(proto::FilesystemStatisticsEntry *entry,
-                                const IoStatistics &ioStats) const {
-    ioStats.getIoStatistics(entry->mutable_statistics());
+void FilesystemStatistics::fillProtoStatisticsEntry(
+        proto::FilesystemStatisticsEntry *entry) const {
+    m_ioStats.getIoStatistics(entry->mutable_statistics());
+    entry->set_deviceid(m_devId);
+    entry->set_partitionid(m_partId);
 
     // Clear proto statistics
     auto pStats = entry->mutable_statistics();
@@ -168,18 +236,31 @@ void FilesystemStatistics::fill(proto::FilesystemStatisticsEntry *entry,
 
 void FilesystemStatistics::updateIoStats(
         const proto::trace::ParsedEvent &event) {
-    auto partId = event.file().partitionid();
-    m_ioStats[partId].count(event);
+    m_ioStats.count(event);
 }
 
 void FilesystemStatistics::discard(const proto::trace::ParsedEvent &event) {
-    for (auto &part : m_ioStats) {
-        part.second.count(event);
+    if (m_devId == event.device().id()) {
+        m_ioStats.count(event);
     }
 
     for (auto &child : m_children) {
         child.second.discard(event);
     }
+}
+
+FilesystemStatistics &FilesystemStatistics::getStatisticsByKey(const Key &key) {
+    auto iter = m_children.find(key);
+    if (iter != m_children.end()) {
+        return iter->second;
+    }
+
+    auto &newFsStats = m_children[key];
+
+    newFsStats.m_devId = key.devId;
+    newFsStats.m_partId = key.partId;
+
+    return newFsStats;
 }
 
 } /* namespace octf */

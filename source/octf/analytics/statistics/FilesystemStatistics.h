@@ -45,14 +45,20 @@ public:
     void getFilesystemStatistics(proto::FilesystemStatistics *statistics) const;
 
 private:
-    FilesystemStatistics &getFilesystemStatisticsById(IFileSystemViewer *viewer,
-                                                      uint64_t id);
+    struct Key;
 
-    void fill(proto::FilesystemStatistics *statistics,
-              const std::string &dir) const;
+    FilesystemStatistics &getStatisticsByKey(const Key &key);
 
-    void fill(proto::FilesystemStatisticsEntry *entry,
-              const IoStatistics &ioStats) const;
+    FilesystemStatistics &getStatisticsByIds(IFileSystemViewer *viewer,
+                                             uint64_t dirId,
+                                             uint64_t devId,
+                                             uint64_t partId);
+
+    void fillProtoStatistics(proto::FilesystemStatistics *statistics,
+                             const std::string &dir) const;
+
+    void fillProtoStatisticsEntry(
+            proto::FilesystemStatisticsEntry *entry) const;
 
     void updateIoStats(const proto::trace::ParsedEvent &event);
 
@@ -62,12 +68,15 @@ private:
     /**
      * Filesystem statistics for children directories
      */
-    std::map<std::string, FilesystemStatistics> m_children;
+    std::map<Key, FilesystemStatistics> m_children;
 
     /**
-     * IO statistics per partition
+     * IO statistics
      */
-    std::map<uint64_t, IoStatistics> m_ioStats;
+    IoStatistics m_ioStats;
+
+    uint64_t m_devId;
+    uint64_t m_partId;
 };
 
 }  // namespace octf
