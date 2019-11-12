@@ -39,6 +39,11 @@ struct IoStatistics::Stats {
     void getIoStatisticsEntry(proto::IoStatisticsEntry *entry,
                               uint64_t beginTime,
                               uint64_t endTime) const {
+        if (!sizeDistribution.getCount()) {
+            // No IOs, don't fill entry
+            return;
+        }
+
         sizeDistribution.getStatistics(entry->mutable_size());
         latencyDistribution.getStatistics(entry->mutable_latency());
         entry->set_errors(errors);
@@ -109,7 +114,6 @@ IoStatistics::IoStatistics(uint64_t lbaHitMapRangeSize)
                        Stats(lbaHitMapRangeSize))
         , m_total(new IoStatistics::Stats(lbaHitMapRangeSize))
         , m_flush(new IoStatistics::Stats(lbaHitMapRangeSize))
-        , m_invalid(new IoStatistics::Stats(lbaHitMapRangeSize))
         , m_lbaHistRangeSize(lbaHitMapRangeSize)
         , m_startTime(0)
         , m_endTime(0)
@@ -119,7 +123,6 @@ IoStatistics::IoStatistics(const IoStatistics &other)
         : m_statistics(other.m_statistics)
         , m_total(new Stats(*other.m_total))
         , m_flush(new Stats(*other.m_flush))
-        , m_invalid(new Stats(*other.m_invalid))
         , m_lbaHistRangeSize(other.m_lbaHistRangeSize)
         , m_startTime(other.m_startTime)
         , m_endTime(other.m_endTime)
@@ -130,7 +133,6 @@ IoStatistics &IoStatistics::operator=(const IoStatistics &other) {
         m_statistics = other.m_statistics;
         *m_total = *other.m_total;
         *m_flush = *other.m_flush;
-        *m_invalid = *other.m_invalid;
         m_lbaHistRangeSize = other.m_lbaHistRangeSize;
         m_startTime = other.m_startTime;
         m_endTime = other.m_endTime;
@@ -161,7 +163,7 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     auto latency = io.latency();
 
     // Update LBA hit maps
-    if (m_lbaHistEnabled && io.len() != 0) {
+    if (m_lbaHistEnabled && len != 0) {
         // Beggining LBAs of ranges where io begins and ends
         uint64_t ioBeginRangeStart =
                 (io.lba() / m_lbaHistRangeSize) * m_lbaHistRangeSize;
@@ -183,21 +185,31 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     }
 
     if (latency) {
-        m_total->sizeDistribution += len;
         m_total->latencyDistribution += latency;
-        m_total->wc.insertRange(io.lba(), len);
-    } else {
-        // Zero latency in nanoscend is impossible, treat it as an invalid IO
-        stats = m_invalid.get();
-        // TODO (mariuszbarczak) consider if print invalid IOs statistics
+        stats->latencyDistribution += latency;
     }
 
-    stats->sizeDistribution += len;
-    stats->latencyDistribution += latency;
-    stats->wc.insertRange(io.lba(), len);
-
+    // Update error
     if (io.error()) {
         stats->errors++;
+        m_total->errors++;
+    }
+
+    if (len) {
+        // Update size
+        m_total->sizeDistribution += len;
+        stats->sizeDistribution += len;
+
+        // update working set
+        if (proto::trace::Discard == io.operation()) {
+            for (auto &s : m_statistics) {
+                s.wc.removeRange(io.lba(), len);
+            }
+            m_total->wc.removeRange(io.lba(), len);
+        } else {
+            stats->wc.insertRange(io.lba(), len);
+            m_total->wc.insertRange(io.lba(), len);
+        }
     }
 
     // Update time
