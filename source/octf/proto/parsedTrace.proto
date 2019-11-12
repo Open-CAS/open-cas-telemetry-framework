@@ -62,6 +62,9 @@ message ParsedEvent {
         /** File size in sectors */
         uint64 size = 3;
 
+        /** Partition ID */
+        uint64 partitionId = 10;
+
         /** File path */
         string path = 1000;
     }

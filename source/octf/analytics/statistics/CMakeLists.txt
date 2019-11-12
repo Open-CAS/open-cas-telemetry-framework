@@ -8,4 +8,7 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/IoStatisticsSet.h
     ${CMAKE_CURRENT_LIST_DIR}/WorksetCalculator.h
     ${CMAKE_CURRENT_LIST_DIR}/WorksetCalculator.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatistics.h
+    ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatistics.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/IFileSystemViewer.h
 )

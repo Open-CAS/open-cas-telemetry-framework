@@ -23,11 +23,13 @@ namespace octf {
  */
 class IoStatistics {
 public:
+    static constexpr uint64_t LBA_HIT_MAP_RANGE_SIZE_DEFAULT = 20480;
+
     /**
      * @param lbaHitMapRangeSize Size in sectors of range in which LBA hits are
      * aggregated
      */
-    IoStatistics(uint64_t lbaHitMapRangeSize);
+    IoStatistics(uint64_t lbaHitMapRangeSize = LBA_HIT_MAP_RANGE_SIZE_DEFAULT);
     IoStatistics(IoStatistics const &other);
     IoStatistics &operator=(IoStatistics const &other);
     virtual ~IoStatistics();
@@ -86,12 +88,6 @@ private:
      * @brief IO statistics summary for flush IOs
      */
     std::unique_ptr<Stats> m_flush;
-
-    /**
-     * @brief IO statistics summary for invalid IOs, e.g. an IO with zero
-     * latency
-     */
-    std::unique_ptr<Stats> m_invalid;
 
     /**
      * @brief Size of range, in which lba hits are aggregated
