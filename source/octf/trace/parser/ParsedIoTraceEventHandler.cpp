@@ -367,6 +367,9 @@ void ParsedIoTraceEventHandler::handleEvent(
             dst.set_id(src.fileid());
             dst.set_offset(src.fileoffset());
             dst.set_size(src.filesize());
+
+            // Update filesystem event type to just file access
+            dst.set_eventtype(proto::trace::FsEventType::Access);
         }
     } break;
 

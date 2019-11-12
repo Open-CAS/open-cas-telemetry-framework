@@ -44,6 +44,7 @@ enum FsEventType {
     Delete = 1;
     MoveTo = 2;
     MoveFrom = 3;
+    Access = 4;
 }
 
 /**
