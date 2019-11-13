@@ -6,8 +6,8 @@
 #ifndef SOURCE_OCTF_TRACE_PARSER_TRACEEVENTHANDLERFILESYSTEMSTATISTICS_H
 #define SOURCE_OCTF_TRACE_PARSER_TRACEEVENTHANDLERFILESYSTEMSTATISTICS_H
 
-#include <memory>
 #include <octf/analytics/statistics/FilesystemStatistics.h>
+#include <octf/proto/statistics.pb.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
 namespace octf {
@@ -25,14 +25,14 @@ public:
     virtual void handleIO(const octf::proto::trace::ParsedEvent &io) override;
 
     /**
-     * @brief Gets computed filesystem statistics
+     * @brief Gets computed protocol buffer filesystem statistics
      *
-     * @return Filesystem statistics
+     * @param[out] fsStats Filesystem statistics in protocol buffer format
      */
-    const FilesystemStatistics &getFilesystemStatistics(void) const;
+    void getFilesystemStatistics(proto::FilesystemStatistics *fsStats) const;
 
 private:
-    std::unique_ptr<FilesystemStatistics> m_fsStats;
+    FilesystemStatistics m_fsStats;
 };
 
 }  // namespace octf

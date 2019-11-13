@@ -113,7 +113,7 @@ private:
     uint64_t m_subrangeStart;
     uint64_t m_subrangeEnd;
     std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
-    std::map<uint64_t, FileSystemViewer> m_fsViewers;
+    std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
 };
 
 }  // namespace octf

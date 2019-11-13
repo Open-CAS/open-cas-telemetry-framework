@@ -413,8 +413,8 @@ void ParsedIoTraceEventHandler::handleEvent(
         }
     } break;
 
-    default: {
-    } break;
+    default:
+        break;
     }
 }
 
@@ -537,7 +537,7 @@ public:
     FileSystemViewer(uint64_t partId, const std::set<FileName> &fsNames)
             : IFileSystemViewer()
             , m_partId(partId)
-            , m_fsNames(fsNames) {}
+            , m_fileNames(fsNames) {}
 
     virtual std::string getBaseName(uint64_t id) const override {
         std::string basename = "";
@@ -546,9 +546,9 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
-            auto i = iter->Name.rfind('.', iter->Name.length());
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
+            auto i = iter->Name.rfind('.');
             if (i != std::string::npos) {
                 basename = iter->Name.substr(0, i);
             }
@@ -562,8 +562,8 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
             return iter->Name;
         }
 
@@ -577,12 +577,11 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
-            auto length = iter->Name.length();
-            auto i = iter->Name.rfind('.', length);
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
+            auto i = iter->Name.rfind('.');
             if (i != std::string::npos) {
-                extension = iter->Name.substr(i + 1, length);
+                extension = iter->Name.substr(i + 1);
             }
         }
 
@@ -596,8 +595,8 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
             getPath(iter->ParentId, dir);
         }
 
@@ -611,8 +610,8 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
             path = getDirPath(id);
 
             if (path != "/") {
@@ -630,8 +629,8 @@ public:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
             return iter->ParentId;
         }
 
@@ -644,8 +643,8 @@ private:
         key.Id = id;
         key.DeviceId = m_partId;
 
-        auto iter = m_fsNames.find(key);
-        if (iter != m_fsNames.end()) {
+        auto iter = m_fileNames.find(key);
+        if (iter != m_fileNames.end()) {
             const auto &name = *iter;
 
             if (name.Id != name.ParentId) {
@@ -658,15 +657,14 @@ private:
 
             path += name.Name;
         } else {
-            if (path != "") {
-                path += "../";
-            }
+            // Missing information about parent, paste discontinuous path
+            path = "..";
         }
     }
 
 private:
     const uint64_t m_partId;
-    const std::set<FileName> &m_fsNames;
+    const std::set<FileName> &m_fileNames;
 };
 
 IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
@@ -675,11 +673,11 @@ IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
 
     // Check if device with specified ID exist
     if (m_devices.end() == m_devices.find(partitionId)) {
-        return NULL;
+        throw Exception("Requesting FS viewer for non-existing partition ID");
     }
 
-    auto iter = m_fsViewers.find(partitionId);
-    if (iter == m_fsViewers.end()) {
+    auto iter = m_partitionFsViewers.find(partitionId);
+    if (iter == m_partitionFsViewers.end()) {
         // FS viewer has not be allocated yet.
 
         // Create FS Viewer
@@ -687,9 +685,9 @@ IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
                                    FileSystemViewer(partitionId, m_fileNames));
 
         // Insert pair into map
-        auto result = m_fsViewers.emplace(pair);
+        auto result = m_partitionFsViewers.emplace(pair);
 
-        if (!result.second || result.first == m_fsViewers.end()) {
+        if (!result.second || result.first == m_partitionFsViewers.end()) {
             throw Exception(
                     "Error during trace parsing, cannot create FS viewer");
         }

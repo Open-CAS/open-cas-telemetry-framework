@@ -227,7 +227,7 @@ void InterfaceTraceParsingImpl::GetFileSystemStatistics(
     try {
         TraceEventHandlerFilesystemStatistics handler(request->tracepath());
         handler.processEvents();
-        handler.getFilesystemStatistics().getFilesystemStatistics(response);
+        handler.getFilesystemStatistics(response);
 
         RpcOutputStream cout(log::Severity::Information, controller);
         cout << log::reset;

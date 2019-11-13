@@ -10,7 +10,7 @@ namespace octf {
 TraceEventHandlerFilesystemStatistics::TraceEventHandlerFilesystemStatistics(
         const std::string &tracePath)
         : ParsedIoTraceEventHandler(tracePath)
-        , m_fsStats(new FilesystemStatistics()) {}
+        , m_fsStats() {}
 
 TraceEventHandlerFilesystemStatistics::
         ~TraceEventHandlerFilesystemStatistics() {}
@@ -18,12 +18,12 @@ TraceEventHandlerFilesystemStatistics::
 void TraceEventHandlerFilesystemStatistics::handleIO(
         const octf::proto::trace::ParsedEvent &io) {
     IFileSystemViewer *viewer = getFileSystemViewer(io.device().id());
-    m_fsStats->count(viewer, io);
+    m_fsStats.count(viewer, io);
 }
 
-const FilesystemStatistics &
-TraceEventHandlerFilesystemStatistics::getFilesystemStatistics(void) const {
-    return *m_fsStats;
+void TraceEventHandlerFilesystemStatistics::getFilesystemStatistics(
+        proto::FilesystemStatistics *fsStats) const {
+    m_fsStats.getFilesystemStatistics(fsStats);
 }
 
 }  // namespace octf
