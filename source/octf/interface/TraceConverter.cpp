@@ -16,7 +16,8 @@ TraceConverter::TraceConverter()
         , m_evIO(std::make_shared<proto::trace::Event>())
         , m_evIOCmpl(std::make_shared<proto::trace::Event>())
         , m_evFsMeta(std::make_shared<proto::trace::Event>())
-        , m_evFsFileName(std::make_shared<proto::trace::Event>()) {}
+        , m_evFsFileName(std::make_shared<proto::trace::Event>())
+        , m_evFsFileEvent(std::make_shared<proto::trace::Event>()) {}
 
 std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         const void *trace,
@@ -150,6 +151,40 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsFileName->set_filename(event->file_name);
 
         return m_evFsFileName;
+    }
+
+    case iotrace_event_type_fs_file_event: {
+        if (size != sizeof(struct iotrace_event_fs_file_event)) {
+            return nullptr;
+        }
+        auto event =
+                static_cast<const struct iotrace_event_fs_file_event *>(trace);
+
+        protobufHdr = m_evFsFileEvent->mutable_header();
+        protobufHdr->set_sid(hdr->sid);
+        protobufHdr->set_timestamp(hdr->timestamp);
+
+        auto protoFsFileEvent = m_evFsFileEvent->mutable_filesystemfileevent();
+        protoFsFileEvent->set_deviceid(event->device_id);
+        protoFsFileEvent->set_fileid(event->file_id);
+        protoFsFileEvent->set_parentid(event->parent_id);
+
+        switch (event->fs_event_type) {
+        case iotrace_fs_event_create:
+            protoFsFileEvent->set_fseventtype(trace::FsEventType::Create);
+            break;
+        case iotrace_fs_event_delete:
+            protoFsFileEvent->set_fseventtype(trace::FsEventType::Delete);
+            break;
+        case iotrace_fs_event_move_to:
+            protoFsFileEvent->set_fseventtype(trace::FsEventType::MoveTo);
+            break;
+        case iotrace_fs_event_move_from:
+            protoFsFileEvent->set_fseventtype(trace::FsEventType::MoveFrom);
+            break;
+        }
+
+        return m_evFsFileEvent;
     }
 
     default:
