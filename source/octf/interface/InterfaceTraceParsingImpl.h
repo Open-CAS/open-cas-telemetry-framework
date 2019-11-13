@@ -43,6 +43,12 @@ public:
             ::octf::proto::IoHistogramSet *response,
             ::google::protobuf::Closure *done) override;
 
+    virtual void GetFileSystemStatistics(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::FilesystemStatistics *response,
+            ::google::protobuf::Closure *done) override;
+
 private:
     void printHistogramCsv(::octf::RpcOutputStream &cout,
                            const ::octf::proto::IoHistogramSet *histogramSet);

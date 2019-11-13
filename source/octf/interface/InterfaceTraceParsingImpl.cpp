@@ -5,12 +5,14 @@
 
 #include <octf/interface/InterfaceTraceParsingImpl.h>
 
+#include <google/protobuf/util/json_util.h>
 #include <iostream>
 #include <octf/communication/RpcOutputStream.h>
 #include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
+#include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/table/Table.h>
@@ -215,6 +217,60 @@ void InterfaceTraceParsingImpl::printHistogramCsv(
     for (auto &table : tables) {
         cout << table << std::endl;
     }
+}
+
+void InterfaceTraceParsingImpl::GetFileSystemStatistics(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::FilesystemStatistics *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        TraceEventHandlerFilesystemStatistics handler(request->tracepath());
+        handler.processEvents();
+        handler.getFilesystemStatistics(response);
+
+        RpcOutputStream cout(log::Severity::Information, controller);
+        cout << log::reset;
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            table::Table table;
+            auto &hdr = table[0];
+
+            // Set header
+            for (int i = 0; i < response->entries_size(); i++) {
+                table::setHeader(hdr, &response->entries(i));
+            }
+
+            // Set rows
+            for (int i = 1; i <= response->entries_size(); i++) {
+                table[i] << response->entries(i - 1);
+            }
+
+            hdr.setupHeader();
+            cout << table << std::endl;
+        } else if (request->format() == proto::OutputFormat::JSON) {
+            google::protobuf::util::JsonOptions jsonOptions;
+            std::string output;
+
+            jsonOptions.always_print_primitive_fields = false;
+            jsonOptions.add_whitespace = true;
+
+            google::protobuf::util::MessageToJsonString(*response, &output,
+                                                        jsonOptions);
+
+            cout << output << std::endl;
+
+        } else {
+            throw Exception("Invalid output format");
+        }
+
+        cout << log::disable;
+
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
 }
 
 }  // namespace octf

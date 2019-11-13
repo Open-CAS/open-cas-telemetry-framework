@@ -18,4 +18,6 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.h
     ${CMAKE_CURRENT_LIST_DIR}/HandlerRunner.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerFilesystemStatistics.h
+    ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerFilesystemStatistics.cpp
 )

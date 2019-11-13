@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <octf/analytics/statistics/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
@@ -45,6 +46,18 @@ public:
     }
 
 protected:
+    /**
+     * Gets filesystem viewer interface
+     *
+     * This interface is used to inspect and view filesystem on the basis
+     * of captured IO traces.
+     *
+     * @param deviceID
+     *
+     * @return
+     */
+    IFileSystemViewer *getFileSystemViewer(uint64_t partitionID);
+
     /**
      * @brief Handles device description trace event
      *
@@ -88,6 +101,7 @@ private:
     class Map;
     struct FileName;
     struct IoQueueDepth;
+    class FileSystemViewer;
     std::queue<proto::trace::ParsedEvent> m_queue;
     std::unique_ptr<Map> m_eventMapping;
     std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
@@ -99,6 +113,7 @@ private:
     uint64_t m_subrangeStart;
     uint64_t m_subrangeEnd;
     std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
+    std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
 };
 
 }  // namespace octf
