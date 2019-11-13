@@ -392,7 +392,9 @@ void ParsedIoTraceEventHandler::handleEvent(
         }
     } break;
 
-    default: { } break; }
+    default: {
+    } break;
+    }
 }
 
 std::shared_ptr<proto::trace::Event>
@@ -507,6 +509,176 @@ void ParsedIoTraceEventHandler::getFilePath(uint64_t devId,
             path += "../";
         }
     }
+}
+
+class ParsedIoTraceEventHandler::FileSystemViewer : public IFileSystemViewer {
+public:
+    FileSystemViewer(uint64_t partId, const std::set<FileName> &fsNames)
+            : IFileSystemViewer()
+            , m_partId(partId)
+            , m_fsNames(fsNames) {}
+
+    virtual std::string getBaseName(uint64_t id) const override {
+        std::string basename = "";
+
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            auto i = iter->Name.rfind('.', iter->Name.length());
+            if (i != std::string::npos) {
+                basename = iter->Name.substr(0, i);
+            }
+        }
+
+        return basename;
+    }
+
+    virtual std::string getFileName(uint64_t id) const override {
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            return iter->Name;
+        }
+
+        return "";
+    }
+
+    virtual std::string getFileExtension(uint64_t id) const override {
+        std::string extension = "";
+
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            auto length = iter->Name.length();
+            auto i = iter->Name.rfind('.', length);
+            if (i != std::string::npos) {
+                extension = iter->Name.substr(i + 1, length);
+            }
+        }
+
+        return extension;
+    }
+
+    virtual std::string getDirPath(uint64_t id) const override {
+        std::string dir = "";
+
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            getPath(iter->ParentId, dir);
+        }
+
+        return dir;
+    }
+
+    virtual std::string getFilePath(uint64_t id) const override {
+        std::string path = "";
+
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            path = getDirPath(id);
+
+            if (path != "/") {
+                path += "/";
+            }
+
+            path += iter->Name;
+        }
+
+        return path;
+    }
+
+    virtual uint64_t getParentId(uint64_t id) const override {
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            return iter->ParentId;
+        }
+
+        return 0;
+    }
+
+private:
+    void getPath(uint64_t id, std::string &path) const {
+        FileName key;
+        key.Id = id;
+        key.DeviceId = m_partId;
+
+        auto iter = m_fsNames.find(key);
+        if (iter != m_fsNames.end()) {
+            const auto &name = *iter;
+
+            if (name.Id != name.ParentId) {
+                getPath(name.ParentId, path);
+
+                if (!path.empty() && '/' != path.back()) {
+                    path += "/";
+                }
+            }
+
+            path += name.Name;
+        } else {
+            if (path != "") {
+                path += "../";
+            }
+        }
+    }
+
+private:
+    const uint64_t m_partId;
+    const std::set<FileName> &m_fsNames;
+};
+
+IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
+        uint64_t partitionId) {
+    IFileSystemViewer *viewer = NULL;
+
+    // Check if device with specified ID exist
+    if (m_devices.end() == m_devices.find(partitionId)) {
+        return NULL;
+    }
+
+    auto iter = m_fsViewers.find(partitionId);
+    if (iter == m_fsViewers.end()) {
+        // FS viewer has not be allocated yet.
+
+        // Create FS Viewer
+        auto pair = std::make_pair(partitionId,
+                                   FileSystemViewer(partitionId, m_fileNames));
+
+        // Insert pair into map
+        auto result = m_fsViewers.emplace(pair);
+
+        if (!result.second || result.first == m_fsViewers.end()) {
+            throw Exception(
+                    "Error during trace parsing, cannot create FS viewer");
+        }
+
+        viewer = &result.first->second;
+    } else {
+        viewer = &iter->second;
+    }
+
+    return viewer;
 }
 
 }  // namespace octf

@@ -122,4 +122,12 @@ service InterfaceTraceParsing {
         option (octf.proto.opts_command).cli_desc =
             "Returns a histogram of LBA hits";
     }
+
+    rpc GetFileSystemStatistics(GetTraceStatisticsRequest)
+        returns (octf.proto.FilesystemStatistics) {
+        option (octf.proto.opts_command).cli = true;
+        option (octf.proto.opts_command).cli_long_key = "get-fs-statistics";
+        option (octf.proto.opts_command).cli_desc =
+            "Gets filesystem statistics";
+    }
 }
