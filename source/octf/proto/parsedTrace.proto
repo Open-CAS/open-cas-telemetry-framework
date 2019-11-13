@@ -67,6 +67,12 @@ message ParsedEvent {
 
         /** File path */
         string path = 1000;
+
+        /** Type of filesystem event */
+        FsEventType eventType = 1001;
+
+        /** Parent file ID */
+        uint64 parentId = 1002;
     }
 
     /** Header Information */

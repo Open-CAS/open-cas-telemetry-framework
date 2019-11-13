@@ -367,7 +367,28 @@ void ParsedIoTraceEventHandler::handleEvent(
             dst.set_id(src.fileid());
             dst.set_offset(src.fileoffset());
             dst.set_size(src.filesize());
+
+            // Update filesystem event type to just file access
+            dst.set_eventtype(proto::trace::FsEventType::Access);
         }
+    } break;
+
+    case Event::EventTypeCase::kFilesystemFileEvent: {
+        auto fsEvent = traceEvent->filesystemfileevent();
+
+        // Allocate new parsed IO event in the queue
+        m_queue.emplace(ParsedEvent());
+        auto &cachedEvent = m_queue.back();
+
+        // Setup parsed IO
+        cachedEvent.mutable_header()->CopyFrom(traceEvent->header());
+
+        // Setup file event type and parent id
+        auto &dstFileInfo = *cachedEvent.mutable_file();
+        dstFileInfo.set_eventtype(fsEvent.fseventtype());
+        dstFileInfo.set_parentid(fsEvent.parentid());
+        dstFileInfo.set_id(fsEvent.fileid());
+
     } break;
 
     case Event::kFilesystemFileNameFieldNumber: {
