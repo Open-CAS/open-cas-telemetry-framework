@@ -94,19 +94,18 @@ private:
 
     void pushOutEvent();
 
-    void getFilePath(uint64_t devId, uint64_t id, std::string &path);
-
 private:
     struct Key;
     class Map;
-    struct FileName;
     struct IoQueueDepth;
     class FileSystemViewer;
+    struct FileId;
+    struct FileInfo;
     std::queue<proto::trace::ParsedEvent> m_queue;
     std::unique_ptr<Map> m_eventMapping;
     std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
     std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
-    std::set<FileName> m_fileNames;
+    std::map<FileId, FileInfo> m_fileInfo;
     uint64_t m_timestampOffset;
     uint64_t m_sidOffset;
     uint64_t m_limit;

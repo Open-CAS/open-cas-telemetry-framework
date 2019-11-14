@@ -15,7 +15,8 @@ ParsedIoTraceEventHandlerPrinter::ParsedIoTraceEventHandlerPrinter(
         , m_format(format)
         , m_jsonOptions()
         , m_jsonTrace() {
-    m_jsonOptions.always_print_primitive_fields = true;
+    m_jsonOptions.always_print_primitive_fields = false;
+    m_jsonOptions.add_whitespace = false;
 }
 
 void ParsedIoTraceEventHandlerPrinter::handleIO(
@@ -32,7 +33,9 @@ void ParsedIoTraceEventHandlerPrinter::handleIO(
                                                     m_jsonOptions);
         std::cout << m_jsonTrace << std::endl;
     } break;
-    default: { throw Exception("Invalid output format"); } break;
+    default: {
+        throw Exception("Invalid output format");
+    } break;
     }
 }
 

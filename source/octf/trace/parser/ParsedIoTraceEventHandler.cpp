@@ -147,62 +147,95 @@ private:
     std::map<Key, std::list<MapEvent>> m_map;
 };
 
-/**
- * Tiny structure of file name containing device id, file id, parent file id,
- * and name
- *
- * To reduced memory overhead, we introduced own version of FileName,
- * instead of using protocol buffer one
- */
-struct ParsedIoTraceEventHandler::FileName {
-    uint64_t DeviceId;
-    uint64_t Id;
-    uint64_t ParentId;
-    std::string Name;
+struct ParsedIoTraceEventHandler::FileId {
+    uint64_t partitionId;
+    uint64_t id;
 
-    FileName()
-            : DeviceId(0)
-            , Id(0)
-            , ParentId(0)
-            , Name() {}
+    FileId()
+            : partitionId(0)
+            , id(0) {}
 
-    FileName(const proto::trace::EventIoFilesystemFileName &event)
-            : DeviceId(event.deviceid())
-            , Id(event.fileid())
-            , ParentId(event.fileparentid())
-            , Name(event.filename()) {}
+    FileId(uint64_t partId, uint64_t fileId)
+            : partitionId(partId)
+            , id(fileId) {}
 
-    FileName(const FileName &other)
-            : DeviceId(other.DeviceId)
-            , Id(other.Id)
-            , ParentId(other.ParentId)
-            , Name(other.Name) {}
+    FileId(const proto::trace::EventIoFilesystemFileName &event)
+            : partitionId(event.partitionid())
+            , id(event.fileid()) {}
 
-    FileName &operator=(const FileName &other) {
+    FileId(const proto::trace::EventIoFilesystemMeta &event)
+            : partitionId(event.partitionid())
+            , id(event.fileid()) {}
+
+    FileId(const proto::trace::EventIoFilesystemFileEvent &event)
+            : partitionId(event.partitionid())
+            , id(event.fileid()) {}
+
+    FileId(const FileId &other)
+            : partitionId(other.partitionId)
+            , id(other.id) {}
+
+    FileId &operator=(const FileId &other) {
         if (this != &other) {
-            DeviceId = other.DeviceId;
-            Id = other.Id;
-            ParentId = other.ParentId;
-            Name = other.Name;
+            partitionId = other.partitionId;
+            id = other.id;
         }
 
         return *this;
     }
 
-    bool operator==(const FileName &other) const {
-        return Id == other.Id && DeviceId == other.DeviceId;
+    bool operator==(const FileId &other) const {
+        return id == other.id && partitionId == other.partitionId;
     }
 
-    bool operator!=(const FileName &other) const {
+    bool operator!=(const FileId &other) const {
         return !(*this == other);
     }
 
-    bool operator<(const FileName &other) const {
-        if (DeviceId != other.DeviceId) {
-            return DeviceId < other.DeviceId;
+    bool operator<(const FileId &other) const {
+        if (partitionId != other.partitionId) {
+            return partitionId < other.partitionId;
         } else {
-            return Id < other.Id;
+            return id < other.id;
         }
+    }
+};
+
+/**
+ * Tiny structure of file info containing parent file id, last size of file,
+ * name, etc.
+ *
+ * To reduced memory overhead, we introduced own version of file info,
+ * instead of using protocol buffer one
+ */
+struct ParsedIoTraceEventHandler::FileInfo {
+    uint64_t parentId;
+    std::string name;
+    uint64_t size;
+
+    FileInfo()
+            : parentId(0)
+            , name()
+            , size(0) {}
+
+    FileInfo(const proto::trace::EventIoFilesystemFileName &event)
+            : parentId(event.fileparentid())
+            , name(event.filename())
+            , size(0) {}
+
+    FileInfo(const FileInfo &other)
+            : parentId(other.parentId)
+            , name(other.name)
+            , size(other.size) {}
+
+    FileInfo &operator=(const FileInfo &other) {
+        if (this != &other) {
+            parentId = other.parentId;
+            name = other.name;
+            size = other.size;
+        }
+
+        return *this;
     }
 };
 
@@ -214,7 +247,7 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         , m_queue()
         , m_eventMapping(new ParsedIoTraceEventHandler::Map())
         , m_devices()
-        , m_fileNames()
+        , m_fileInfo()
         , m_timestampOffset(0)
         , m_sidOffset(0)
         , m_limit(ParsedIoTraceEventHandler_QueueLimit)
@@ -282,8 +315,10 @@ void ParsedIoTraceEventHandler::handleEvent(
         qd.Value++;
         dst.set_qd(qd.Value);
 
-        cachedEvent.mutable_device()->set_name(m_devices[deviceId].name());
-        cachedEvent.mutable_device()->set_id(deviceId);
+        auto *devInfo = cachedEvent.mutable_device();
+        devInfo->set_name(m_devices[deviceId].name());
+        devInfo->set_id(deviceId);
+        devInfo->set_partition(deviceId);
 
         // Create LBA mapping
         m_eventMapping->add(key, &cachedEvent);
@@ -370,11 +405,27 @@ void ParsedIoTraceEventHandler::handleEvent(
 
             // Update filesystem event type to just file access
             dst.set_eventtype(proto::trace::FsEventType::Access);
+
+            // Set partition ID
+            auto partId = traceEvent->filesystemmeta().partitionid();
+            auto devInfo = iter->second->mutable_device();
+            devInfo->set_partition(partId);
+
+            // Add device description for given partition
+            auto devIter = m_devices.find(partId);
+            if (devIter == m_devices.end()) {
+                m_devices[partId].CopyFrom(m_devices[devInfo->id()]);
+            }
+
+            // Update size in file info
+            auto size = src.filesize();
+            m_fileInfo[FileId(src)].size = size;
         }
     } break;
 
     case Event::EventTypeCase::kFilesystemFileEvent: {
-        auto fsEvent = traceEvent->filesystemfileevent();
+        const auto &fsEvent = traceEvent->filesystemfileevent();
+        auto partId = fsEvent.partitionid();
 
         // Allocate new parsed IO event in the queue
         m_queue.emplace(ParsedEvent());
@@ -386,31 +437,25 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Setup file event type and parent id
         auto &dstFileInfo = *cachedEvent.mutable_file();
         dstFileInfo.set_eventtype(fsEvent.fseventtype());
-        dstFileInfo.set_parentid(fsEvent.parentid());
         dstFileInfo.set_id(fsEvent.fileid());
 
+        auto &destDevInfo = *cachedEvent.mutable_device();
+        const auto &srcDevInfo = m_devices[partId];
+        destDevInfo.set_name(srcDevInfo.name());
+        destDevInfo.set_id(srcDevInfo.id());
+        destDevInfo.set_partition(partId);
+
+        // Set file size from file info
+        auto size = m_fileInfo[FileId(fsEvent)].size;
+        dstFileInfo.set_size(size);
     } break;
 
     case Event::kFilesystemFileNameFieldNumber: {
-        // TODO (mariuszbarczak) set limit on m_fileNames
+        FileId fileId(traceEvent->filesystemfilename());
+        auto &fileInfo = m_fileInfo[fileId];
 
-        // Create SID mapping
-        auto sidResult =
-                m_fileNames.emplace(FileName(traceEvent->filesystemfilename()));
-
-        if (!sidResult.second) {
-            // Equivalent element already exist
-
-            if (sidResult.first == m_fileNames.end()) {
-                // Iterator shall point at the existing element
-                throw Exception(
-                        "Error during trace parsing, cannot cache file name");
-            }
-
-            // Exchange old one with new one
-            m_fileNames.erase(sidResult.first);
-            m_fileNames.insert(FileName(traceEvent->filesystemfilename()));
-        }
+        fileInfo.name = traceEvent->filesystemfilename().filename();
+        fileInfo.parentId = traceEvent->filesystemfilename().fileparentid();
     } break;
 
     default:
@@ -467,14 +512,18 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
 
     // Take into account IO queue depth adjustment
     auto devId = event.device().id();
+    auto partId = event.device().partition();
     auto &qd = m_devIoQueueDepth[devId];
-    auto ioqd = event.io().qd();
-    if (qd.Adjustment < ioqd) {
-        ioqd -= qd.Adjustment;
-    } else {
-        ioqd = 1;
+
+    if (event.has_io()) {
+        auto ioqd = event.io().qd();
+        if (qd.Adjustment < ioqd) {
+            ioqd -= qd.Adjustment;
+        } else {
+            ioqd = 1;
+        }
+        event.mutable_io()->set_qd(ioqd);
     }
-    event.mutable_io()->set_qd(ioqd);
 
     // Update latency
     auto timestamp = event.header().timestamp();
@@ -485,14 +534,14 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     }
 
     if (event.has_file()) {
-        getFilePath(devId, event.file().id(),
-                    *event.mutable_file()->mutable_path());
+        auto viewer = getFileSystemViewer(partId);
+        event.mutable_file()->set_path(viewer->getFilePath(event.file().id()));
     }
 
     // Call handler
     handleIO(event);
 
-    if (0 == event.io().latency()) {
+    if (event.has_io() && 0 == event.io().latency()) {
         // An IO completion lost, so the queue depth of next IOs are disrupted,
         // Set queue depth adjustment
         qd.Adjustment++;
@@ -507,50 +556,24 @@ void ParsedIoTraceEventHandler::setExclusiveSubrange(uint64_t start,
     m_subrangeEnd = end;
 }
 
-void ParsedIoTraceEventHandler::getFilePath(uint64_t devId,
-                                            uint64_t id,
-                                            std::string &path) {
-    // TODO (mariuszbarczak) Provide path caching with limit
-
-    FileName key;
-    key.Id = id;
-    key.DeviceId = devId;
-
-    auto iter = m_fileNames.find(key);
-    if (iter != m_fileNames.end()) {
-        const auto &name = *iter;
-
-        if (name.Id != name.ParentId) {
-            getFilePath(devId, name.ParentId, path);
-            path += "/";
-            path += name.Name;
-        }
-    } else {
-        if (path != "") {
-            path += "../";
-        }
-    }
-}
-
 class ParsedIoTraceEventHandler::FileSystemViewer : public IFileSystemViewer {
 public:
-    FileSystemViewer(uint64_t partId, const std::set<FileName> &fsNames)
+    FileSystemViewer(uint64_t partId,
+                     const std::map<FileId, FileInfo> &fileInfo)
             : IFileSystemViewer()
             , m_partId(partId)
-            , m_fileNames(fsNames) {}
+            , m_fileInfo(fileInfo) {}
 
     virtual std::string getBaseName(uint64_t id) const override {
         std::string basename = "";
 
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
+        FileId fid(m_partId, id);
 
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            auto i = iter->Name.rfind('.');
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
-                basename = iter->Name.substr(0, i);
+                basename = iter->second.name.substr(0, i);
             }
         }
 
@@ -558,13 +581,11 @@ public:
     }
 
     virtual std::string getFileName(uint64_t id) const override {
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
+        FileId fid(m_partId, id);
 
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            return iter->Name;
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            return iter->second.name;
         }
 
         return "";
@@ -572,16 +593,13 @@ public:
 
     virtual std::string getFileExtension(uint64_t id) const override {
         std::string extension = "";
+        FileId fid(m_partId, id);
 
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
-
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            auto i = iter->Name.rfind('.');
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
-                extension = iter->Name.substr(i + 1);
+                extension = iter->second.name.substr(i + 1);
             }
         }
 
@@ -590,14 +608,11 @@ public:
 
     virtual std::string getDirPath(uint64_t id) const override {
         std::string dir = "";
+        FileId fid(m_partId, id);
 
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
-
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            getPath(iter->ParentId, dir);
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            getPath(iter->second.parentId, dir);
         }
 
         return dir;
@@ -605,66 +620,68 @@ public:
 
     virtual std::string getFilePath(uint64_t id) const override {
         std::string path = "";
+        FileId fid(m_partId, id);
 
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
-
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
             path = getDirPath(id);
+
+            if ("" == path) {
+                return "";
+            }
 
             if (path != "/") {
                 path += "/";
             }
 
-            path += iter->Name;
+            path += iter->second.name;
         }
 
         return path;
     }
 
     virtual uint64_t getParentId(uint64_t id) const override {
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
+        FileId fid(m_partId, id);
 
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            return iter->ParentId;
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            return iter->second.parentId;
         }
 
         return 0;
     }
 
 private:
-    void getPath(uint64_t id, std::string &path) const {
-        FileName key;
-        key.Id = id;
-        key.DeviceId = m_partId;
+    bool getPath(uint64_t id, std::string &path) const {
+        FileId fid(m_partId, id);
 
-        auto iter = m_fileNames.find(key);
-        if (iter != m_fileNames.end()) {
-            const auto &name = *iter;
+        auto iter = m_fileInfo.find(fid);
+        if (iter != m_fileInfo.end()) {
+            const auto &info = iter->second;
 
-            if (name.Id != name.ParentId) {
-                getPath(name.ParentId, path);
+            if (id != info.parentId) {
+                if (!getPath(info.parentId, path)) {
+                    path = "";
+                    return false;
+                }
 
                 if (!path.empty() && '/' != path.back()) {
                     path += "/";
                 }
             }
 
-            path += name.Name;
+            path += info.name;
+
+            return true;
         } else {
-            // Missing information about parent, paste discontinuous path
-            path = "..";
+            path = "";
+            return false;
         }
     }
 
 private:
     const uint64_t m_partId;
-    const std::set<FileName> &m_fileNames;
+    const std::map<FileId, FileInfo> &m_fileInfo;
 };
 
 IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
@@ -682,7 +699,7 @@ IFileSystemViewer *ParsedIoTraceEventHandler::getFileSystemViewer(
 
         // Create FS Viewer
         auto pair = std::make_pair(partitionId,
-                                   FileSystemViewer(partitionId, m_fileNames));
+                                   FileSystemViewer(partitionId, m_fileInfo));
 
         // Insert pair into map
         auto result = m_partitionFsViewers.emplace(pair);
