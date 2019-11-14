@@ -105,14 +105,14 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
         auto id = file.id();
 
         auto &statistics = getStatisticsByIds(viewer, viewer->getParentId(id),
-                                              device.id(), file.partitionid());
+                                              device.id(), device.partition());
         statistics.updateIoStats(event);
 
         {
             // Update statistics by file extension
             auto ext = viewer->getFileExtension(id);
             if (ext != "") {
-                Key key("*." + ext, device.id(), file.partitionid());
+                Key key("*." + ext, device.id(), device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
         }
@@ -120,7 +120,7 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
             // Update statistics by base name
             auto basename = viewer->getBaseName(id);
             if (basename != "") {
-                Key key(basename + ".*", device.id(), file.partitionid());
+                Key key(basename + ".*", device.id(), device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
         }
@@ -191,6 +191,10 @@ void FilesystemStatistics::fillProtoStatistics(
 
     for (const auto &child : m_children) {
         std::string name = child.first.name;
+
+        if (name.empty()) {
+            continue;
+        }
 
         if (name.front() != '*' && name.back() != '*') {
             // Directory case

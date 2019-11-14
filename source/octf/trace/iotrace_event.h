@@ -193,14 +193,17 @@ struct iotrace_event_fs_meta {
 
     /** File size in sectors */
     uint64_t file_size;
+
+    /** ID of the partition the file belongs to */
+    uint64_t partition_id;
 } __attribute__((packed, aligned(8)));
 
 struct iotrace_event_fs_file_name {
     /** Trace event header */
     struct iotrace_event_hdr hdr;
 
-    /** Device Id */
-    uint64_t device_id;
+    /** ID of the partition the file belongs to */
+    uint64_t partition_id;
 
     /** File ID */
     uint64_t file_id;
@@ -243,18 +246,14 @@ struct iotrace_event_fs_file_event {
     /** Trace event header */
     struct iotrace_event_hdr hdr;
 
-    /** Device Id */
-    uint64_t device_id;
+    /** ID of the partition the file belongs to */
+    uint64_t partition_id;
 
     /** Event type */
     iotrace_fs_event_type fs_event_type;
 
     /** File ID */
     uint64_t file_id;
-
-    /** Parent directory ID */
-    uint64_t parent_id;
-
 } __attribute__((packed, aligned(8)));
 
 #ifdef __cplusplus

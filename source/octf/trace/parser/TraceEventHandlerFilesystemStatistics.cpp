@@ -17,7 +17,7 @@ TraceEventHandlerFilesystemStatistics::
 
 void TraceEventHandlerFilesystemStatistics::handleIO(
         const octf::proto::trace::ParsedEvent &io) {
-    IFileSystemViewer *viewer = getFileSystemViewer(io.device().id());
+    IFileSystemViewer *viewer = getFileSystemViewer(io.device().partition());
     m_fsStats.count(viewer, io);
 }
 

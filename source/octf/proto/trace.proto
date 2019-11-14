@@ -40,11 +40,12 @@ enum IoType {
 }
 
 enum FsEventType {
-    Create = 0;
-    Delete = 1;
-    MoveTo = 2;
-    MoveFrom = 3;
-    Access = 4;
+    Unknown = 0;
+    Create = 1;
+    Delete = 2;
+    MoveTo = 3;
+    MoveFrom = 4;
+    Access = 5;
 }
 
 /**
@@ -115,11 +116,14 @@ message EventIoFilesystemMeta {
 
     /** File size in sectors */
     uint64 fileSize = 4;
+
+    /** ID of the partition the file belongs to */
+    uint64 partitionId = 5;
 };
 
 message EventIoFilesystemFileName {
-    /** Device ID */
-    uint64 deviceId = 1;
+    /** ID of the partition the file belongs to */
+    uint64 partitionId = 1;
 
     /** File ID */
     uint64 fileId = 2;
@@ -132,14 +136,11 @@ message EventIoFilesystemFileName {
 }
 
 message EventIoFilesystemFileEvent {
-    /** Device ID */
-    uint64 deviceId = 1;
+    /** ID of the partition the file belongs to */
+    uint64 partitionId = 1;
 
     /** File ID */
     uint64 fileId = 2;
-
-    /** Parent directory ID */
-    uint64 parentId = 3;
 
     /** Type of FS event */
     FsEventType fsEventType = 4;

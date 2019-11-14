@@ -129,6 +129,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsMeta->set_fileid(event->file_id);
         protoFsMeta->set_fileoffset(event->file_offset);
         protoFsMeta->set_filesize(event->file_size);
+        protoFsMeta->set_partitionid(event->partition_id);
 
         return m_evFsMeta;
     }
@@ -145,7 +146,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsFileName = m_evFsFileName->mutable_filesystemfilename();
-        protoFsFileName->set_deviceid(event->device_id);
+        protoFsFileName->set_partitionid(event->partition_id);
         protoFsFileName->set_fileid(event->file_id);
         protoFsFileName->set_fileparentid(event->file_parent_id);
         protoFsFileName->set_filename(event->file_name);
@@ -165,9 +166,8 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsFileEvent = m_evFsFileEvent->mutable_filesystemfileevent();
-        protoFsFileEvent->set_deviceid(event->device_id);
+        protoFsFileEvent->set_partitionid(event->partition_id);
         protoFsFileEvent->set_fileid(event->file_id);
-        protoFsFileEvent->set_parentid(event->parent_id);
 
         switch (event->fs_event_type) {
         case iotrace_fs_event_create:
