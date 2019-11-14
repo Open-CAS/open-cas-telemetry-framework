@@ -202,10 +202,10 @@ struct ParsedIoTraceEventHandler::FileId {
 };
 
 /**
- * Tiny structure of file name containing partition id, file id, parent file id,
- * last size of file, and name
+ * Tiny structure of file info containing parent file id, last size of file,
+ * name, etc.
  *
- * To reduced memory overhead, we introduced own version of FileName,
+ * To reduced memory overhead, we introduced own version of file info,
  * instead of using protocol buffer one
  */
 struct ParsedIoTraceEventHandler::FileInfo {
