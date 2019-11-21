@@ -7,31 +7,36 @@
 
 namespace octf {
 
-static constexpr auto WIF_METRIC_NAME = "write invalidation factor";
-
 struct FilesystemStatistics::Key {
     Key()
             : name()
             , devId()
-            , partId() {}
+            , partId()
+            , statsCase(StatisticsCase::NAME_NOT_SET) {}
 
-    Key(const std::string &name, uint64_t devId, uint64_t partId)
+    Key(StatisticsCase sCase,
+        const std::string &name,
+        uint64_t devId,
+        uint64_t partId)
             : name(name)
             , devId(devId)
-            , partId(partId) {}
+            , partId(partId)
+            , statsCase(sCase) {}
 
     virtual ~Key() {}
 
     Key(const Key &other)
             : name(other.name)
             , devId(other.devId)
-            , partId(other.partId) {}
+            , partId(other.partId)
+            , statsCase(other.statsCase) {}
 
     Key &operator=(const Key &other) {
         if (this != &other) {
             name = other.name;
             devId = other.devId;
             partId = other.partId;
+            statsCase = other.statsCase;
         }
 
         return *this;
@@ -39,7 +44,7 @@ struct FilesystemStatistics::Key {
 
     bool operator==(const Key &other) const {
         return name == other.name && devId == other.devId &&
-               partId == other.partId;
+               partId == other.partId && statsCase == other.statsCase;
     }
 
     bool operator!=(const Key &other) const {
@@ -51,8 +56,11 @@ struct FilesystemStatistics::Key {
         if (0 == result) {
             if (devId != other.devId) {
                 return devId < other.devId;
+            } else if (partId != other.partId) {
+                return partId < other.partId;
+            } else {
+                return statsCase < other.statsCase;
             }
-            return partId < other.partId;
         }
 
         return result < 0;
@@ -61,13 +69,15 @@ struct FilesystemStatistics::Key {
     std::string name;
     uint64_t devId;
     uint64_t partId;
+    StatisticsCase statsCase;
 };
 
 FilesystemStatistics::FilesystemStatistics()
         : m_children()
         , m_ioStats()
         , m_devId()
-        , m_partId() {}
+        , m_partId()
+        , m_statsCase(StatisticsCase::NAME_NOT_SET) {}
 
 FilesystemStatistics::~FilesystemStatistics() {}
 
@@ -75,7 +85,8 @@ FilesystemStatistics::FilesystemStatistics(const FilesystemStatistics &other)
         : m_children(other.m_children)
         , m_ioStats(other.m_ioStats)
         , m_devId(other.m_devId)
-        , m_partId(other.m_partId) {}
+        , m_partId(other.m_partId)
+        , m_statsCase(other.m_statsCase) {}
 
 FilesystemStatistics &FilesystemStatistics::operator=(
         const FilesystemStatistics &other) {
@@ -84,6 +95,7 @@ FilesystemStatistics &FilesystemStatistics::operator=(
         m_ioStats = other.m_ioStats;
         m_devId = other.m_devId;
         m_partId = other.m_partId;
+        m_statsCase = other.m_statsCase;
     }
 
     return *this;
@@ -112,7 +124,8 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
             // Update statistics by file extension
             auto ext = viewer->getFileExtension(id);
             if (ext != "") {
-                Key key("*." + ext, device.id(), device.partition());
+                Key key(StatisticsCase::kExtension, ext, device.id(),
+                        device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
         }
@@ -120,7 +133,8 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
             // Update statistics by base name
             auto basename = viewer->getBaseName(id);
             if (basename != "") {
-                Key key(basename + ".*", device.id(), device.partition());
+                Key key(StatisticsCase::kBasename, basename, device.id(),
+                        device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
         }
@@ -147,7 +161,7 @@ FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
     }
 
     std::string name = viewer->getFileName(dirId);
-    Key key(name, devId, partId);
+    Key key(StatisticsCase::kDirectory, name, devId, partId);
 
     return statistics->getStatisticsByKey(key);
 }
@@ -155,25 +169,12 @@ FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
 void FilesystemStatistics::fillProtoStatistics(
         proto::FilesystemStatistics *statistics,
         const std::string &dir) const {
-    bool checkWif = false;
     proto::FilesystemStatisticsEntry entry;
 
-    fillProtoStatisticsEntry(&entry);
-
     if (dir != "") {
-        if (dir.front() == '*') {
-            // Extension case
-            entry.set_extension(dir);
-            checkWif = true;
-        } else if (dir.back() == '*') {
-            // Basename case
-            entry.set_basename(dir);
-            checkWif = true;
-        } else {
-            entry.set_directory(dir);
-        }
+        fillProtoStatisticsEntry(&entry, dir);
 
-        if (checkWif) {
+        if (m_statsCase != StatisticsCase::kDirectory) {
             auto &metrics = *entry.mutable_statistics()
                                      ->mutable_write()
                                      ->mutable_metrics();
@@ -191,12 +192,13 @@ void FilesystemStatistics::fillProtoStatistics(
 
     for (const auto &child : m_children) {
         std::string name = child.first.name;
+        auto statsCase = child.first.statsCase;
 
         if (name.empty()) {
             continue;
         }
 
-        if (name.front() != '*' && name.back() != '*') {
+        if (statsCase == StatisticsCase::kDirectory) {
             // Directory case
             if (name.back() != '/' && !dir.empty() && dir.back() != '/') {
                 name = dir + "/" + name;
@@ -210,7 +212,8 @@ void FilesystemStatistics::fillProtoStatistics(
 }
 
 void FilesystemStatistics::fillProtoStatisticsEntry(
-        proto::FilesystemStatisticsEntry *entry) const {
+        proto::FilesystemStatisticsEntry *entry,
+        const std::string &name) const {
     m_ioStats.getIoStatistics(entry->mutable_statistics());
     entry->set_deviceid(m_devId);
     entry->set_partitionid(m_partId);
@@ -238,6 +241,21 @@ void FilesystemStatistics::fillProtoStatisticsEntry(
     }
 
     (*metrics)[WIF_METRIC_NAME].set_value(wif);
+
+    switch (m_statsCase) {
+    case StatisticsCase::kDirectory:
+        entry->set_directory(name);
+        break;
+    case StatisticsCase::kBasename:
+        entry->set_basename(name);
+        break;
+    case StatisticsCase::kExtension:
+        entry->set_extension(name);
+        break;
+    default:
+        throw Exception("Invalid statistics case");
+        break;
+    }
 }
 
 void FilesystemStatistics::updateIoStats(
@@ -265,6 +283,7 @@ FilesystemStatistics &FilesystemStatistics::getStatisticsByKey(const Key &key) {
 
     newFsStats.m_devId = key.devId;
     newFsStats.m_partId = key.partId;
+    newFsStats.m_statsCase = key.statsCase;
 
     return newFsStats;
 }
