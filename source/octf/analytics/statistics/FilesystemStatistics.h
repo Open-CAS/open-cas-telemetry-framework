@@ -44,6 +44,8 @@ public:
      */
     void getFilesystemStatistics(proto::FilesystemStatistics *statistics) const;
 
+    static constexpr auto WIF_METRIC_NAME = "write invalidation factor";
+
 private:
     struct Key;
 
@@ -57,8 +59,8 @@ private:
     void fillProtoStatistics(proto::FilesystemStatistics *statistics,
                              const std::string &dir) const;
 
-    void fillProtoStatisticsEntry(
-            proto::FilesystemStatisticsEntry *entry) const;
+    void fillProtoStatisticsEntry(proto::FilesystemStatisticsEntry *entry,
+                                  const std::string &name) const;
 
     void updateIoStats(const proto::trace::ParsedEvent &event);
 
@@ -77,6 +79,12 @@ private:
 
     uint64_t m_devId;
     uint64_t m_partId;
+
+    using StatisticsCase = proto::FilesystemStatisticsEntry::NameCase;
+    /**
+     * Statistics Case
+     */
+    StatisticsCase m_statsCase;
 };
 
 }  // namespace octf

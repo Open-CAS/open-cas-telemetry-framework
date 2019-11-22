@@ -45,6 +45,11 @@ public:
         flushEvents();
     }
 
+    /**
+     * @return Sum of all devices sizes in sectors
+     */
+    uint64_t getDevicesSize() const;
+
 protected:
     /**
      * Gets filesystem viewer interface
