@@ -82,13 +82,15 @@ WorksetCalculator::WorksetCalculator()
 
 WorksetCalculator::WorksetCalculator(const WorksetCalculator &other)
         : m_hitRanges(other.m_hitRanges)
-        , m_max(other.m_max) {}
+        , m_max(other.m_max)
+        , m_isMaxFresh(other.m_isMaxFresh) {}
 
 WorksetCalculator &octf::WorksetCalculator::operator=(
         const WorksetCalculator &other) {
     if (this != &other) {
         m_hitRanges = other.m_hitRanges;
         m_max = other.m_max;
+        m_isMaxFresh = other.m_isMaxFresh;
     }
     return *this;
 }
@@ -98,13 +100,15 @@ WorksetCalculator &octf::WorksetCalculator::operator=(
     if (this != &other) {
         m_hitRanges = std::move(other.m_hitRanges);
         m_max = std::move(other.m_max);
+        m_isMaxFresh = std::move(other.m_isMaxFresh);
     }
     return *this;
 }
 
 WorksetCalculator::WorksetCalculator(WorksetCalculator &&other)
         : m_hitRanges(std::move(other.m_hitRanges))
-        , m_max(std::move(other.m_max)) {}
+        , m_max(std::move(other.m_max))
+        , m_isMaxFresh(std::move(other.m_isMaxFresh)) {}
 
 void WorksetCalculator::insertRange(uint64_t begin, uint64_t len) {
     // Ignore ranges with 0 length
