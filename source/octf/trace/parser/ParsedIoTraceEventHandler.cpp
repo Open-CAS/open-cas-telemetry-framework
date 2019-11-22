@@ -722,7 +722,7 @@ uint64_t ParsedIoTraceEventHandler::getDevicesSize() const {
 
     for (const auto &dev : m_devices) {
         // In device map we code partition sizes as well, so peek only entire
-        // drices, this take place when key of map equals to id in map value.
+        // drives, take place when key of map equals to id in map value.
         if (dev.first == dev.second.id()) {
             size += dev.second.size();
         }
