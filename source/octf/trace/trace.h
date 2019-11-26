@@ -30,7 +30,7 @@ typedef struct octf_trace *octf_trace_t;
 #define OCTF_TRACE_HDR_SIZE 4096ULL
 typedef struct {
     char hdr[OCTF_TRACE_HDR_SIZE];
-} __attribute__((packed)) octf_trace_hdr_t;
+} __attribute__((packed, aligned(8))) octf_trace_hdr_t;
 
 /**
  * Trace open mode
