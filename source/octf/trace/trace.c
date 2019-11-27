@@ -421,6 +421,68 @@ int octf_trace_push(octf_trace_t trace,
     return 0;
 }
 
+int octf_trace_get_wr_buffer(octf_trace_t trace,
+                             octf_trace_event_handle_t *ev_hndl,
+                             void **event,
+                             const uint32_t size) {
+    struct trace_event_hdr *hdr;
+    *ev_hndl = NULL;
+    *event = NULL;
+
+    if (!_is_trace_valid(trace)) {
+        return -EINVAL;
+    }
+
+    if (trace->mode != octf_trace_open_mode_producer) {
+        return -EINVAL;
+    }
+
+    // Allocate trace
+    hdr = _allocate_event(trace, size);
+    if (!hdr) {
+        // Not enough space for storing trace event
+        env_atomic64_inc(&trace->phdr->lost);
+        return -ENOSPC;
+    }
+
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+        // Inconsistent trace state, trying to access out of ring buffer
+        // Invalidate trace and stop pushing and popping
+        env_atomic64_set(&trace->phdr->magic, 0);
+        ENV_BUG();
+        return -EINVAL;
+    }
+
+    *ev_hndl = hdr;
+    *event = trace->ring_buffer + hdr->data_ptr;
+
+    return 0;
+}
+
+int octf_trace_commit_wr_buffer(octf_trace_t trace, octf_trace_event_handle_t ev_hndl) {
+    struct trace_event_hdr *hdr = ev_hndl;
+
+    if (!_is_trace_valid(trace)) {
+        return -EINVAL;
+    }
+
+    if (trace->mode != octf_trace_open_mode_producer) {
+        return -EINVAL;
+    }
+
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+        // Inconsistent trace state, trying to access out of ring buffer
+        // Invalidate trace and stop pushing and popping
+        env_atomic64_set(&trace->phdr->magic, 0);
+        ENV_BUG();
+        return -EINVAL;
+    }
+
+    hdr->ready = true;
+
+    return 0;
+}
+
 //******************************************************************************
 // POP
 //******************************************************************************
