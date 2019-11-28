@@ -171,7 +171,8 @@ int octf_trace_get_wr_buffer(octf_trace_t trace,
  * @retval 0 Event commited successfully
  * @retval -EINVAL Trace or handle is invalid
  */
-int octf_trace_commit_wr_buffer(octf_trace_t trace, octf_trace_event_handle_t ev_hndl);
+int octf_trace_commit_wr_buffer(octf_trace_t trace,
+                                octf_trace_event_handle_t ev_hndl);
 
 /**
  * @brief Pops event from the trace
@@ -184,12 +185,48 @@ int octf_trace_commit_wr_buffer(octf_trace_t trace, octf_trace_event_handle_t ev
  * @retval 0 Event read successfully
  * @retval -EINVAL Trace is invalid
  * @retval -EPERM Invalid open mode, only consumer can pop events
- * @retval -EBUSY Pop operation already in progress
+ * @retval -EBUSY Pop/get_rd_buffer operation already in progress
  * @retval -EBADF Trace empty and already closed
  * @retval -EAGAIN Trace empty, try again
  * @retval -ENOSPC event buffer too small
  */
 int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size);
+
+/**
+ * @brief Allocates event buffer
+ *
+ * @note Only consumer may allocate event buffer.
+ *
+ * @param[in] trace Trace handle
+ * @param[out] ev_hndl Handle to allocated event
+ * @param[out] event Pointer to allocated event
+ * @param[in] size Event size to allocate
+ *
+ * @retval 0 Event allocated successfully
+ * @retval -EINVAL Trace is invalid
+ * @retval -EPERM Invalid open mode, only consumer can allocate read events
+ * @retval -EBUSY Pop/get_rd_buffer operation already in progress
+ * @retval -EBADF Trace empty and already closed
+ * @retval -EAGAIN Trace empty, try again
+ */
+int octf_trace_get_rd_buffer(octf_trace_t trace,
+                             octf_trace_event_handle_t *ev_hndl,
+                             void **event,
+                             uint32_t *size);
+
+/**
+ * @brief Marks event as read
+ *
+ * @note Only consumer may mark the event.
+ *
+ * @param[in] trace Trace handle
+ * @param[in] ev_hndl Handle to event
+ *
+ * @retval 0 Event released successfully
+ * @retval -EINVAL Trace or handle is invalid
+ */
+int octf_trace_release_rd_buffer(octf_trace_t trace,
+                                 octf_trace_event_handle_t ev_hndl);
 
 /**
  * @brief Retrieves current free space of the circular buffer in bytes

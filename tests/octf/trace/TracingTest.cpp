@@ -277,7 +277,8 @@ TEST_F(TracingTest, PushManyPopMany) {
     for (i = 0; i < 2048; i++) {
         // fill log
         do {
-            uint32_t size = generateSize(Event::getMinEventSize(), MAX_EVENT_SIZE);
+            uint32_t size =
+                    generateSize(Event::getMinEventSize(), MAX_EVENT_SIZE);
             Event e(size);
 
             result = octf_trace_push(m_traceProducer, e.getBuffer(),
@@ -318,8 +319,8 @@ TEST_F(TracingTest, PushManyPopMany) {
 }
 
 /**
- * @test This test case allocates event by zcopy, then pops it. At the end of tests
- * there is the check of events equality.
+ * @test This test case allocates event by zcopy, then pops it. At the end of
+ * tests there is the check of events equality.
  */
 TEST_F(TracingTest, ZcopyOnePopOne) {
     int result;
@@ -332,9 +333,10 @@ TEST_F(TracingTest, ZcopyOnePopOne) {
         octf_trace_event_handle_t ev_hndl;
         void *buffer;
 
-        result = octf_trace_get_wr_buffer(m_traceProducer, &ev_hndl, &buffer, size);
+        result = octf_trace_get_wr_buffer(m_traceProducer, &ev_hndl, &buffer,
+                                          size);
         if (result) {
-             FAIL();
+            FAIL();
         }
 
         Event e(buffer, size, true);
@@ -382,11 +384,13 @@ TEST_F(TracingTest, ZcopyManyPopMany) {
     for (i = 0; i < 2048; i++) {
         // fill log
         do {
-            uint32_t size = generateSize(Event::getMinEventSize(), MAX_EVENT_SIZE);
+            uint32_t size =
+                    generateSize(Event::getMinEventSize(), MAX_EVENT_SIZE);
             octf_trace_event_handle_t ev_hndl;
             void *buffer;
 
-            result = octf_trace_get_wr_buffer(m_traceProducer, &ev_hndl, &buffer, size);
+            result = octf_trace_get_wr_buffer(m_traceProducer, &ev_hndl,
+                                              &buffer, size);
             if (result) {
                 break;
             }
@@ -520,6 +524,7 @@ protected:
             return false;
         }
     }
+
 private:
     virtual void work() = 0;
 
@@ -535,21 +540,23 @@ protected:
 
 env_atomic64 Worker::m_eventCount;
 
-class EventCopier : public Worker {
+class EventWriteCopier : public Worker {
 public:
-    EventCopier(octf_trace_t log, TestEventLog &eventLog)
+    EventWriteCopier(octf_trace_t log, TestEventLog &eventLog)
             : Worker(log, eventLog) {}
 
-    virtual ~EventCopier() {}
+    virtual ~EventWriteCopier() {}
 
 private:
     void work() {
         while (isTestRunning() && !isEventLimitReached()) {
             octf_trace_event_handle_t ev_hndl;
-            uint32_t size = generateSize(Event::getMinEventSize(), MAX_EVENTS_SIZE);
-            void* buffer;
+            uint32_t size =
+                    generateSize(Event::getMinEventSize(), MAX_EVENTS_SIZE);
+            void *buffer;
 
-            int result = octf_trace_get_wr_buffer(m_log, &ev_hndl, (void **)&buffer, size);
+            int result = octf_trace_get_wr_buffer(m_log, &ev_hndl,
+                                                  (void **) &buffer, size);
             if (result) {
                 continue;
             }
@@ -566,6 +573,50 @@ private:
     }
 };
 
+class EventReadCopier : public Worker {
+public:
+    EventReadCopier(octf_trace_t log, TestEventLog &eventLog)
+            : Worker(log, eventLog) {}
+
+    virtual ~EventReadCopier() {}
+
+private:
+    void work() {
+        while (isTestRunning()) {
+            process();
+        }
+
+        while (1 != octf_trace_is_empty(m_log)) {
+            // Fetch left events
+            process();
+        }
+    }
+
+public:
+    void process() {
+        octf_trace_event_handle_t ev_hndl;
+        uint32_t size;
+        void *buffer;
+
+        int result = octf_trace_get_rd_buffer(m_log, &ev_hndl,
+                                              (void **) &buffer, &size);
+        if (result) {
+            return;
+        }
+
+        Event e(buffer, size, false);
+        if (!m_eventLog.pop(e)) {
+            terminate();
+            FAIL();
+        }
+        result = octf_trace_release_rd_buffer(m_log, ev_hndl);
+        if (result) {
+            terminate();
+            FAIL();
+        }
+    }
+};
+
 class EventWriter : public Worker {
 public:
     EventWriter(octf_trace_t log, TestEventLog &eventLog)
@@ -576,7 +627,8 @@ public:
 private:
     void work() {
         while (isTestRunning() && !isEventLimitReached()) {
-            uint32_t size = generateSize(Event::getMinEventSize(), MAX_EVENTS_SIZE);
+            uint32_t size =
+                    generateSize(Event::getMinEventSize(), MAX_EVENTS_SIZE);
             Event e(size);
 
             m_eventLog.push(e);
@@ -641,16 +693,22 @@ public:
             , m_eventLog()
             , m_writers()
             , m_readers()
-            , m_copiers()
+            , m_wrCopiers()
+            , m_rdCopiers()
             , m_writersNo(0)
             , m_readersNo(0)
-            , m_copiersNo(0)
+            , m_wrCopiersNo(0)
+            , m_rdCopiersNo(0)
             , m_buffer(BUFFER_SIZE) {}
 
-    void run(uint8_t writersNo, uint8_t readersNo, uint8_t copiersNo) {
+    void run(uint8_t writersNo,
+             uint8_t readersNo,
+             uint8_t wrCopiersNo,
+             uint8_t rdCopiersNo) {
         m_writersNo = writersNo;
         m_readersNo = readersNo;
-        m_copiersNo = copiersNo;
+        m_wrCopiersNo = wrCopiersNo;
+        m_rdCopiersNo = rdCopiersNo;
 
         createWorkers();
         startWorkers();
@@ -671,7 +729,7 @@ private:
             }
         }
 
-        for (auto &cp : m_copiers) {
+        for (auto &cp : m_wrCopiers) {
             if (!cp->isTestRunning()) {
                 return false;
             }
@@ -683,6 +741,11 @@ private:
             }
         }
 
+        for (auto &cp : m_rdCopiers) {
+            if (!cp->isTestRunning()) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -691,12 +754,18 @@ private:
             m_writers.push_back(new EventWriter(m_traceProducer, m_eventLog));
         }
 
-        for (uint64_t i = 0; i < m_copiersNo; i++) {
-            m_copiers.push_back(new EventCopier(m_traceProducer, m_eventLog));
+        for (uint64_t i = 0; i < m_wrCopiersNo; i++) {
+            m_wrCopiers.push_back(
+                    new EventWriteCopier(m_traceProducer, m_eventLog));
         }
 
         for (uint64_t i = 0; i < m_readersNo; i++) {
             m_readers.push_back(new EventReader(m_traceConsumer, m_eventLog));
+        }
+
+        for (uint64_t i = 0; i < m_rdCopiersNo; i++) {
+            m_rdCopiers.push_back(
+                    new EventReadCopier(m_traceConsumer, m_eventLog));
         }
     }
 
@@ -708,11 +777,11 @@ private:
             iter_wr = m_writers.erase(iter_wr);
         }
 
-        auto iter_cp = m_copiers.begin();
+        auto iter_wrcp = m_wrCopiers.begin();
 
-        for (; iter_cp != m_copiers.end();) {
-            delete *iter_cp;
-            iter_cp = m_copiers.erase(iter_cp);
+        for (; iter_wrcp != m_wrCopiers.end();) {
+            delete *iter_wrcp;
+            iter_wrcp = m_wrCopiers.erase(iter_wrcp);
         }
 
         auto iter_rd = m_readers.begin();
@@ -721,6 +790,13 @@ private:
             delete *iter_rd;
             iter_rd = m_readers.erase(iter_rd);
         }
+
+        auto iter_rdcp = m_rdCopiers.begin();
+
+        for (; iter_rdcp != m_rdCopiers.end();) {
+            delete *iter_rdcp;
+            iter_rdcp = m_rdCopiers.erase(iter_rdcp);
+        }
     }
 
     void startWorkers(void) {
@@ -728,12 +804,16 @@ private:
             writer->start();
         }
 
-        for (auto &copier : m_copiers) {
+        for (auto &copier : m_wrCopiers) {
             copier->start();
         }
 
         for (auto &reader : m_readers) {
             reader->start();
+        }
+
+        for (auto &copier : m_rdCopiers) {
+            copier->start();
         }
     }
 
@@ -742,7 +822,7 @@ private:
             writer->stop();
         }
 
-        for (auto &copier : m_copiers) {
+        for (auto &copier : m_wrCopiers) {
             copier->stop();
         }
 
@@ -752,6 +832,15 @@ private:
             // We have to flush trace, wait until readers processed all events
             while (0 == octf_trace_is_empty(m_traceConsumer)) {
                 reader->process();
+            }
+        }
+
+        for (auto &copier : m_rdCopiers) {
+            copier->stop();
+
+            // We have to flush trace, wait until readers processed all events
+            while (0 == octf_trace_is_empty(m_traceConsumer)) {
+                copier->process();
             }
         }
     }
@@ -768,47 +857,57 @@ private:
 private:
     TestEventLog m_eventLog;
     list<EventWriter *> m_writers;
-    list<EventCopier *> m_copiers;
+    list<EventWriteCopier *> m_wrCopiers;
     list<EventReader *> m_readers;
+    list<EventReadCopier *> m_rdCopiers;
     uint8_t m_writersNo;
-    uint8_t m_copiersNo;
+    uint8_t m_wrCopiersNo;
     uint8_t m_readersNo;
+    uint8_t m_rdCopiersNo;
     vector<char> m_buffer;
     static constexpr uint32_t BUFFER_SIZE = 1024 * 1024;
 };
 
 TEST_F(TracingMultiThreadTest, OneProducerOneConsumer) {
-    run(1, 1, 0);
+    run(1, 1, 0, 0);
 }
 
 TEST_F(TracingMultiThreadTest, ManyProducerOneConsumer) {
-    run(16, 1, 0);
+    run(16, 1, 0, 0);
 }
 
 TEST_F(TracingMultiThreadTest, OneProducerManyConsumer) {
-    run(1, 16, 0);
+    run(1, 16, 0, 0);
 }
 
 TEST_F(TracingMultiThreadTest, ManyProducerManyConsumer) {
-    run(16, 16, 0);
+    run(16, 16, 0, 0);
 }
 
-TEST_F(TracingMultiThreadTest, OneCopierOneConsumer) {
-    run(0, 1, 1);
+TEST_F(TracingMultiThreadTest, OneCopierOneCopier) {
+    run(0, 0, 1, 1);
 }
 
-TEST_F(TracingMultiThreadTest, ManyCopierOneConsumer) {
-    run(0, 1, 16);
+TEST_F(TracingMultiThreadTest, ManyCopierOneCopier) {
+    run(0, 0, 16, 1);
 }
 
-TEST_F(TracingMultiThreadTest, OneCopierManyConsumer) {
-    run(0, 16, 1);
+TEST_F(TracingMultiThreadTest, OneCopierManyCopier) {
+    run(0, 0, 1, 16);
+}
+
+TEST_F(TracingMultiThreadTest, ManyCopierManyCopier) {
+    run(0, 0, 16, 16);
 }
 
 TEST_F(TracingMultiThreadTest, ManyCopierManyConsumer) {
-    run(0, 16, 16);
+    run(0, 16, 16, 0);
+}
+
+TEST_F(TracingMultiThreadTest, ManyProducerManyCopier) {
+    run(8, 0, 0, 8);
 }
 
 TEST_F(TracingMultiThreadTest, ManyProducerManyCopierManyConsumer) {
-    run(8, 8, 16);
+    run(8, 8, 8, 8);
 }

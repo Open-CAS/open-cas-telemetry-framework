@@ -170,9 +170,6 @@ void TraceJob::consumeTraces() {
     std::mutex mutex;
     std::unique_lock<std::mutex> lock(mutex);
     auto endTime = m_startTime + std::chrono::seconds(m_maxDuration);
-    constexpr size_t TRACE_MEMORY_BUFFER_MIB_SIZE = 1;
-    auto traceBuffer =
-            std::vector<char>(MiBToBytes(TRACE_MEMORY_BUFFER_MIB_SIZE));
     bool finish = false;
 
     // The loop executes until the desired time passes or someone forces it to
@@ -186,15 +183,23 @@ void TraceJob::consumeTraces() {
         // If we're woken up (via timeout or outside trigger), try to empty the
         // circular buffer
         while (!octf_trace_is_empty(m_traceConsumerHandle)) {
+            octf_trace_event_handle_t eventHandle = {};
             bool circBufferNotAvailable = false;
-            uint32_t traceSize = traceBuffer.size();
+            void *traceBuffer = NULL;
+            uint32_t traceSize = 0;
 
-            int result = octf_trace_pop(m_traceConsumerHandle,
-                                        traceBuffer.data(), &traceSize);
-
+            int result = octf_trace_get_rd_buffer(m_traceConsumerHandle,
+                                                  &eventHandle, &traceBuffer,
+                                                  &traceSize);
             switch (result) {
             case 0:
-                this->serialize(traceBuffer.data(), traceSize);
+                this->serialize(traceBuffer, traceSize);
+                result = octf_trace_release_rd_buffer(m_traceConsumerHandle,
+                                                      eventHandle);
+                if (result) {
+                    throw Exception("Failed to release trace data, error: " +
+                                    std::to_string(result));
+                }
                 break;
             case -EAGAIN:
             case -EBUSY:
@@ -205,8 +210,8 @@ void TraceJob::consumeTraces() {
             case -EBADF:
             case -ENOSPC:
             default:
-                throw Exception("Failed to retrieve trace data, error: "
-                        + std::to_string(result));
+                throw Exception("Failed to retrieve trace data, error: " +
+                                std::to_string(result));
             }
             if (circBufferNotAvailable) {
                 // We want to break (instead of continue in the switch), so that
