@@ -27,6 +27,8 @@ extern "C" {
  */
 typedef struct octf_trace *octf_trace_t;
 
+typedef void *octf_trace_event_handle_t;
+
 #define OCTF_TRACE_HDR_SIZE 4096ULL
 typedef struct {
     char hdr[OCTF_TRACE_HDR_SIZE];
@@ -137,6 +139,39 @@ int64_t octf_trace_get_lost_count(octf_trace_t trace);
  * @retval -ENOSPC Event lost because no space in memory pool to store event
  */
 int octf_trace_push(octf_trace_t trace, const void *event, const uint32_t size);
+
+/**
+ * @brief Allocates event buffer
+ *
+ * @note Only producer may allocate event buffer.
+ *
+ * @param[in] trace Trace handle
+ * @param[out] ev_hndl Handle to allocated event
+ * @param[out] event Pointer to allocated event
+ * @param[in] size Event size to allocate
+ *
+ * @retval 0 Event allocated successfully
+ * @retval -EINVAL Trace is invalid
+ * @retval -EPERM Invalid open mode, only producer can allocate write events
+ * @retval -ENOSPC Event lost because no space in memory pool to allocate event
+ */
+int octf_trace_get_wr_buffer(octf_trace_t trace,
+                             octf_trace_event_handle_t *ev_hndl,
+                             void **event,
+                             const uint32_t size);
+
+/**
+ * @brief Marks event as written
+ *
+ * @note Only producer may mark the event.
+ *
+ * @param[in] trace Trace handle
+ * @param[in] ev_hndl Handle to event
+ *
+ * @retval 0 Event commited successfully
+ * @retval -EINVAL Trace or handle is invalid
+ */
+int octf_trace_commit_wr_buffer(octf_trace_t trace, octf_trace_event_handle_t ev_hndl);
 
 /**
  * @brief Pops event from the trace
