@@ -459,7 +459,8 @@ int octf_trace_get_wr_buffer(octf_trace_t trace,
     return 0;
 }
 
-int octf_trace_commit_wr_buffer(octf_trace_t trace, octf_trace_event_handle_t ev_hndl) {
+int octf_trace_commit_wr_buffer(octf_trace_t trace,
+                                octf_trace_event_handle_t ev_hndl) {
     struct trace_event_hdr *hdr = ev_hndl;
 
     if (!_is_trace_valid(trace)) {
@@ -599,6 +600,82 @@ int octf_trace_pop(octf_trace_t trace, void *event, uint32_t *size) {
 END:
     _unlock_rd(trace);
     return result;
+}
+
+int octf_trace_get_rd_buffer(octf_trace_t trace,
+                             octf_trace_event_handle_t *ev_hndl,
+                             void **event,
+                             uint32_t *size) {
+    int result = -1;
+    struct trace_event_hdr *hdr;
+
+    if (!_is_trace_valid(trace)) {
+        return -EINVAL;
+    }
+
+    if (trace->mode != octf_trace_open_mode_consumer) {
+        return -EPERM;
+    }
+
+    // Try lock for reading event
+    if (_try_lock_rd(trace)) {
+        // Other thread took lock, return
+        return -EBUSY;
+    }
+
+    // Get read position
+    hdr = _get_rd_hdr(trace);
+    if (!hdr) {
+        // No event to be read
+        if (env_atomic64_read(&trace->phdr->closed)) {
+            result = -EBADF;
+        } else {
+            result = -EAGAIN;
+        }
+        goto END;
+    }
+
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+        // Inconsistent trace state, trying to access out of ring buffer
+        result = -EINVAL;
+        ENV_BUG();
+        goto END;
+    }
+
+    // Update size
+    *size = hdr->data_size;
+    *ev_hndl = hdr;
+    *event = trace->ring_buffer + hdr->data_ptr;
+    return 0;
+
+END:
+    _unlock_rd(trace);
+    return result;
+}
+
+int octf_trace_release_rd_buffer(octf_trace_t trace,
+                                 octf_trace_event_handle_t ev_hndl) {
+    struct trace_event_hdr *hdr = ev_hndl;
+
+    if (!_is_trace_valid(trace)) {
+        return -EINVAL;
+    }
+
+    if (trace->mode != octf_trace_open_mode_consumer) {
+        return -EINVAL;
+    }
+
+    if (!_integrity_check(trace, hdr->data_ptr, hdr->data_size)) {
+        // Inconsistent trace state, trying to access out of ring buffer
+        // Invalidate trace and stop pushing and popping
+        env_atomic64_set(&trace->phdr->magic, 0);
+        ENV_BUG();
+        return -EINVAL;
+    }
+
+    _move_rd_ptr(trace, hdr);
+    _unlock_rd(trace);
+    return 0;
 }
 
 int octf_trace_is_empty(octf_trace_t trace) {
