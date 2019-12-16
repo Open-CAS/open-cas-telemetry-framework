@@ -43,7 +43,7 @@ file(WRITE ${OCTF_CONFIG_FILE}
        "   \"paths\": {\n"
        "   \"settings\": \"${settingsPath}\",\n"
        "   \"unixsocket\": \"${socketsPath}\",\n"
-       "   \"trace\": \"${tracePath}\",\n"
+       "   \"trace\": \"${tracePath}\"\n"
        "   }\n"
     "}")
 
