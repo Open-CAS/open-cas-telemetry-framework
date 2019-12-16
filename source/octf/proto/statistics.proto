@@ -239,8 +239,8 @@ message FilesystemStatisticsEntry {
 
     oneof name {
         string directory = 11;
-        string basename = 12;
-        string extension = 13;
+        string fileNamePrefix = 12;
+        string fileExtension = 13;
     }
 
     IoStatistics statistics = 101;

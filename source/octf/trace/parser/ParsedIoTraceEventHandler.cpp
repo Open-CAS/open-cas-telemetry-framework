@@ -261,6 +261,16 @@ void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
 
+    if (traceEvent->has_filesystemmeta()) {
+        traceEvent->mutable_filesystemmeta()->set_partitionid(271581185);
+    }
+    if (traceEvent->has_filesystemfilename()) {
+        traceEvent->mutable_filesystemfilename()->set_partitionid(271581185);
+    }
+    if (traceEvent->has_filesystemfileevent()) {
+        traceEvent->mutable_filesystemfileevent()->set_partitionid(271581185);
+    }
+
     if (!m_timestampOffset) {
         // This event handler presents traces from time '0', and SID '0',
         // we remember the first event time stamp and SID and the subtract
@@ -564,7 +574,7 @@ public:
             , m_partId(partId)
             , m_fileInfo(fileInfo) {}
 
-    virtual std::string getBaseName(uint64_t id) const override {
+    virtual std::string getFileNamePrefix(uint64_t id) const override {
         std::string basename = "";
 
         FileId fid(m_partId, id);
@@ -574,6 +584,16 @@ public:
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
                 basename = iter->second.name.substr(0, i);
+            } else {
+                basename = iter->second.name;
+            }
+        }
+
+        while (basename.size()) {
+            if (std::isalpha(basename.back())) {
+                break;
+            } else {
+                basename.pop_back();
             }
         }
 

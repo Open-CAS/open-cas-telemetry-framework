@@ -35,10 +35,26 @@ public:
     /**
      * @brief Gets base name of file
      *
-     * @param id File ID
-     * @return Base name of file
+     * If file respectively consists of:
+     * - string of alphabetic chars, followed by
+     * - string of non-alphabetic chars, followed by
+     * - dot, followed by
+     * - any file extension
+     * Then file prefix is the first part: <b>string of alphabetic chars</b>
+     *
+     * | %File Name    | %File Prefix |
+     * |---------------|--------------|
+     * | foo.txt       | foo          |
+     * | bar           | bar          |
+     * | log1410       | log          |
+     * | log1683.dat   | log          |
+     * | db-1918.bin   | db           |
+     * | db_1920:1410  | db           |
+     *
+     * @param id %File ID
+     * @return %File name prefix
      */
-    virtual std::string getBaseName(uint64_t id) const = 0;
+    virtual std::string getFileNamePrefix(uint64_t id) const = 0;
 
     /**
      * @brief Gets file name of specified file ID
