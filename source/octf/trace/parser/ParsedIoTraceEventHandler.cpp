@@ -261,16 +261,6 @@ void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
 
-    if (traceEvent->has_filesystemmeta()) {
-        traceEvent->mutable_filesystemmeta()->set_partitionid(271581185);
-    }
-    if (traceEvent->has_filesystemfilename()) {
-        traceEvent->mutable_filesystemfilename()->set_partitionid(271581185);
-    }
-    if (traceEvent->has_filesystemfileevent()) {
-        traceEvent->mutable_filesystemfileevent()->set_partitionid(271581185);
-    }
-
     if (!m_timestampOffset) {
         // This event handler presents traces from time '0', and SID '0',
         // we remember the first event time stamp and SID and the subtract
