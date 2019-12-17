@@ -124,16 +124,16 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
             // Update statistics by file extension
             auto ext = viewer->getFileExtension(id);
             if (ext != "") {
-                Key key(StatisticsCase::kExtension, ext, device.id(),
+                Key key(StatisticsCase::kFileExtension, ext, device.id(),
                         device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
         }
         {
             // Update statistics by base name
-            auto basename = viewer->getBaseName(id);
+            auto basename = viewer->getFileNamePrefix(id);
             if (basename != "") {
-                Key key(StatisticsCase::kBasename, basename, device.id(),
+                Key key(StatisticsCase::kFileNamePrefix, basename, device.id(),
                         device.partition());
                 getStatisticsByKey(key).updateIoStats(event);
             }
@@ -246,11 +246,11 @@ void FilesystemStatistics::fillProtoStatisticsEntry(
     case StatisticsCase::kDirectory:
         entry->set_directory(name);
         break;
-    case StatisticsCase::kBasename:
-        entry->set_basename(name);
+    case StatisticsCase::kFileNamePrefix:
+        entry->set_filenameprefix(name);
         break;
-    case StatisticsCase::kExtension:
-        entry->set_extension(name);
+    case StatisticsCase::kFileExtension:
+        entry->set_fileextension(name);
         break;
     default:
         throw Exception("Invalid statistics case");

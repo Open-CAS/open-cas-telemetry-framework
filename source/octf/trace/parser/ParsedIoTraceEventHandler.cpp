@@ -564,7 +564,7 @@ public:
             , m_partId(partId)
             , m_fileInfo(fileInfo) {}
 
-    virtual std::string getBaseName(uint64_t id) const override {
+    virtual std::string getFileNamePrefix(uint64_t id) const override {
         std::string basename = "";
 
         FileId fid(m_partId, id);
@@ -574,6 +574,16 @@ public:
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
                 basename = iter->second.name.substr(0, i);
+            } else {
+                basename = iter->second.name;
+            }
+        }
+
+        while (basename.size()) {
+            if (std::isalpha(basename.back())) {
+                break;
+            } else {
+                basename.pop_back();
             }
         }
 
