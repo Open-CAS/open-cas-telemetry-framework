@@ -17,6 +17,7 @@ foreach(dir ${DIRS})
 
     # Remove double backslashes etc.
     get_filename_component(${dir} ${${dir}} REALPATH)
+    set(${dir} ${${dir}} CACHE INTERNAL ${dir})
 endforeach(dir)
 
 set(configFileName "octf.conf")
