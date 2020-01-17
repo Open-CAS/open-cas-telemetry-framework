@@ -98,8 +98,8 @@ void TraceFileReader::readTraceEvent(
     m_size -= bytesRead;
 
     // Parse trace event
-    if (false == traceEvent->ParseFromArray(m_addr, messageLength) ||
-        messageLength > m_size) {
+    if (messageLength > m_size || messageLength < 0 ||
+            false == traceEvent->ParseFromArray(m_addr, messageLength)) {
         m_error = true;
         throw Exception("Couldn't parse valid trace event");
     }
