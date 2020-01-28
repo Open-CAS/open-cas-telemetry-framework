@@ -5,6 +5,7 @@
 
 #include <octf/cli/Executor.h>
 
+#include <algorithm>
 #include <google/protobuf/dynamic_message.h>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
@@ -96,17 +97,28 @@ void Executor::printMainHelp(std::stringstream &ss) {
 }
 
 void Executor::getModules() {
+    // No remote modules supported anyway, so quit
+    if (m_supportedRemoteModules.empty()) {
+        return;
+    }
+
     ModulesDiscover discover;
     NodesIdList nodes;
 
     // Get a list of modules which sockets were detected
     discover.getModulesList(nodes);
 
-    // Add modules
-    for (auto node : nodes) {
-        Module newModule;
-        newModule.setLongKey(node.getId());
-        m_modules[node.getId()] = newModule;
+    // Add only modules which are explicitly supported
+    for (const NodeId &node : nodes) {
+        NodesIdList::iterator result;
+        result = std::find(m_supportedRemoteModules.begin(),
+                m_supportedRemoteModules.end(), node);
+
+        if (result != m_supportedRemoteModules.end()) {
+            Module newModule;
+            newModule.setLongKey(node.getId());
+            m_modules[node.getId()] = newModule;
+        }
     }
 }
 
@@ -186,6 +198,9 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
 }
 
 int Executor::execute(CLIList &cliList) {
+    // Find supported and available modules by discovering sockets
+    getModules();
+
     shared_ptr<ICommand> command = validateCommand(cliList);
 
     if (command == nullptr || command == m_moduleCmdSet->getHelpCmd()) {
@@ -352,8 +367,22 @@ void Executor::addLocalModule(InterfaceShRef interface,
     addInterface(interface, m_localModules[longKey]);
 }
 
-void Executor::addLocalModule(InterfaceShRef interface) {
+void Executor::addModule(InterfaceShRef interface) {
     addInterface(interface, *m_localCmdSet);
+}
+
+void Executor::addModule(const NodeId &moduleId) {
+    NodesIdList::iterator result;
+    result = std::find(m_supportedRemoteModules.begin(),
+            m_supportedRemoteModules.end(), moduleId);
+
+    // Add only non-duplicate NodeIds
+    if (result == m_supportedRemoteModules.end()) {
+        m_supportedRemoteModules.push_back(moduleId);
+
+    } else {
+        throw Exception("Duplicate remote module ids added");
+    }
 }
 
 void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
@@ -421,3 +450,4 @@ void Executor::setupOutputsForCommandsLogs() const {
 
 }  // namespace cli
 }  // namespace octf
+

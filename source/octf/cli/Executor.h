@@ -45,7 +45,8 @@ public:
      * Adds modules to this executor
      *
      * @note At the moment following module type's are supported:
-     * - InterfaceShRef
+     * - InterfaceShRef (for local modules)
+     * - NodeId (for remote modules)
      *
      * @tparam Module One of supported modules
      * @tparam Modules List of modules which are supported
@@ -55,7 +56,7 @@ public:
      */
     template <class Module, class... Modules>
     void addModules(Module const &module, Modules const &... modules) {
-        addLocalModule(module);
+        addModule(module);
         addModules(modules...);
     }
 
@@ -63,7 +64,8 @@ public:
      * Adds module to this executor
      *
      * @note At the moment following module type's are supported:
-     * - InterfaceShRef
+     * - InterfaceShRef (for local modules)
+     * - NodeId (for remote modules)
      *
      * @tparam Module One of supported modules
      *
@@ -71,7 +73,7 @@ public:
      */
     template <class Module>
     void addModules(Module const &module) {
-        addLocalModule(module);
+        addModule(module);
     }
 
     /**
@@ -101,12 +103,20 @@ private:
                         const std::string &shortKey = "");
 
     /**
-     * @brief Add local module
+     * @brief Add local module (available from local application)
      *
      * @param interface Interface which methods will be add into local command
      * set
      */
-    void addLocalModule(InterfaceShRef interface);
+    void addModule(InterfaceShRef interface);
+
+    /**
+     * @brief Add remote module (available from remote application)
+     *
+     * @param moduleId NodeId of remote module which shall
+     * be available when discovered
+     */
+    void addModule(const NodeId &moduleId);
 
     /**
      * @brief Add local command to executor's command set
@@ -189,6 +199,7 @@ private:
     double m_progress;
     std::unique_ptr<GenericPluginShadow> m_nodePlugin;
     std::map<std::string, CommandSet> m_localModules;
+    NodesIdList m_supportedRemoteModules;
 };
 
 }  // namespace cli
