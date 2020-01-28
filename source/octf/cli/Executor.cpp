@@ -97,6 +97,11 @@ void Executor::printMainHelp(std::stringstream &ss) {
 }
 
 void Executor::getModules() {
+    // No remote modules supported anyway, so quit
+    if (m_supportedRemoteModules.empty()) {
+        return;
+    }
+
     ModulesDiscover discover;
     NodesIdList nodes;
 
@@ -376,7 +381,7 @@ void Executor::addModule(const NodeId &moduleId) {
         m_supportedRemoteModules.push_back(moduleId);
 
     } else {
-    	throw Exception("Duplicate remote module ids added");
+        throw Exception("Duplicate remote module ids added");
     }
 }
 
