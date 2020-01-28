@@ -5,6 +5,7 @@
 
 #include <octf/cli/Executor.h>
 
+#include <algorithm>
 #include <google/protobuf/dynamic_message.h>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
@@ -103,14 +104,16 @@ void Executor::getModules() {
     discover.getModulesList(nodes);
 
     // Add only modules which are explicitly supported
-    for (auto node : nodes) {
-        for (const auto &supportedNode : m_supportedRemoteModules) {
-            if (node.getId() == supportedNode.getId()) {
-                Module newModule;
-                newModule.setLongKey(node.getId());
-                m_modules[node.getId()] = newModule;
-                break;
-            }
+    for (const NodeId &node : nodes) {
+        NodesIdList::iterator result;
+        result = std::find(m_supportedRemoteModules.begin(),
+                m_supportedRemoteModules.end(), node);
+
+        if (result != m_supportedRemoteModules.end()) {
+            Module newModule;
+            newModule.setLongKey(node.getId());
+            m_modules[node.getId()] = newModule;
+            break;
         }
     }
 }
@@ -357,8 +360,22 @@ void Executor::addLocalModule(InterfaceShRef interface,
     addInterface(interface, m_localModules[longKey]);
 }
 
-void Executor::addLocalModule(InterfaceShRef interface) {
+void Executor::addModule(InterfaceShRef interface) {
     addInterface(interface, *m_localCmdSet);
+}
+
+void Executor::addModule(const NodeId &moduleId) {
+    NodesIdList::iterator result;
+    result = std::find(m_supportedRemoteModules.begin(),
+            m_supportedRemoteModules.end(), moduleId);
+
+    // Add only non-duplicate NodeIds
+    if (result == m_supportedRemoteModules.end()) {
+        m_supportedRemoteModules.push_back(moduleId);
+    }
+
+    // Find supported and available modules by discovering sockets
+    getModules();
 }
 
 void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
@@ -426,3 +443,4 @@ void Executor::setupOutputsForCommandsLogs() const {
 
 }  // namespace cli
 }  // namespace octf
+
