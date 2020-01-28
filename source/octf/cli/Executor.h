@@ -11,6 +11,7 @@
 #include <memory>
 #include <octf/cli/CLIProperties.h>
 #include <octf/node/INode.h>
+#include <initializer_list>
 
 namespace octf {
 namespace cli {
@@ -72,6 +73,20 @@ public:
     template <class Module>
     void addModules(Module const &module) {
         addLocalModule(module);
+    }
+
+    /**
+     * Specifies which remote modules are supported (discovered)
+     *
+     * @param modules Initializer list with NodeIds of modules
+     * which are supported
+     */
+    void supportRemoteModules(std::initializer_list<NodeId> modules) {
+        for (auto & module : modules) {
+            m_supportedRemoteModules.push_back(module);
+        }
+        // Find supported and available modules by discovering sockets
+        getModules();
     }
 
     /**
@@ -189,6 +204,7 @@ private:
     double m_progress;
     std::unique_ptr<GenericPluginShadow> m_nodePlugin;
     std::map<std::string, CommandSet> m_localModules;
+    NodesIdList m_supportedRemoteModules;
 };
 
 }  // namespace cli

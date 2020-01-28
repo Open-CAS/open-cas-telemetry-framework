@@ -102,11 +102,16 @@ void Executor::getModules() {
     // Get a list of modules which sockets were detected
     discover.getModulesList(nodes);
 
-    // Add modules
+    // Add only modules which are explicitly supported
     for (auto node : nodes) {
-        Module newModule;
-        newModule.setLongKey(node.getId());
-        m_modules[node.getId()] = newModule;
+        for (const auto &supportedNode : m_supportedRemoteModules) {
+            if (node.getId() == supportedNode.getId()) {
+                Module newModule;
+                newModule.setLongKey(node.getId());
+                m_modules[node.getId()] = newModule;
+                break;
+            }
+        }
     }
 }
 
