@@ -11,7 +11,6 @@
 #include <memory>
 #include <octf/cli/CLIProperties.h>
 #include <octf/node/INode.h>
-#include <initializer_list>
 
 namespace octf {
 namespace cli {
@@ -65,7 +64,8 @@ public:
      * Adds module to this executor
      *
      * @note At the moment following module type's are supported:
-     * - InterfaceShRef
+     * - InterfaceShRef (for local modules)
+     * - NodeId (for remote modules)
      *
      * @tparam Module One of supported modules
      *

@@ -113,7 +113,6 @@ void Executor::getModules() {
             Module newModule;
             newModule.setLongKey(node.getId());
             m_modules[node.getId()] = newModule;
-            break;
         }
     }
 }
@@ -194,6 +193,9 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
 }
 
 int Executor::execute(CLIList &cliList) {
+    // Find supported and available modules by discovering sockets
+    getModules();
+
     shared_ptr<ICommand> command = validateCommand(cliList);
 
     if (command == nullptr || command == m_moduleCmdSet->getHelpCmd()) {
@@ -372,10 +374,10 @@ void Executor::addModule(const NodeId &moduleId) {
     // Add only non-duplicate NodeIds
     if (result == m_supportedRemoteModules.end()) {
         m_supportedRemoteModules.push_back(moduleId);
-    }
 
-    // Find supported and available modules by discovering sockets
-    getModules();
+    } else {
+    	throw Exception("Duplicate remote module ids added");
+    }
 }
 
 void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
