@@ -27,24 +27,24 @@ namespace octf {
  */
 class Exception : std::exception {
 public:
-	Exception(const std::string &message);
-	virtual ~Exception() = default;
+    Exception(const std::string &message);
+    virtual ~Exception() = default;
 
-	/**
-	 * @brief Exception message
-	 *
-	 * @return const char* Exception text message
-	 */
-	virtual const char *what() const noexcept override;
+    /**
+     * @brief Exception message
+     *
+     * @return const char* Exception text message
+     */
+    virtual const char *what() const noexcept override;
 
-	/**
-	 * @brief getMessage
-	 * @return Exception text message as a string
-	 */
-	virtual const std::string &getMessage();
+    /**
+     * @brief getMessage
+     * @return Exception text message as a string
+     */
+    virtual const std::string &getMessage();
 
 private:
-	std::string m_message;
+    std::string m_message;
 };
 
 /**
@@ -54,9 +54,9 @@ private:
  */
 class InvalidParameterException : public Exception {
 public:
-	InvalidParameterException(const std::string &message)
-			: Exception(message) {}
-	virtual ~InvalidParameterException() = default;
+    InvalidParameterException(const std::string &message)
+            : Exception(message) {}
+    virtual ~InvalidParameterException() = default;
 };
 
 /**
@@ -66,9 +66,9 @@ public:
  */
 class ProtoBufferException : public Exception {
 public:
-	ProtoBufferException(const std::string &message)
-			: Exception(message) {}
-	virtual ~ProtoBufferException() = default;
+    ProtoBufferException(const std::string &message)
+            : Exception(message) {}
+    virtual ~ProtoBufferException() = default;
 };
 
 /**
@@ -77,9 +77,9 @@ public:
  */
 class InvalidNodeIdException : public InvalidParameterException {
 public:
-	InvalidNodeIdException(const std::string &message)
-			: InvalidParameterException(message) {}
-	virtual ~InvalidNodeIdException() = default;
+    InvalidNodeIdException(const std::string &message)
+            : InvalidParameterException(message) {}
+    virtual ~InvalidNodeIdException() = default;
 };
 
 /**
@@ -87,10 +87,10 @@ public:
  */
 class ShellExecutorException : public octf::Exception {
 public:
-	ShellExecutorException(const std::string &message, const std::string &cmd)
-			: Exception(std::string("Exception occurred during '") + cmd
-					+"' execution: " + message) {}
-	virtual ~ShellExecutorException() = default;
+    ShellExecutorException(const std::string &message, const std::string &cmd)
+            : Exception(std::string("Exception occurred during '") + cmd +
+                        "' execution: " + message) {}
+    virtual ~ShellExecutorException() = default;
 };
 
 /**

@@ -16,40 +16,39 @@ namespace octf {
  */
 class ShellExecutor {
 public:
-	ShellExecutor() = default;
-	virtual ~ShellExecutor() = default;
+    ShellExecutor() = default;
+    virtual ~ShellExecutor() = default;
 
-	/**
-	 * @brief Executes a command in shell by using popen()
-	 *
-	 * This effectively creates a pipe, forks and invokes the default shell
-	 *
-	 * @note Command and arguments are simply concatenated with spaces
-	 */
-	std::string execute();
+    /**
+     * @brief Executes a command in shell by using popen()
+     *
+     * This effectively creates a pipe, forks and invokes the default shell
+     *
+     * @note Command and arguments are simply concatenated with spaces
+     */
+    std::string execute();
 
-	const std::string& getArgs() const {
-		return m_args;
-	}
+    const std::string &getArgs() const {
+        return m_args;
+    }
 
-	const std::string& getCommand() const {
-		return m_command;
-	}
+    const std::string &getCommand() const {
+        return m_command;
+    }
 
-	void setCommand(const std::string &command) {
-		m_command = command;
-	}
+    void setCommand(const std::string &command) {
+        m_command = command;
+    }
 
-	void setArgs(const std::string &args) {
-		m_args = args;
-	}
+    void setArgs(const std::string &args) {
+        m_args = args;
+    }
 
 private:
-	std::string m_command;
-	std::string m_args;
-
+    std::string m_command;
+    std::string m_args;
 };
 
-} // namespace octf
+}  // namespace octf
 
-#endif // SOURCE_OCTF_UTILS_SHELLEXECUTOR_H
+#endif  // SOURCE_OCTF_UTILS_SHELLEXECUTOR_H
