@@ -25,4 +25,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.cpp
 	${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.h
 	${CMAKE_CURRENT_LIST_DIR}/SizeConversion.h
+	${CMAKE_CURRENT_LIST_DIR}/ShellExecutor.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ShellExecutor.h
 )
