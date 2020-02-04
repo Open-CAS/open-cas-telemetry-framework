@@ -12,7 +12,7 @@
 namespace octf {
 
 
-std::string ShellExecutor::executeCommand() {
+std::string ShellExecutor::execute() {
 	std::string command = m_command;
 	command += " ";
 	command += m_args;
@@ -24,48 +24,32 @@ std::string ShellExecutor::executeCommand() {
 
 	std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
 	if (!pipe) {
-		throw Exception("Call to popen() failed!");
+		throw ShellExecutorException("call to popen() failed", m_command);
 	}
 
 	int read;
 	while ((read = fread(buffer.data(), 1, buffer.size(), pipe.get()))
 			== static_cast<int>(buffer.size())) {
-		result += buffer.data();
+		result.append(buffer.data(), read);
 	}
 
-	// Error occurred
 	if (ferror(pipe.get())) {
-		throw Exception("Could not read from started casadm process");
+		throw ShellExecutorException("could not read from started process",
+				m_command);
 	}
 
 	// Not entire buffer was read at the end
 	if (feof(pipe.get()) && read > 0) {
-		buffer[read] = '\0';
-		result += buffer.data();
+		result.append(buffer.data(), read);
 	}
 
 	// This should never occur
 	if (!feof(pipe.get())) {
-		throw Exception("Invalid result of reading from process");
+		throw ShellExecutorException("invalid result of reading from process",
+				m_command);
 	}
 
 	return result;
-}
-
-const std::string& ShellExecutor::getArgs() const {
-	return m_args;
-}
-
-const std::string& ShellExecutor::getCommand() const {
-	return m_command;
-}
-
-void ShellExecutor::setCommand(const std::string &command) {
-	m_command = command;
-}
-
-void ShellExecutor::setArgs(const std::string &args) {
-	m_args = args;
 }
 
 } // namespace octf

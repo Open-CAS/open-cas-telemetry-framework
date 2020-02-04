@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_UTILS_SHELLEXECUTOR_H
 
 #include <string>
+#include <octf/utils/Exception.h>
 
 namespace octf {
 
@@ -25,21 +26,30 @@ public:
 	 *
 	 * @note Command and arguments are simply concatenated with spaces
 	 */
-	std::string executeCommand();
+	std::string execute();
 
-	const std::string& getArgs() const;
+	const std::string& getArgs() const {
+		return m_args;
+	}
 
-	const std::string& getCommand() const;
+	const std::string& getCommand() const {
+		return m_command;
+	}
 
-	void setCommand(const std::string &command);
+	void setCommand(const std::string &command) {
+		m_command = command;
+	}
 
-	void setArgs(const std::string &args);
+	void setArgs(const std::string &args) {
+		m_args = args;
+	}
 
 private:
 	std::string m_command;
 	std::string m_args;
 
 };
+
 } // namespace octf
 
 #endif // SOURCE_OCTF_UTILS_SHELLEXECUTOR_H
