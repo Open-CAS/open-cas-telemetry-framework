@@ -179,7 +179,7 @@ index_t TableMap::getRowCount() const {
 }
 
 index_t TableMap::getColumnCount() const {
-    return m_rows.size();
+    return m_columns.size();
 }
 
 void octf::table::TableMap::clear() {
