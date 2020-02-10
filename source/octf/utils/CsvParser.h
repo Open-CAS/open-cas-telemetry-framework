@@ -16,11 +16,13 @@
 #include <octf/utils/table/Table.h>
 
 namespace octf {
+namespace csvparser {
 
 /**
- * @brief Parser for CSV content
+ * @file Parser utils for parsing CSV content
  *
  * @note Commas and newlines escaping is not handled
+ *
  * @note Requires strict CSV format:
  *  - number of record elements must be <= number of header elements,
  *  - comma (',')delimited,
@@ -29,30 +31,40 @@ namespace octf {
  *
  * @note Throws exception upon parsing errors
  */
-class CsvParser {
-public:
-    CsvParser();
-    virtual ~CsvParser() = default;
 
-    void parseCsv(std::istream &content,
-                  const std::list<std::string> &requiredHeaderElements);
+/**
+ * @brief Parse csv
+ *
+ * @param content Stream with csv content, read from set position
+ * @param requiredHeaderElements Header elements which must be present
+ *  otherwise Exception is thrown
+ * @param[out] parsed Table which will be set with parsed CSV content.
+ *
+ * @note parsed[0] shall contain parsed header row, and consequtive table rows
+ *  shall contain parsed records.
+ */
+void parseCsv(std::istream &content,
+              const std::list<std::string> &requiredHeaderElements,
+              octf::table::Table &parsed);
 
-    void parseCsv(const std::string &content,
-                  const std::list<std::string> &requiredHeaderElements);
+/**
+ * @brief Parse csv
+ *
+ * @param content String with csv content
+ * @param requiredHeaderElements Header elements which must be present
+ *  otherwise Exception is thrown
+ * @param[out] parsed Table which will be set with parsed CSV content.
+ *
+ * @note parsed[0] shall contain parsed header row, and consequtive table rows
+ *  shall contain parsed records.
+ */
+void parseCsv(const std::string &content,
+              const std::list<std::string> &requiredHeaderElements,
+              octf::table::Table &parsed);
 
-    octf::table::Table &getParsedContent() {
-        return m_data;
-    }
+constexpr static long long MAX_CSV_CONTENT_SIZE = 10 * 1024 * 1024;  // 10MiB
 
-    static constexpr long long getMaxContentSize() {
-        return m_maxContentSize;
-    }
-
-private:
-    constexpr static long long m_maxContentSize = 10 * 1024 * 1024;  // 10MiB
-    octf::table::Table m_data;
-};
-
-}  // namespace octf
+};  // namespace csvparser
+};  // namespace octf
 
 #endif  // SOURCE_OCTF_UTILS_CSVPARSER_H

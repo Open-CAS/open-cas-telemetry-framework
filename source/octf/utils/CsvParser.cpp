@@ -8,26 +8,26 @@
 #include <octf/utils/Exception.h>
 
 namespace octf {
+namespace csvparser {
 
 using namespace std;
 
-CsvParser::CsvParser()
-        : m_data() {}
-
-void CsvParser::parseCsv(const std::string &content,
-                         const std::list<std::string> &requiredHeaderElements) {
+void parseCsv(const std::string &content,
+              const std::list<std::string> &requiredHeaderElements,
+              table::Table &parsed) {
     stringstream ss;
     ss << content;
 
-    parseCsv(ss, requiredHeaderElements);
+    parseCsv(ss, requiredHeaderElements, parsed);
 }
 
-void CsvParser::parseCsv(std::istream &content,
-                         const std::list<std::string> &requiredHeaderElements) {
+void parseCsv(std::istream &content,
+              const std::list<std::string> &requiredHeaderElements,
+              table::Table &parsed) {
     using namespace ::octf::table;
 
-    m_data.clear();
-    Row &header = m_data[0];
+    parsed.clear();
+    Row &header = parsed[0];
 
     // Check stream size
     int originalstreamPos = content.tellg();
@@ -57,7 +57,7 @@ void CsvParser::parseCsv(std::istream &content,
         lineCount++;
     }
 
-    if (streamSize > m_maxContentSize) {
+    if (streamSize > MAX_CSV_CONTENT_SIZE) {
         throw Exception("Input content for CSV parser is too large.");
     } else if (streamSize == 0 || lineCount <= 1) {
         throw Exception("CSV content empty or no records found");
@@ -132,17 +132,18 @@ void CsvParser::parseCsv(std::istream &content,
                         "Records without header found during CSV parsing.");
             }
 
-            m_data[lineIndex][tokenIndex] = token;
+            parsed[lineIndex][tokenIndex] = token;
             tokenIndex++;
         }
 
         if (!lineSS && token.empty()) {
             // Trailing comma with no data after it.
-            m_data[lineIndex][header.size() - 1] = "";
+            parsed[lineIndex][header.size() - 1] = "";
         }
 
         lineIndex++;
     }
 }
 
+}  // namespace csvparser
 }  // namespace octf
