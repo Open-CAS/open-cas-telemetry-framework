@@ -50,7 +50,7 @@ public:
 
     void parseTraceEvent(google::protobuf::Message *traceEvent) override;
 
-    bool isFinished() override;
+    bool isFinished() const override;
 
 private:
     /**

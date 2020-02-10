@@ -41,7 +41,7 @@ public:
      * @brief getMessage
      * @return Exception text message as a string
      */
-    virtual const std::string &getMessage();
+    virtual const std::string &getMessage() const;
 
 private:
     std::string m_message;

@@ -44,7 +44,7 @@ public:
     /**
      * @return Is file fully read.
      */
-    bool isFinished();
+    bool isFinished() const;
 
     /**
      * @return Queue id associated with this reader
