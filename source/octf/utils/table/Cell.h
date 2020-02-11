@@ -8,11 +8,13 @@
 
 #include <memory>
 #include <ostream>
+#include <sstream>
 #include <string>
 
 namespace octf {
 namespace table {
 
+// TODO (trybicki): Provide casting operators
 /**
  * @ingroup Table
  *
@@ -51,6 +53,16 @@ public:
         *this = std::string(value);
         return *this;
     };
+
+    template <class T>
+    bool operator==(const T &value) const {
+        std::stringstream osThis, osValue;
+
+        osThis << *this;
+        osValue << value;
+
+        return osThis.str() == osValue.str();
+    }
 
     virtual ~Cell() = default;
 
