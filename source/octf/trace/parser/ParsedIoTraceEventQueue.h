@@ -21,7 +21,8 @@ namespace octf {
  *
  * It parses a trace and allows to access parsed IOs using queue interface.
  *
- * @throws Exception when accessing empty queue (calling front or pop)
+ * @throws Exception when accessing empty queue (calling front or pop) or
+ * when an error during trace parsing
  */
 class ParsedIoTraceEventQueue : NonCopyable {
 public:
@@ -41,7 +42,7 @@ public:
      * @brief Checks if queue is empty (reached end of the event trace)
      *
      * @retval true - queue empty
-     * @retval false - queue no empty
+     * @retval false - queue not empty
      */
     bool empty();
 

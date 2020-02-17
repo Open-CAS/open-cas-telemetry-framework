@@ -85,8 +85,8 @@ TEST(ParsedIoTraceEventQueueTest, Cancel) {
 
         // Wait a time until queue will reach a limit,
         // exit this branch to check if we destroy queue object properly
-        std::chrono::milliseconds sleppTime(1000);
-        std::this_thread::sleep_for(sleppTime);
+        std::chrono::milliseconds sleepTime(1000);
+        std::this_thread::sleep_for(sleepTime);
 
         ASSERT_FALSE(queue.empty());
 
