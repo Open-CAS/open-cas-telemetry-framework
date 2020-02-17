@@ -14,7 +14,7 @@ const char *Exception::what() const noexcept {
     return m_message.c_str();
 }
 
-const std::string &Exception::getMessage() {
+const std::string &Exception::getMessage() const {
     return m_message;
 }
 }  // namespace octf

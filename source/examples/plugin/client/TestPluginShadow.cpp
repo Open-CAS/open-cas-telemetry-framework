@@ -16,7 +16,6 @@ bool TestPluginShadow::initCustom() {
         throw Exception("Error creating CLI interface");
     }
 
-    // TODO (mbarczak) Wait for connection
     return true;
 }
 

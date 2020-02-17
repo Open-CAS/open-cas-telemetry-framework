@@ -107,7 +107,7 @@ void TraceFileReader::readTraceEvent(
     m_size -= messageLength;
 }
 
-bool TraceFileReader::isFinished() {
+bool TraceFileReader::isFinished() const {
     if (m_size) {
         return false;
     }

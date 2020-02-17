@@ -110,7 +110,7 @@ void TraceFileParser::parseTraceEvent(google::protobuf::Message *traceEvent) {
     }
 }
 
-bool TraceFileParser::isFinished() {
+bool TraceFileParser::isFinished() const {
     for (const auto &reader : m_readers) {
         if (!reader->isFinished()) {
             return false;

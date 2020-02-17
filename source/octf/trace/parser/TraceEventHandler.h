@@ -103,8 +103,14 @@ protected:
     /**
      * @brief Checks if cancel of event processing has been requested.
      */
-    virtual bool isCancelRequested() {
+    virtual bool isCancelRequested() const {
         return m_cancelRequested;
+    }
+    /**
+     * @brief Checks if trace event handler has finished.
+     */
+    virtual bool isFinished() const {
+        return m_parser->isFinished();
     }
     /**
      * @brief Gets the prototype of message of specific event type.

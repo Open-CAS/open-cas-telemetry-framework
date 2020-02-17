@@ -48,7 +48,7 @@ public:
     /**
      * @brief Checks if whole trace has been parsed.
      */
-    virtual bool isFinished() = 0;
+    virtual bool isFinished() const = 0;
 };
 }  // namespace octf
 

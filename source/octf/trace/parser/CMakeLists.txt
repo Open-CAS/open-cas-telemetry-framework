@@ -20,4 +20,6 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/HandlerRunner.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerFilesystemStatistics.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerFilesystemStatistics.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventQueue.h
+    ${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventQueue.cpp
 )
