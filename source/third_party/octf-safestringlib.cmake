@@ -1,3 +1,5 @@
+include(CheckIncludeFile)
+
 #
 # Build only selected files from safe string library into objects
 #

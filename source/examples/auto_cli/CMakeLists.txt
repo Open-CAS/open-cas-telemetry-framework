@@ -1,5 +1,9 @@
 add_executable(auto-cli "")
-target_link_libraries(auto-cli octf)
+target_link_libraries(auto-cli octf ${PROTOBUF_LIBRARY})
+
+target_include_directories(auto-cli
+	SYSTEM PRIVATE ${PROTOBUF_INCLUDE_DIR}
+)
 
 # Generate protocol buffer headers and sources 
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER InterfaceHelloWorld.proto)

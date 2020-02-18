@@ -173,52 +173,6 @@ function setup_cmake
     info "Installed cmake to ${OPT_DIR}/cmake"
 }
 
-function setup_protobuf
-{
-    if protobuf_found
-    then
-        return
-    fi
-
-    info "Installing Google Protocol Buffers to ${OPT_DIR}/protobuf"
-
-    local build_dir="$(dirname $0)/setup-dependencies-build"
-    rm -rf "${build_dir}"
-    mkdir -p "${build_dir}"
-    pushd "${build_dir}"
-
-    git clone https://github.com/protocolbuffers/protobuf.git
-    check_result $? "Cannot clone Google Protocol Buffers"
-    pushd protobuf
-
-    latest_release=$(curl --silent "https://github.com/protocolbuffers/protobuf/releases/latest" | sed 's#.*tag/\(.*\)\".*#\1#')
-    if [ "${latest_release}" == "" ]
-    then
-        error "Cannot get the latest version of Google Protocol Buffers"
-    fi
-
-    git checkout ${latest_release}
-    check_result $? "Cannot checkout version ${latest_release}"
-
-    mkdir -p ${OPT_DIR}/protobuf
-
-    git submodule update --init --recursive && \
-        ./autogen.sh && \
-        ./configure --prefix=${OPT_DIR}/protobuf && \
-        make -j$(nproc) && \
-        make check -j$(nproc) && \
-        make install -j$(nproc) && \
-    check_result $? "Cannot setup Google Protocol Buffers"
-
-    ldconfig
-    check_result $? "Cannot run ldconfig after installing Google Protocol Buffers"
-
-    popd
-    popd
-
-    rm -rf "${build_dir}"
-}
-
 function gtest_found
 {
     info "Looking for gtest in ${OPT_DIR}"
@@ -270,44 +224,6 @@ function cmake_found
     return 1;
 }
 
-function protobuf_found
-{
-    info "Looking for protobuf ${MIN_PROTOBUF_VER_MAJOR}.${MIN_PROTOBUF_VER_MINOR} or newer..."
-
-    if [ -f ${OPT_DIR}/protobuf/bin/protoc ]
-    then
-        local protoc_version=$(${OPT_DIR}/protobuf/bin/protoc --version | awk {'print $2'})
-        info "Found protobuf in ${OPT_DIR}, version: ${protoc_version}"
-        return 0
-    fi
-
-    if command -v protoc >/dev/null
-    then
-        # Check existing protobuf version
-        local protoc_version=$(protoc --version | awk {'print $2'})
-        local protoc_version_major=$(printf "${protoc_version}" | awk -F '.' {'print $1'})
-        local protoc_version_minor=$(printf "${protoc_version}" | awk -F '.' {'print $2'})
-
-        if [ "$protoc_version_major" -lt "$MIN_PROTOBUF_VER_MAJOR" ]
-        then
-            info "Insufficent protobuf version found"
-            return 1
-        fi
-
-        if [ "$protoc_version_minor" -lt "$MIN_PROTOBUF_VER_MINOR" ]
-        then
-            info "Insufficent protobuf version found"
-            return 1
-        fi
-
-        info "Found protobuf, version: ${protoc_version}"
-        return 0
-    fi
-
-    info "No protobuf found"
-    return 1
-}
-
 
 if [ "$EUID" -ne 0 ]
 then
@@ -326,7 +242,6 @@ case "${distro}" in
     check_result $? "Cannot install required dependencies"
 
     setup_cmake
-    setup_protobuf
     setup_gtest
     ;;
 "CENTOS7")
@@ -338,12 +253,11 @@ case "${distro}" in
     check_result $? "Cannot install required dependencies"
 
     setup_cmake
-    setup_protobuf
     setup_gtest
     ;;
 "FEDORA30")
     info "Fedora 30 detected"
-    packages="curl make gcc-c++ unzip protobuf-devel cmake autoconf automake gtest-devel"
+    packages="curl make gcc-c++ unzip cmake autoconf automake gtest-devel"
 
     info "Installing packages: ${packages}"
     dnf -y install ${packages}
@@ -351,7 +265,7 @@ case "${distro}" in
     ;;
 "UBUNTU18")
     info "Ubuntu 18 detected"
-    packages="cmake autoconf automake libtool curl make g++ unzip protobuf-compiler libprotobuf-dev git"
+    packages="cmake autoconf automake libtool curl make g++ unzip git"
 
     info "Installing packages: ${packages}"
     apt-get -y install ${packages}
@@ -368,7 +282,6 @@ case "${distro}" in
     check_result $? "Cannot install required dependencies"
 
     setup_cmake
-    setup_protobuf
     setup_gtest
     ;;
 *)
