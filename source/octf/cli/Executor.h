@@ -148,9 +148,7 @@ private:
                    CommandSet &commandSet);
 
     void printMainHelp(std::stringstream &ss);
-    void printCmdSetHelp(std::stringstream &ss,
-                         const Module &module,
-                         const CommandSet &cmdSet);
+    void printModuleHelp(std::stringstream &ss);
 
     /**
      * @brief Discovers internally a set of available modules

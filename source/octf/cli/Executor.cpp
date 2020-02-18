@@ -83,26 +83,25 @@ void Executor::printMainHelp(std::stringstream &ss) {
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
-        for (auto iter : m_modules) {
+        for (const auto iter : m_modules) {
             utils::printModuleHelp(ss, &iter.first, true);
         }
     }
 
     ss << std::endl << "Available commands: " << std::endl;
-    for (const auto iter : m_modules) {
-        if (false) {
-            utils::printModuleHelp(ss, &iter.first, true);
-        }
-    }
     utils::printCmdSetHelp(ss, *m_localCmdSet);
 }
 
-void Executor::printCmdSetHelp(std::stringstream &ss,
-                               const Module &module,
-                               const CommandSet &cmdSet) {
-    utils::printUsage(ss, &module, m_cliProperties, false);
+void Executor::printModuleHelp(std::stringstream &ss) {
+    // Initialize module command set if needed
+    loadModuleCommandSet();
+
+    utils::printUsage(ss, m_module.get(), m_cliProperties, false);
+    if (m_module->getDesc() != "") {
+        ss << "\n" << m_module->getDesc() << std::endl;
+    }
     ss << std::endl << "Available commands: " << std::endl;
-    utils::printCmdSetHelp(ss, cmdSet);
+    utils::printCmdSetHelp(ss, *m_cmdSet);
 }
 
 void Executor::discoverModules() {
@@ -234,11 +233,8 @@ int Executor::execute(CLIList &cliList) {
             printMainHelp(ss);
             log::cout << ss.str();
         } else {
-            // No command for module specified or specified command is help,
-            // get module's command set and show help
-            loadModuleCommandSet();
             stringstream ss;
-            printCmdSetHelp(ss, *m_module, *m_cmdSet);
+            printModuleHelp(ss);
             log::cout << ss.str();
         }
 
