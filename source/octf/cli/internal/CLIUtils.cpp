@@ -171,15 +171,15 @@ void printOutputString(const std::string &output) {
     log::cout << output << std::endl;
 }
 
-void printModuleHelp(stringstream &ss, Module *module, bool isList) {
+void printModuleHelp(stringstream &ss, const Module *module, bool isList) {
     if (module) {
-        utils::printKeys(ss, module->getShortKey(), module->getLongKey(), "",
-                         isList);
+        utils::printKeys(ss, module->getShortKey(), module->getLongKey(),
+                         isList ? module->getDesc() : "", isList);
     }
 }
 
 void printUsage(stringstream &ss,
-                Module *module,
+                const Module *module,
                 const CLIProperties &cliProperties,
                 bool isList,
                 bool hasPlugins) {
@@ -190,7 +190,7 @@ void printUsage(stringstream &ss,
 
     } else {
         if (hasPlugins) {
-            ss << "[plugin] ";
+            ss << "[module] ";
         }
     }
 
@@ -198,7 +198,6 @@ void printUsage(stringstream &ss,
 }
 
 void printCmdSetHelp(stringstream &ss, const CommandSet &cmdSet) {
-    ss << std::endl << "Available commands: " << std::endl;
     cmdSet.getHelp(ss);
 }
 

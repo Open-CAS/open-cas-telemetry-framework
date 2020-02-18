@@ -108,7 +108,7 @@ void printKeys(std::stringstream &ss,
  * @param cliProperties CLI Properties
  */
 void printUsage(std::stringstream &ss,
-                Module *module,
+                const Module *module,
                 const CLIProperties &cliProperties,
                 bool isList = false,
                 bool hasPlugins = false);
@@ -123,7 +123,7 @@ void printUsage(std::stringstream &ss,
  * This method doesn't print complete help for commands supported by the module,
  * just information about the module itself (short, long key, etc.)
  */
-void printModuleHelp(std::stringstream &ss, Module *module, bool isList);
+void printModuleHelp(std::stringstream &ss, const Module *module, bool isList);
 
 /**
  * @brief Prints help for Command Set to the stringstream
