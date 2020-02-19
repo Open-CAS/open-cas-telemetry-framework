@@ -1,3 +1,6 @@
 [submodule "source/third_party/safestringlib"]
 	path = source/third_party/safestringlib
 	url = https://github.com/intel/safestringlib
+[submodule "source/third_party/protobuf"]
+	path = source/third_party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git

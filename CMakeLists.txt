@@ -5,10 +5,7 @@ project(octf VERSION ${OCTF_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_CXX_STANDARD 11)
-
-# Look in our directory for installed protobuf first
-set(CMAKE_PREFIX_PATH "/opt/octf/protobuf;${CMAKE_PREFIX_PATH}")
-find_package(Protobuf 3.0 REQUIRED)
+set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/third_party;${CMAKE_PREFIX_PATH}")
 
 include(octf-paths.cmake)
 include(octf-defenses.cmake)

@@ -7,10 +7,12 @@ add_library(octf SHARED ""
 	 $<TARGET_OBJECTS:safestringlib>
 )
 set(OCTF_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/octf/proto)
-add_subdirectory(octf)
-add_subdirectory(octf/proto)
 add_subdirectory(third_party)
+add_subdirectory(octf)
 
+find_package(Protobuf 3.0 REQUIRED)
+
+add_subdirectory(octf/proto)
 set(PROTOBUF_IMPORT_DIRS  "${PROTOBUF_IMPORT_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}/octf/proto")
 
 set_target_properties(octf PROPERTIES LINKER_LANGUAGE CXX)
@@ -24,12 +26,12 @@ target_include_directories(octf
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
 )
 target_include_directories(octf
-	SYSTEM PUBLIC ${PROTOBUF_INCLUDE_DIR}
+	SYSTEM PRIVATE ${PROTOBUF_INCLUDE_DIR}
 )
 
 # Specify libraries to link
 target_link_libraries(octf PUBLIC pthread)
-target_link_libraries(octf PUBLIC ${PROTOBUF_LIBRARY})
+target_link_libraries(octf PRIVATE ${PROTOBUF_LIBRARY})
 
 # Add version definitions
 target_compile_definitions(octf
