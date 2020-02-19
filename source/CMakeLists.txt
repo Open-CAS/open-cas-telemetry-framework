@@ -10,7 +10,7 @@ set(OCTF_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/octf/proto)
 add_subdirectory(third_party)
 add_subdirectory(octf)
 
-set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/third_party/protobuf;${CMAKE_PREFIX_PATH}")
+set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/third_party;${CMAKE_PREFIX_PATH}")
 find_package(Protobuf 3.0 REQUIRED)
 
 add_subdirectory(octf/proto)
