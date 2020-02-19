@@ -7,8 +7,8 @@ execute_process(
 	RESULT_VARIABLE ret
 )
 
-if(ret EQUAL "1")
-	message(FATAL_ERROR "mkdir failed")
+if(NOT ret EQUAL "0")
+	message(FATAL_ERROR "Creating directory for protobuf library failed")
 endif()
 
 execute_process(
@@ -17,8 +17,8 @@ execute_process(
 	RESULT_VARIABLE ret
 )
 
-if(ret EQUAL "1")
-	message(FATAL_ERROR "cmake failed")
+if(NOT ret EQUAL "0")
+	message(FATAL_ERROR "cmake for protobuf library failed")
 endif()
 
 execute_process(
@@ -27,6 +27,6 @@ execute_process(
 	RESULT_VARIABLE ret
 )
 
-if(ret EQUAL "1")
-	message(FATAL_ERROR "make failed")
+if(NOT ret EQUAL "0")
+	message(FATAL_ERROR "Building and installing of protobuf library failed")
 endif()

@@ -15,7 +15,6 @@ link_directories("/opt/octf/gtest")
 add_executable(octf-tests "")
 set_target_properties(octf-tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/third_party;${CMAKE_PREFIX_PATH}")
 find_package(Protobuf 3.0 REQUIRED)
 target_include_directories(octf-tests
 	SYSTEM PRIVATE ${PROTOBUF_INCLUDE_DIR}
