@@ -147,15 +147,13 @@ private:
                    InterfaceShRef interface,
                    CommandSet &commandSet);
 
-    /**
-     * @return Help for executor's local commands and available plugins
-     */
     void printMainHelp(std::stringstream &ss);
+    void printModuleHelp(std::stringstream &ss);
 
     /**
-     * @brief Get internally a set of available modules
+     * @brief Discovers internally a set of available modules
      */
-    void getModules();
+    void discoverModules();
 
     /**
      * @brief Set execution progress and print if changed
@@ -174,11 +172,10 @@ private:
 
     std::shared_ptr<ICommand> getCommandFromModule(std::string cmdName);
 
-    bool isModuleExistent(std::string moduleName) const;
+    bool lookupModule(const std::string &name);
 
-    void setModule(std::string moduleName);
-
-    std::shared_ptr<ICommand> validateCommand(CLIList &cliList);
+    std::shared_ptr<ICommand> lookupCommand(CLIList &cliList,
+                                            std::string &errMsg);
 
     void executeRemote(std::shared_ptr<CommandProtobuf> cmd);
 
@@ -192,13 +189,12 @@ private:
 
 private:
     CLIProperties m_cliProperties;
-    std::unique_ptr<CommandSet> m_localCmdSet;
-    std::unique_ptr<CommandSet> m_moduleCmdSet;
-    std::map<std::string, Module> m_modules;
+    std::shared_ptr<CommandSet> m_localCmdSet;
+    std::shared_ptr<CommandSet> m_cmdSet;
     std::unique_ptr<Module> m_module;
     double m_progress;
     std::unique_ptr<GenericPluginShadow> m_nodePlugin;
-    std::map<std::string, CommandSet> m_localModules;
+    std::map<Module, std::shared_ptr<CommandSet>> m_modules;
     NodesIdList m_supportedRemoteModules;
 };
 

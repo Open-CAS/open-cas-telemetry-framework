@@ -13,6 +13,21 @@ message OptsInterface {
 
     // Defines version of interface, if missed, version is set to 0 by default
     uint32 version = 2;
+
+    // defines short key command switch (i.e. -X) for interface
+    // allowed characters are: [a-zA-Z]
+    // char H not allowed, dedicated for printing help
+    // it shall be unique across all interfaces for particular node
+    string cli_short_key = 3;
+
+    // defines long key command switch (i.e. --command-long-key) for interface
+    // allowed characters are: [a-zA-Z] and "-"
+    // "help" not allowed, dedicated for printing help
+    // it shall be unique across all interfaces for particular node
+    string cli_long_key = 4;
+
+    // defines interface description displayed when user invokes help
+    string cli_desc = 5;
 }
 
 message OptsCommand {

@@ -5,8 +5,8 @@
 
 #include <octf/cli/Executor.h>
 
-#include <algorithm>
 #include <google/protobuf/dynamic_message.h>
+#include <algorithm>
 #include <octf/cli/internal/CLIList.h>
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/CommandSet.h>
@@ -33,12 +33,13 @@ namespace cli {
 
 Executor::Executor()
         : m_cliProperties()
-        , m_localCmdSet(new CommandSet())
-        , m_moduleCmdSet(new CommandSet())
-        , m_modules()
+        , m_localCmdSet(std::make_shared<CommandSet>())
+        , m_cmdSet(nullptr)
         , m_module(new Module())
         , m_progress(0.0)
-        , m_nodePlugin() {
+        , m_nodePlugin(nullptr)
+        , m_modules()
+        , m_supportedRemoteModules() {
     addLocalCommand(make_shared<CmdVersion>(m_cliProperties));
 }
 
@@ -53,11 +54,7 @@ void Executor::addLocalCommand(shared_ptr<ICommand> cmd) {
 }
 
 void Executor::loadModuleCommandSet() {
-    if (m_module->isLocal()) {
-        // Module is local, set the appropriate command set
-        *m_moduleCmdSet = m_localModules[m_module->getLongKey()];
-
-    } else {
+    if (!m_module->isLocal()) {
         // Get description of this module's command set
         Call<proto::Void, proto::CliCommandSetDesc> call(m_nodePlugin.get());
         m_nodePlugin->getCliInterface()->getCliCommandSetDescription(
@@ -75,7 +72,7 @@ void Executor::loadModuleCommandSet() {
             for (int i = 0; i < commandCount; i++) {
                 const proto::CliCommandDesc &cmdDesc = cmdSetDesc->command(i);
                 auto cmd = make_shared<CommandProtobuf>(cmdDesc);
-                m_moduleCmdSet->addCmd(cmd);
+                m_cmdSet->addCmd(cmd);
             }
         }
     }
@@ -86,17 +83,30 @@ void Executor::printMainHelp(std::stringstream &ss) {
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
-        for (auto module : m_modules) {
-            utils::printModuleHelp(ss, &module.second, true);
+        for (const auto iter : m_modules) {
+            utils::printModuleHelp(ss, &iter.first, true);
         }
     }
 
+    ss << std::endl << "Available commands: " << std::endl;
     utils::printCmdSetHelp(ss, *m_localCmdSet);
-
-    return;
 }
 
-void Executor::getModules() {
+void Executor::printModuleHelp(std::stringstream &ss) {
+    // Initialize module command set if needed
+    loadModuleCommandSet();
+
+    utils::printUsage(ss, m_module.get(), m_cliProperties, false);
+    if (m_module->getDesc() != "") {
+        ss << "\n" << m_module->getDesc() << std::endl;
+    }
+    ss << std::endl << "Available commands: " << std::endl;
+    utils::printCmdSetHelp(ss, *m_cmdSet);
+}
+
+void Executor::discoverModules() {
+    bool found = false;
+
     // No remote modules supported anyway, so quit
     if (m_supportedRemoteModules.empty()) {
         return;
@@ -112,58 +122,65 @@ void Executor::getModules() {
     for (const NodeId &node : nodes) {
         NodesIdList::iterator result;
         result = std::find(m_supportedRemoteModules.begin(),
-                m_supportedRemoteModules.end(), node);
+                           m_supportedRemoteModules.end(), node);
 
         if (result != m_supportedRemoteModules.end()) {
             Module newModule;
             newModule.setLongKey(node.getId());
-            m_modules[node.getId()] = newModule;
+
+            auto entry = std::make_pair(newModule, CommandSet());
+            m_modules[newModule] = std::make_shared<CommandSet>();
+            found = true;
         }
+    }
+
+    if (!found) {
+        m_supportedRemoteModules.clear();
     }
 }
 
-shared_ptr<ICommand> Executor::validateCommand(CLIList &cliList) {
+shared_ptr<ICommand> Executor::lookupCommand(CLIList &cliList,
+                                             std::string &errMsg) {
     CLIElement element = cliList.nextElement();
     string key = element.getValidKeyName();
     if (key.empty()) {
         throw InvalidParameterException("Invalid command format.");
     }
     string cmd;
-    bool localCommand;
 
-    if (isModuleExistent(key)) {
-        // Dealing with module
-        setModule(key);
-        localCommand = false;
+    // Set initial command set to local one
+    m_cmdSet = m_localCmdSet;
+    m_module->setLocal(true);
+
+    if (lookupModule(key)) {
+        // Dealing with module, the next parameter is command switch
 
         if (cliList.hasNext()) {
             element = cliList.nextElement();
             cmd = element.getValidKeyName();
             if (cmd.empty()) {
+                errMsg = "Invalid command format.";
                 return nullptr;
             }
         } else {
-            // No command specified
+            errMsg = "No command specified";
             return nullptr;
         }
-
     } else {
         // Dealing with local command
         cmd = key;
-        localCommand = true;
     }
 
     // Look for command in local or module command set
     shared_ptr<ICommand> commandToExecute;
-    if (localCommand) {
+    if (m_module->isLocal()) {
         // Local command
-        commandToExecute = m_localCmdSet->getCmd(cmd);
-
+        commandToExecute = m_cmdSet->getCmd(cmd);
     } else {
         // Module command
-        if (m_moduleCmdSet->hasCmd(cmd)) {
+        if (m_cmdSet->hasCmd(cmd)) {
             // Module command set already loaded
-            commandToExecute = m_moduleCmdSet->getCmd(cmd);
+            commandToExecute = m_cmdSet->getCmd(cmd);
         } else {
             // Module command set not loaded or command not existent
             commandToExecute = getCommandFromModule(cmd);
@@ -199,33 +216,34 @@ shared_ptr<ICommand> Executor::getCommandFromModule(string cmdName) {
 
 int Executor::execute(CLIList &cliList) {
     // Find supported and available modules by discovering sockets
-    getModules();
+    discoverModules();
 
-    shared_ptr<ICommand> command = validateCommand(cliList);
+    std::string errMsg = "";
+    shared_ptr<ICommand> command = lookupCommand(cliList, errMsg);
+    bool printHelp = command == nullptr || command == m_cmdSet->getHelpCmd();
 
-    if (command == nullptr || command == m_moduleCmdSet->getHelpCmd()) {
-        // No command for module specified or specified command is help
-        // download module's command set and show help
-        loadModuleCommandSet();
-        stringstream ss;
-        utils::printUsage(ss, m_module.get(), m_cliProperties, false);
-        utils::printCmdSetHelp(ss, *m_moduleCmdSet);
-        log::cout << ss.str();
+    if (printHelp) {
+        if (!errMsg.empty()) {
+            log::cerr << errMsg << std::endl;
+        }
+
+        if (m_cmdSet == m_localCmdSet) {
+            // "First level" help (general for application)
+            stringstream ss;
+            printMainHelp(ss);
+            log::cout << ss.str();
+        } else {
+            stringstream ss;
+            printModuleHelp(ss);
+            log::cout << ss.str();
+        }
 
         return command == nullptr;
     }
 
-    if (command == m_localCmdSet->getHelpCmd()) {
-        // "First level" help (general for application)
-        stringstream ss;
-        printMainHelp(ss);
-        log::cout << ss.str();
-        return 0;
-    }
-
     try {
         if (cliList.hasHelp()) {
-            // Help reqested, print it and return
+            // Help requested, print it and return
             stringstream ss;
             utils::printCmdHelp(ss, command, m_cliProperties);
             log::cout << ss.str();
@@ -292,39 +310,30 @@ int Executor::execute(int argc, char *argv[]) {
     return result;
 }
 
-bool Executor::isModuleExistent(std::string moduleName) const {
-    for (const auto module : m_modules) {
-        if (module.second.getLongKey() == moduleName ||
-            module.second.getShortKey() == moduleName) {
-            return true;
+bool Executor::lookupModule(const std::string &name) {
+    for (const auto iter : m_modules) {
+        const auto &module = iter.first;
+        if (name == module.getShortKey() || name == module.getLongKey()) {
+            *m_module = module;
+            m_cmdSet = iter.second;
+            break;
         }
     }
-    return false;
-}
 
-void Executor::setModule(std::string moduleName) {
-    for (const auto &module : m_modules) {
-        if (module.second.getLongKey() == moduleName ||
-            module.second.getShortKey() == moduleName) {
-            // Remember which module was set
-            *m_module = module.second;
+    if ("" == m_module->getLongKey()) {
+        // Module not found
+        return false;
+    }
 
-            if (m_module->isLocal()) {
-                // Set appropriate command set for local module
-                *m_moduleCmdSet = m_localModules[moduleName];
-
-            } else {
-                // Initialize node plugin if module is remote
-                m_nodePlugin.reset(
-                        new GenericPluginShadow(m_module->getLongKey()));
-                if (!m_nodePlugin->init()) {
-                    throw Exception("Plugin unavailable.");
-                }
-
-                return;
-            }
+    if (!m_module->isLocal()) {
+        // Initialize node plug-in if module is remote
+        m_nodePlugin.reset(new GenericPluginShadow(m_module->getLongKey()));
+        if (!m_nodePlugin->init()) {
+            throw Exception("Module unavailable.");
         }
     }
+
+    return true;
 }
 
 void Executor::addInterface(InterfaceShRef interface, CommandSet &commandSet) {
@@ -338,8 +347,8 @@ void Executor::addInterface(InterfaceShRef interface, CommandSet &commandSet) {
 void Executor::addMethod(const ::google::protobuf::MethodDescriptor *method,
                          InterfaceShRef interface,
                          CommandSet &commandSet) {
-    // TODO(trybicki): Don't create commands upfront for every interface method
-    // Create local command and add it to command set
+    // TODO(trybicki): Don't create commands upfront for every interface
+    // method Create local command and add it to command set
     std::shared_ptr<CommandProtobufLocal> cmd =
             make_shared<CommandProtobufLocal>(method, interface);
     commandSet.addCmd(cmd);
@@ -349,10 +358,7 @@ void Executor::addLocalModule(InterfaceShRef interface,
                               const std::string &longKey,
                               const std::string &desc,
                               const std::string &shortKey) {
-    if (m_modules.end() != m_modules.find(longKey)) {
-        // Specified module already exist
-        throw Exception("Trying to add already existing module: " + longKey);
-    }
+    std::shared_ptr<CommandSet> cmdSet;
 
     Module module;
     module.setDesc(desc);
@@ -360,26 +366,63 @@ void Executor::addLocalModule(InterfaceShRef interface,
     module.setShortKey(shortKey);
     module.setLocal(true);
 
-    // Register module
-    m_modules[longKey] = module;
+    if (shortKey != "" && m_localCmdSet->hasCmd(shortKey)) {
+        // Short key cannot repeat, clear it, the module will be invoked using
+        // long key only
+        module.setShortKey("");
+    }
+
+    if (m_localCmdSet->hasCmd(longKey)) {
+        // Specified module already exist
+        throw Exception("Cannot add module, because command already exist: " +
+                        longKey);
+    }
+
+    if (m_modules.end() == m_modules.find(module)) {
+        cmdSet = std::make_shared<CommandSet>();
+        m_modules[module] = cmdSet;
+    } else {
+        if (shortKey != "") {
+            // Maybe short key is repeated, so for the new module clear short
+            // key. It will be invoked by long key only
+            module.setShortKey("");
+
+            if (m_modules.end() == m_modules.find(module)) {
+                cmdSet = std::make_shared<CommandSet>();
+                m_modules[module] = cmdSet;
+            }
+        }
+    }
+
+    if (!cmdSet) {
+        // Specified module already exist
+        throw Exception("Trying to add already existing module: " + longKey);
+    }
 
     // Create command set for interface
-    addInterface(interface, m_localModules[longKey]);
+    addInterface(interface, *cmdSet);
 }
 
 void Executor::addModule(InterfaceShRef interface) {
-    addInterface(interface, *m_localCmdSet);
+    auto iDesc = interface->GetDescriptor();
+    const auto &iOpts = iDesc->options().GetExtension(proto::opts_interface);
+
+    if ("" != iOpts.cli_long_key()) {
+        addLocalModule(interface, iOpts.cli_long_key(), iOpts.cli_desc(),
+                       iOpts.cli_short_key());
+    } else {
+        addInterface(interface, *m_localCmdSet);
+    }
 }
 
 void Executor::addModule(const NodeId &moduleId) {
     NodesIdList::iterator result;
     result = std::find(m_supportedRemoteModules.begin(),
-            m_supportedRemoteModules.end(), moduleId);
+                       m_supportedRemoteModules.end(), moduleId);
 
     // Add only non-duplicate NodeIds
     if (result == m_supportedRemoteModules.end()) {
         m_supportedRemoteModules.push_back(moduleId);
-
     } else {
         throw Exception("Duplicate remote module ids added");
     }
@@ -401,7 +444,8 @@ void Executor::executeRemote(std::shared_ptr<CommandProtobuf> cmd) {
     // Ownership passed to the caller, thus use smart pointer to handle it
     MessageShRef in_msg = MessageShRef(prototype_msg->New());
 
-    // Parse parameters - set values stored in command to the protobuf message
+    // Parse parameters - set values stored in command to the protobuf
+    // message
     cmd->parseToProtobuf(in_msg.get(), cmd->getInputDesc());
 
     // Create prototype of output message based on command output descriptor
@@ -450,4 +494,3 @@ void Executor::setupOutputsForCommandsLogs() const {
 
 }  // namespace cli
 }  // namespace octf
-

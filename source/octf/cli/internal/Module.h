@@ -22,7 +22,36 @@ public:
      */
     Module();
 
+    /**
+     * @brief Copy constructor
+     * @param other Other object to be copied into the new module object
+     */
+    Module(const Module &other);
+
     virtual ~Module() = default;
+
+    /**
+     * @brief Assignment operator
+     * @param other Module to take data from
+     * @return Module with copied data
+     */
+    virtual Module &operator=(const Module &other);
+
+    /**
+     * @brief Operator of <
+     * @param other Module to take data for comparison
+     * @retval true this object less than other
+     * @retval false this object greater or equal than other object
+     */
+    virtual bool operator<(const Module &other) const;
+
+    /**
+     * @brief Operator of equality
+     * @param other Module to data for checking if objects are equal
+     * @retval true object are equal
+     * @retval false objects are not equal
+     */
+    virtual bool operator==(const Module &other) const;
 
     /**
      * @return Long key of module
@@ -43,13 +72,6 @@ public:
      * @param shortKey Short key of module
      */
     void setShortKey(const std::string &shortKey);
-
-    /**
-     * @brief Assignment operator
-     * @param other Module to take data from
-     * @return Module with copied data
-     */
-    virtual Module &operator=(const Module &other);
 
     /**
      * @return Module description

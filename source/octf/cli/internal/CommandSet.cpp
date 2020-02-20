@@ -82,7 +82,7 @@ void CommandSet::clear() {
     m_iter = m_cmds.begin();
 }
 
-bool CommandSet::hasCmd(std::string cmdName) const {
+bool CommandSet::hasCmd(const std::string &cmdName) const {
     map<string, shared_ptr<ICommand>>::const_iterator iter = m_cmds.begin();
 
     for (; iter != m_cmds.end(); iter++) {
@@ -95,7 +95,7 @@ bool CommandSet::hasCmd(std::string cmdName) const {
     return false;
 }
 
-void CommandSet::setHelpCmdContent(std::string help) {
+void CommandSet::setHelpCmdContent(const std::string &help) {
     m_helpCmd->setHelp(help);
 }
 

@@ -84,6 +84,12 @@ service InterfaceTraceParsing {
 
     option (opts_interface).version = 1;
 
+    option (opts_interface).cli_long_key = "trace-parsing";
+
+    option (opts_interface).cli_short_key = "P";
+
+    option (opts_interface).cli_desc = "Parses traces";
+
     rpc ParseTrace(ParseTraceRequest) returns (Void) {
         option (opts_command).cli = true;
 
@@ -100,9 +106,7 @@ service InterfaceTraceParsing {
         option (opts_command).cli = true;
 
         option (opts_command).cli_long_key = "get-trace-statistics";
-
-        option (opts_command).cli_short_key = "T";
-
+        option (opts_command).cli_short_key = "S";
         option (opts_command).cli_desc = "Gets trace statistics";
     }
 
@@ -111,23 +115,22 @@ service InterfaceTraceParsing {
         option (opts_command).cli = true;
 
         option (opts_command).cli_long_key = "get-latency-histogram";
-
+        option (opts_command).cli_short_key = "L";
         option (opts_command).cli_desc = "Gets latency histogram";
     }
 
-    rpc GetLbaHistogram(octf.proto.GetLbaHistogramRequest)
-        returns (IoHistogramSet) {
-        option (octf.proto.opts_command).cli = true;
-        option (octf.proto.opts_command).cli_long_key = "get-lba-histogram";
-        option (octf.proto.opts_command).cli_desc =
-            "Returns a histogram of LBA hits";
+    rpc GetLbaHistogram(GetLbaHistogramRequest) returns (IoHistogramSet) {
+        option (opts_command).cli = true;
+        option (opts_command).cli_long_key = "get-lba-histogram";
+        option (opts_command).cli_short_key = "B";
+        option (opts_command).cli_desc = "Returns a histogram of LBA hits";
     }
 
     rpc GetFileSystemStatistics(GetTraceStatisticsRequest)
-        returns (octf.proto.FilesystemStatistics) {
-        option (octf.proto.opts_command).cli = true;
-        option (octf.proto.opts_command).cli_long_key = "get-fs-statistics";
-        option (octf.proto.opts_command).cli_desc =
-            "Gets filesystem statistics";
+        returns (FilesystemStatistics) {
+        option (opts_command).cli = true;
+        option (opts_command).cli_long_key = "get-fs-statistics";
+        option (opts_command).cli_short_key = "F";
+        option (opts_command).cli_desc = "Gets filesystem statistics";
     }
 }

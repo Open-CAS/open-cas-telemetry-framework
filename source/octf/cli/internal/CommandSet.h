@@ -59,13 +59,13 @@ public:
      * @param cmdName Name of command (short o long key)
      * @return Is corresponding command present in command set
      */
-    virtual bool hasCmd(std::string cmdName) const;
+    virtual bool hasCmd(const std::string &cmdName) const;
 
     /**
      * @brief Sets content of command set's help command output
      * @param help Help output to be set
      */
-    virtual void setHelpCmdContent(std::string help);
+    virtual void setHelpCmdContent(const std::string &help);
 
     /**
      * @return Pointer to help command

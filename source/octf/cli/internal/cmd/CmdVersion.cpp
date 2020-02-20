@@ -19,7 +19,7 @@ CmdVersion::CmdVersion(const CLIProperties &properties)
         , m_cliProperties(properties) {
     setShortKey("V");
     setLongKey("version");
-    setDesc("Print version");
+    setDesc("Prints version");
     setLocal(true);
 }
 

@@ -18,6 +18,35 @@ Module::Module()
         , m_desc("")
         , m_isLocal(false) {}
 
+Module::Module(const Module &other)
+        : m_shortKey(other.m_shortKey)
+        , m_longKey(other.m_longKey)
+        , m_desc(other.m_desc)
+        , m_isLocal(other.m_isLocal) {}
+
+Module &Module::operator=(const Module &other) {
+    if (&other != this) {
+        m_desc = other.m_desc;
+        m_shortKey = other.m_shortKey;
+        m_longKey = other.m_longKey;
+        m_isLocal = other.m_isLocal;
+    }
+
+    return *this;
+}
+
+bool Module::operator<(const Module &other) const {
+    if (m_shortKey != other.m_shortKey) {
+        return m_shortKey < other.m_shortKey;
+    } else {
+        return m_longKey < other.m_longKey;
+    }
+}
+
+bool Module::operator==(const Module &other) const {
+    return (m_shortKey == other.m_shortKey) && (m_longKey == other.m_longKey);
+}
+
 const string &Module::getLongKey() const {
     return m_longKey;
 }
@@ -32,15 +61,6 @@ const std::string &Module::getShortKey() const {
 
 void Module::setShortKey(const string &shortKey) {
     m_shortKey = shortKey;
-}
-
-Module &Module::operator=(const Module &other) {
-    m_desc = other.getDesc();
-    m_shortKey = other.getShortKey();
-    m_longKey = other.getLongKey();
-    m_isLocal = other.isLocal();
-
-    return *this;
 }
 
 const string &Module::getDesc() const {

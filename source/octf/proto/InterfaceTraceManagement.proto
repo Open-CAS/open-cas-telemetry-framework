@@ -45,6 +45,12 @@ service InterfaceTraceManagement {
 
     option (opts_interface).version = 1;
 
+    option (opts_interface).cli_long_key = "trace-management";
+
+    option (opts_interface).cli_short_key = "M";
+
+    option (opts_interface).cli_desc = "Manages available traces";
+
     // Lists existing traces consistent with specified trace prefix.
     // Lists all traces when given no prefix
     rpc listTraces(TracePathPrefix) returns (TraceList) {

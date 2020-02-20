@@ -16,7 +16,7 @@ CmdHelp::CmdHelp()
         : Command() {
     setShortKey("H");
     setLongKey("help");
-    setDesc("Print help");
+    setDesc("Prints help");
     setLocal(true);
     setHelp("Help not available");
 }
