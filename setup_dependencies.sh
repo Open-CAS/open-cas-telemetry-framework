@@ -157,7 +157,7 @@ function get_distribution_pkg_installer () {
     esac
 }
 
-PKGS="autoconf automake libtool curl make cmake gcc gcc-c++ unzip git"
+PKGS="autoconf automake libtool curl make gcc gcc-c++ unzip git"
 function get_distribution_pkg_dependencies () {
     distro=$(detect_distribution)
 
@@ -190,7 +190,7 @@ then
 fi
 info "${DISTRO} detected"
 
-PKGS=$(get_distribution_pkg_depndenices)
+PKGS=$(get_distribution_pkg_dependencies)
 PKG_INSTALLER=$(get_distribution_pkg_installer)
 
 info "Installing packages: ${PKGS}"
