@@ -5,8 +5,6 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := all
 CMAKE_FILE=CMakeLists.txt
 
-PWD=$(shell pwd)
-
 TEST_DIR=build/test
 TEST_PREFIX=./rootfs
 
@@ -30,7 +28,11 @@ else
 endif
 
 SOURCE_PATH:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-CMAKE:="$(SOURCE_PATH)/tools/third_party/cmake/bin/cmake"
+CMAKE=$(SOURCE_PATH)/tools/third_party/cmake/bin/cmake
+ifeq ("$(wildcard $(CMAKE))","")
+   $(info Using system $(shell cmake --version | grep version))
+   CMAKE=cmake
+endif
 
 .PHONY: init all install uninstall reinstall package clean doc
 
