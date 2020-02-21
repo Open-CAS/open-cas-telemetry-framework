@@ -52,6 +52,8 @@ doc: init
 
 install: all
 	$(CMAKE)  -DCOMPONENT=octf-install -P $(BUILD_DIR)/cmake_install.cmake
+	$(CMAKE)  -DCOMPONENT=octf-install-headers -P $(BUILD_DIR)/cmake_install.cmake
+	$(CMAKE)  -DCOMPONENT=octf-install-cmake -P $(BUILD_DIR)/cmake_install.cmake
 	$(CMAKE)  -DCOMPONENT=octf-post-install -P $(BUILD_DIR)/cmake_install.cmake
 
 uninstall: init
