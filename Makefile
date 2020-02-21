@@ -5,10 +5,10 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := all
 CMAKE_FILE=CMakeLists.txt
 
+PWD=$(shell pwd)
+
 TEST_DIR=build/test
 TEST_PREFIX=./rootfs
-
-OPT_DIR=/opt/octf
 
 ifdef DEBUG
 	ifndef BUILD_DIR
@@ -29,14 +29,8 @@ else
 	endif
 endif
 
-ifneq ("$(wildcard $(OPT_DIR)/cmake/bin/cmake)","")
-	# Found our installation of cmake in opt dir
-	CMAKE=$(OPT_DIR)/cmake/bin/cmake
-else
-	CMAKE=cmake
-endif
-
 SOURCE_PATH:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+CMAKE:="$(SOURCE_PATH)/tools/third_party/cmake/bin/cmake"
 
 .PHONY: init all install uninstall reinstall package clean doc
 

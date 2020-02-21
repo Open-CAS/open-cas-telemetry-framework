@@ -12,11 +12,17 @@ if(NOT ret EQUAL "0")
 endif()
 
 execute_process(
-	COMMAND "cmake" "${CMAKE_CURRENT_SOURCE_DIR}/protobuf/cmake" "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/third_party" "-DCMAKE_CXX_FLAGS_INIT=-std=c++11 -fPIC" "-Dprotobuf_BUILD_TESTS=NO"
+	COMMAND ${CMAKE_COMMAND}
+		"${CMAKE_CURRENT_SOURCE_DIR}/protobuf/cmake"
+		"-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/third_party"
+		"-DCMAKE_CXX_FLAGS_INIT=${CMAKE_CXX_FLAGS_RELEASE}"
+		"-DCMAKE_SHARED_LINKER_FLAGS_INIT=${CMAKE_SHARED_LINKER_FLAGS_RELEASE}"
+		"-DCMAKE_EXE_LINKER_FLAGS_INIT=${CMAKE_EXE_LINKER_FLAGS_RELEASE}"
+		"-DCMAKE_C_FLAGS_RELEASE_INIT=${CMAKE_C_FLAGS_RELEASE}"
+		"-Dprotobuf_BUILD_TESTS=NO"
 	WORKING_DIRECTORY "${WORKING_DIRECTORY}"
 	RESULT_VARIABLE ret
 )
-
 if(NOT ret EQUAL "0")
 	message(FATAL_ERROR "cmake for protobuf library failed")
 endif()
@@ -26,7 +32,6 @@ execute_process(
 	WORKING_DIRECTORY ${WORKING_DIRECTORY}
 	RESULT_VARIABLE ret
 )
-
 if(NOT ret EQUAL "0")
 	message(FATAL_ERROR "Building and installing of protobuf library failed")
 endif()
