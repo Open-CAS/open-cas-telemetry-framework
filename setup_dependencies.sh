@@ -142,7 +142,7 @@ function setup_dependencies () {
     setup_cmake
 }
 
-function get_distribution_pkg_installer () {
+function get_distribution_pkg_manager () {
     distro=$(detect_distribution)
     case "${distro}" in
     "RHEL7"|"CENTOS7"|"FEDORA")
@@ -191,7 +191,7 @@ fi
 info "${DISTRO} detected"
 
 PKGS=$(get_distribution_pkg_dependencies)
-PKG_INSTALLER=$(get_distribution_pkg_installer)
+PKG_INSTALLER=$(get_distribution_pkg_manager)
 
 info "Installing packages: ${PKGS}"
 ${PKG_INSTALLER} ${PKGS}
