@@ -105,8 +105,8 @@ function setup_cmake
              echo "${cmake_sha256} ${cmake_tar_path}" | sha256sum -c &>/dev/null
              if [ $? -ne 0 ]
              then
-                info CHECK sum is wrong: ${cmake_tar_path}
-                info Remove package and re-download it
+                info "CHECK sum is wrong: ${cmake_tar_path}"
+                info "Remove package and re-download it"
                 rm "${cmake_tar_path}"
              fi
         fi
@@ -145,11 +145,8 @@ function setup_dependencies () {
 function get_distribution_pkg_installer () {
     distro=$(detect_distribution)
     case "${distro}" in
-    "RHEL7"|"CENTOS7")
+    "RHEL7"|"CENTOS7"|"FEDORA")
         echo "yum -y install"
-        ;;
-    "FEDORA")
-        echo "dnf -y install"
         ;;
     "UBUNTU")
         echo "apt-get -y install"
@@ -160,37 +157,42 @@ function get_distribution_pkg_installer () {
     esac
 }
 
-function get_distribution_pkg_depndenices () {
+PKGS="autoconf automake libtool curl make cmake gcc gcc-c++ unzip git"
+function get_distribution_pkg_dependencies () {
     distro=$(detect_distribution)
+
     case "${distro}" in
-    "RHEL7"|"CENTOS7")
-        echo "autoconf automake libtool curl make gcc gcc-c++ unzip git"
-        ;;
-    "FEDORA")
-        echo "autoconf automake libtool curl make gcc gcc-c++ unzip git"
+    "RHEL7"|"CENTOS7"|"FEDORA")
+        echo "${PKGS}"
         ;;
     "UBUNTU")
         echo "autoconf automake libtool curl make gcc g++ unzip git"
         ;;
     *)
         error "Unknown Linux distribution"
+        exit 1
         ;;
     esac
 }
 
 if [ "$EUID" -ne 0 ]
 then
-    error "Please run as root to alllow using package installer"
+    error "Please run as root to allow using package manager"
 fi
 
-PKG_INSTALLER=$(get_distribution_pkg_installer)
-PKGS=$(get_distribution_pkg_depndenices)
+setup_dependencies
 
 DISTRO=$(detect_distribution)
+if [ "" == "${DISTRO}" ]
+then
+    error "Cannot detect Linux distribution, please install packages yourself: ${PKGS}"
+    exit 1
+fi
 info "${DISTRO} detected"
+
+PKGS=$(get_distribution_pkg_depndenices)
+PKG_INSTALLER=$(get_distribution_pkg_installer)
 
 info "Installing packages: ${PKGS}"
 ${PKG_INSTALLER} ${PKGS}
 check_result $? "Cannot install required dependencies"
-
-setup_dependencies
