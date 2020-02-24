@@ -166,7 +166,7 @@ function get_distribution_pkg_dependencies () {
         echo "${PKGS}"
         ;;
     "UBUNTU")
-        echo "autoconf automake libtool curl make gcc g++ unzip git"
+        echo "autoconf automake libtool curl make gcc g++ unzip git wget"
         ;;
     *)
         error "Unknown Linux distribution"
