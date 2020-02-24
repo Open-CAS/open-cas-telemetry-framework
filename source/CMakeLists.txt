@@ -124,7 +124,7 @@ install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONE
 if (${CMAKE_INSTALL_PREFIX} STREQUAL "/")
     install(
         CODE "execute_process(COMMAND ldconfig)"
-        COMPONENT octf-install
+        COMPONENT octf-post-install
     )
 endif()
 
@@ -132,7 +132,7 @@ endif()
 # Install headers and proto files
 install(DIRECTORY octf ${CMAKE_CURRENT_BINARY_DIR}/octf
 	DESTINATION ${OCTF_INCLUDE_DIR}
-	COMPONENT octf-install
+	COMPONENT octf-install-headers
 	FILES_MATCHING
 	PATTERN "*.h"
 	PATTERN "*.proto"
@@ -140,10 +140,10 @@ install(DIRECTORY octf ${CMAKE_CURRENT_BINARY_DIR}/octf
 	REGEX "CMakeFiles" EXCLUDE)
 
 # Generate and install a .cmake file with exported targets and properties definitions
-install(EXPORT octf-targets DESTINATION ${OCTF_PACKAGE_DIR} FILE octf.cmake COMPONENT octf-install)
+install(EXPORT octf-targets DESTINATION ${OCTF_PACKAGE_DIR} FILE octf.cmake COMPONENT octf-install-cmake)
 
 # Install a file which will be recognized by 'find_package' and includes above file with exports
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/../octf-config.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/../octf-config.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install-cmake)
 
 # Create a file with variables which are to be exported with the package
 file(WRITE ${CMAKE_BINARY_DIR}/octf-vars.cmake
@@ -154,6 +154,6 @@ file(APPEND ${CMAKE_BINARY_DIR}/octf-vars.cmake
 )
 
 # Install it next to octf-config
-install(FILES ${CMAKE_BINARY_DIR}/octf-vars.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install)
+install(FILES ${CMAKE_BINARY_DIR}/octf-vars.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install-cmake)
 
 add_subdirectory(examples)
