@@ -84,7 +84,7 @@ function setup_cmake
     if [ ! -d "${cmake_dir}" ]
     then
         info "Create directory for cmake, ${cmake_dir}"
-        mkdir ${cmake_dir}
+        mkdir -p ${cmake_dir}
         check_result $? "Can't create directory for cmake"
     fi
 
@@ -157,7 +157,7 @@ function get_distribution_pkg_manager () {
     esac
 }
 
-PKGS="autoconf automake libtool curl make gcc gcc-c++ unzip git"
+PKGS="autoconf automake libtool curl make gcc gcc-c++ unzip git wget"
 function get_distribution_pkg_dependencies () {
     distro=$(detect_distribution)
 
@@ -166,7 +166,7 @@ function get_distribution_pkg_dependencies () {
         echo "${PKGS}"
         ;;
     "UBUNTU")
-        echo "autoconf automake libtool curl make gcc g++ unzip git"
+        echo "autoconf automake libtool curl make gcc g++ unzip git wget"
         ;;
     *)
         error "Unknown Linux distribution"
