@@ -3,8 +3,6 @@ project(test LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 enable_testing()
-
-set(CMAKE_PREFIX_PATH "/opt/octf/gtest;${CMAKE_PREFIX_PATH}")
 find_package (Threads)
 
 add_executable(octf-tests "")
