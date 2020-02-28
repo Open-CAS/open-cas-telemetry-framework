@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <octf/utils/Exception.h>
+#include <octf/utils/Log.h>
 #include <octf/utils/NonCopyable.h>
 #include <limits.h>
 
@@ -624,7 +625,12 @@ public:
 
         auto iter = m_fileInfo.find(fid);
         if (iter != m_fileInfo.end()) {
-            getPath(iter->second.parentId, dir, len);
+            try {
+                getPath(iter->second.parentId, dir, len);
+            }
+            catch (MaxPathExceededException &e) {
+                log::cerr << e.getMessage() << std::endl;
+            }
         }
 
         return dir;
@@ -672,7 +678,7 @@ private:
             const auto &info = iter->second;
             len += info.name.length();
             if (len > PATH_MAX) {
-                throw Exception("Exceeded maximum path length limit");
+                throw MaxPathExceededException(id);
             }
             if (id != info.parentId) {
                 if (!getPath(info.parentId, path, len)) {
