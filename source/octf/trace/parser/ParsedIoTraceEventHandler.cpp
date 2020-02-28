@@ -8,7 +8,9 @@
 #include <list>
 #include <map>
 #include <octf/utils/Exception.h>
+#include <octf/utils/Log.h>
 #include <octf/utils/NonCopyable.h>
+#include <limits.h>
 
 namespace octf {
 
@@ -426,6 +428,7 @@ void ParsedIoTraceEventHandler::handleEvent(
     case Event::EventTypeCase::kFilesystemFileEvent: {
         const auto &fsEvent = traceEvent->filesystemfileevent();
         auto partId = fsEvent.partitionid();
+        FileId file = FileId(fsEvent);
 
         // Allocate new parsed IO event in the queue
         m_queue.emplace(ParsedEvent());
@@ -446,8 +449,11 @@ void ParsedIoTraceEventHandler::handleEvent(
         destDevInfo.set_partition(partId);
 
         // Set file size from file info
-        auto size = m_fileInfo[FileId(fsEvent)].size;
+        auto size = m_fileInfo[file].size;
         dstFileInfo.set_size(size);
+        if (fsEvent.fseventtype() == FsEventType::Delete) {
+            m_fileInfo.erase(file);
+        }
     } break;
 
     case Event::kFilesystemFileNameFieldNumber: {
@@ -619,10 +625,16 @@ public:
     virtual std::string getDirPath(uint64_t id) const override {
         std::string dir = "";
         FileId fid(m_partId, id);
+        uint64_t len = 0;
 
         auto iter = m_fileInfo.find(fid);
         if (iter != m_fileInfo.end()) {
-            getPath(iter->second.parentId, dir);
+            try {
+                getPath(iter->second.parentId, dir, len);
+            }
+            catch (MaxPathExceededException &e) {
+                log::cerr << e.getMessage() << std::endl;
+            }
         }
 
         return dir;
@@ -662,15 +674,18 @@ public:
     }
 
 private:
-    bool getPath(uint64_t id, std::string &path) const {
+    bool getPath(uint64_t id, std::string &path, uint64_t &len) const {
         FileId fid(m_partId, id);
 
         auto iter = m_fileInfo.find(fid);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
-
+            len += info.name.length();
+            if (len > PATH_MAX) {
+                throw MaxPathExceededException(id);
+            }
             if (id != info.parentId) {
-                if (!getPath(info.parentId, path)) {
+                if (!getPath(info.parentId, path, len)) {
                     path = "";
                     return false;
                 }

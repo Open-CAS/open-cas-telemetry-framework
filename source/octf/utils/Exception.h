@@ -94,6 +94,17 @@ public:
 };
 
 /**
+ * @brief Exception which occurred during file system path traversing
+ */
+class MaxPathExceededException : public octf::Exception {
+public:
+    MaxPathExceededException(const uint64_t inode)
+            : Exception(std::string("Exceeded maximum path length limit for inode ") +
+                        std::to_string(inode)) {}
+    virtual ~MaxPathExceededException() = default;
+};
+
+/**
  * @}
  * @}
  */
