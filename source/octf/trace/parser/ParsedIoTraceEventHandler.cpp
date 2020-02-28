@@ -428,6 +428,7 @@ void ParsedIoTraceEventHandler::handleEvent(
     case Event::EventTypeCase::kFilesystemFileEvent: {
         const auto &fsEvent = traceEvent->filesystemfileevent();
         auto partId = fsEvent.partitionid();
+        FileId file = FileId(fsEvent);
 
         // Allocate new parsed IO event in the queue
         m_queue.emplace(ParsedEvent());
@@ -448,8 +449,11 @@ void ParsedIoTraceEventHandler::handleEvent(
         destDevInfo.set_partition(partId);
 
         // Set file size from file info
-        auto size = m_fileInfo[FileId(fsEvent)].size;
+        auto size = m_fileInfo[file].size;
         dstFileInfo.set_size(size);
+        if (fsEvent.fseventtype() == FsEventType::Delete) {
+            m_fileInfo.erase(file);
+        }
     } break;
 
     case Event::kFilesystemFileNameFieldNumber: {
