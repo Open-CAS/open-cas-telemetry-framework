@@ -84,7 +84,7 @@ service InterfaceTraceParsing {
 
     option (opts_interface).version = 1;
 
-    option (opts_interface).cli_long_key = "trace-parsing";
+    option (opts_interface).cli_long_key = "trace-parser";
 
     option (opts_interface).cli_short_key = "P";
 
@@ -93,35 +93,35 @@ service InterfaceTraceParsing {
     rpc ParseTrace(ParseTraceRequest) returns (Void) {
         option (opts_command).cli = true;
 
-        option (opts_command).cli_long_key = "parse-trace";
+        option (opts_command).cli_long_key = "io";
 
         option (opts_command).cli_short_key = "P";
 
         option (opts_command).cli_desc =
-            "Parses trace files to human readable form";
+            "Parses IO trace to human readable form";
     }
 
     rpc GetTraceStatistics(GetTraceStatisticsRequest)
         returns (IoStatisticsSet) {
         option (opts_command).cli = true;
 
-        option (opts_command).cli_long_key = "get-trace-statistics";
+        option (opts_command).cli_long_key = "statistics";
         option (opts_command).cli_short_key = "S";
-        option (opts_command).cli_desc = "Gets trace statistics";
+        option (opts_command).cli_desc = "Returns basic IO statistics";
     }
 
     rpc GetLatencyHistogram(GetTraceStatisticsRequest)
         returns (IoHistogramSet) {
         option (opts_command).cli = true;
 
-        option (opts_command).cli_long_key = "get-latency-histogram";
+        option (opts_command).cli_long_key = "latency-histogram";
         option (opts_command).cli_short_key = "L";
-        option (opts_command).cli_desc = "Gets latency histogram";
+        option (opts_command).cli_desc = "Returns latency histogram";
     }
 
     rpc GetLbaHistogram(GetLbaHistogramRequest) returns (IoHistogramSet) {
         option (opts_command).cli = true;
-        option (opts_command).cli_long_key = "get-lba-histogram";
+        option (opts_command).cli_long_key = "lba-histogram";
         option (opts_command).cli_short_key = "B";
         option (opts_command).cli_desc = "Returns a histogram of LBA hits";
     }
@@ -129,8 +129,8 @@ service InterfaceTraceParsing {
     rpc GetFileSystemStatistics(GetTraceStatisticsRequest)
         returns (FilesystemStatistics) {
         option (opts_command).cli = true;
-        option (opts_command).cli_long_key = "get-fs-statistics";
+        option (opts_command).cli_long_key = "fs-statistics";
         option (opts_command).cli_short_key = "F";
-        option (opts_command).cli_desc = "Gets filesystem statistics";
+        option (opts_command).cli_desc = "Returns filesystem statistics";
     }
 }
