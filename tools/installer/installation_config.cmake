@@ -12,4 +12,3 @@ set(OCTF_PACKAGE_DIR "${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
 # in DOC_DIR path, we manually specify project name in doc path
 get_filename_component(OCTF_DOC_DIR "${CMAKE_INSTALL_FULL_DOCDIR}"  DIRECTORY)
 set(OCTF_DOC_DIR "${OCTF_DOC_DIR}/${PROJECT_NAME}")
-

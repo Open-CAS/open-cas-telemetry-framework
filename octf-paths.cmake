@@ -25,7 +25,7 @@ set(configFileName "octf.conf")
 set(NOTICE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/NOTICE")
 set(LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/VERSION")
-set(OCTF_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/${configFileName})
+set(OCTF_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/${configFileName} CACHE INTERNAL OCTF_CONFIG_FILE)
 set(OCTF_MANIFEST_PREINSTALL ${CMAKE_BINARY_DIR}/install_manifest_octf-install.txt)
 set(OCTF_MANIFEST_POSTINSTALL ${OCTF_DOC_DIR}/install_manifest_octf-install.txt)
 
@@ -33,20 +33,23 @@ set(socketsPath ${OCTF_RUN_DIR}/sockets)
 set(tracePath ${OCTF_WORK_DIR}/trace)
 set(settingsPath ${OCTF_WORK_DIR}/settings)
 
-set(destConfigFile "${OCTF_CONFIG_DIR}/${configFileName}")
-add_definitions(-DOCTF_CONFIG_FILE="${destConfigFile}")
-message(STATUS "OCTF_CONFIG_FILE set to: ${destConfigFile}")
+set(OCTF_CONFIG_FILE_PATH "${OCTF_CONFIG_DIR}/${configFileName}" CACHE INTERNAL OCTF_CONFIG_FILE_PATH)
+add_definitions(-DOCTF_CONFIG_FILE="${OCTF_CONFIG_FILE_PATH}")
+message(STATUS "OCTF_CONFIG_FILE set to: ${OCTF_CONFIG_FILE_PATH}")
 
 set(includePath ${OCTF_INCLUDE_DIR})
 
-file(WRITE ${OCTF_CONFIG_FILE}
+set(OCTF_CONFIG_FILE_CONTENT
     "{\n"
        "   \"paths\": {\n"
        "   \"settings\": \"${settingsPath}\",\n"
        "   \"unixsocket\": \"${socketsPath}\",\n"
        "   \"trace\": \"${tracePath}\"\n"
        "   }\n"
-    "}")
+    "}"
+    CACHE INTERNAL OCTF_CONFIG_FILE_CONTENT
+)
+file(WRITE ${OCTF_CONFIG_FILE} ${OCTF_CONFIG_FILE_CONTENT})
 
 install(FILES ${OCTF_CONFIG_FILE}
         DESTINATION ${OCTF_CONFIG_DIR}
