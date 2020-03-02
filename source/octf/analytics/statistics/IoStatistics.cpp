@@ -39,11 +39,6 @@ struct IoStatistics::Stats {
     void getIoStatisticsEntry(proto::IoStatisticsEntry *entry,
                               uint64_t beginTime,
                               uint64_t endTime) const {
-        if (!sizeDistribution.getCount()) {
-            // No IOs, don't fill entry
-            return;
-        }
-
         sizeDistribution.getStatistics(entry->mutable_size());
         latencyDistribution.getStatistics(entry->mutable_latency());
         entry->set_errors(errors);
@@ -55,11 +50,10 @@ struct IoStatistics::Stats {
             // Set IOPS
             double count = sizeDistribution.getCount();
             double iops = durationS != 0.0 ? count / durationS : 0;
-            if (iops != 0.0) {
-                auto &metric = (*entry->mutable_metrics())["throughput"];
-                metric.set_unit("IOPS");
-                metric.set_value(iops);
-            }
+
+            auto &metric = (*entry->mutable_metrics())["throughput"];
+            metric.set_unit("IOPS");
+            metric.set_value(iops);
         }
         {
             // Set bandwidth in sectors
@@ -68,20 +62,16 @@ struct IoStatistics::Stats {
             total *= 512.0 / 1024.0 / 1024.0;
             double bandwidth = durationS != 0.0 ? total / durationS : 0;
 
-            if (bandwidth) {
-                auto &metric = (*entry->mutable_metrics())["bandwidth"];
-                metric.set_unit("MiB/s");
-                metric.set_value(bandwidth);
-            }
+            auto &metric = (*entry->mutable_metrics())["bandwidth"];
+            metric.set_unit("MiB/s");
+            metric.set_value(bandwidth);
         }
         {
             auto workset = wc.getWorkset();
 
-            if (workset) {
-                auto &metric = (*entry->mutable_metrics())["workset"];
-                metric.set_unit("sector");
-                metric.set_value(workset);
-            }
+            auto &metric = (*entry->mutable_metrics())["workset"];
+            metric.set_unit("sector");
+            metric.set_value(workset);
         }
     }
 
@@ -90,6 +80,8 @@ struct IoStatistics::Stats {
     }
 
     void getLbaHistogramEntry(proto::Histogram *entry) const {
+        entry->set_unit("sector");
+
         for (auto &range : lbaHitMap) {
             auto protoRange = entry->add_range();
             protoRange->set_begin(range.first);

@@ -247,25 +247,11 @@ void InterfaceTraceParsingImpl::GetFileSystemStatistics(
             }
 
             hdr.setupHeader();
-            cout << table << std::endl;
-        } else if (request->format() == proto::OutputFormat::JSON) {
-            google::protobuf::util::JsonOptions jsonOptions;
-            std::string output;
+            cout << table << std::endl << log::disable;
 
-            jsonOptions.always_print_primitive_fields = false;
-            jsonOptions.add_whitespace = true;
-
-            google::protobuf::util::MessageToJsonString(*response, &output,
-                                                        jsonOptions);
-
-            cout << output << std::endl;
-
-        } else {
+        } else if (request->format() != proto::OutputFormat::JSON) {
             throw Exception("Invalid output format");
         }
-
-        cout << log::disable;
-
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());
     }

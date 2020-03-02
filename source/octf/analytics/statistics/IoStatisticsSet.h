@@ -97,6 +97,9 @@ private:
      */
     uint64_t m_lbaHitRangeSize;
 
+    /**
+     * @brief This flag indicates if computing of LBA histogram is enabled
+     */
     bool m_lbaHistEnabled;
 };
 

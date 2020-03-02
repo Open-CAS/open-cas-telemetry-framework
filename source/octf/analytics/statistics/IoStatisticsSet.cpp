@@ -58,7 +58,8 @@ struct IoStatisticsSet::Key {
 
 IoStatisticsSet::IoStatisticsSet(uint64_t lbaHitRangeSize)
         : m_map()
-        , m_lbaHitRangeSize(lbaHitRangeSize) {}
+        , m_lbaHitRangeSize(lbaHitRangeSize)
+        , m_lbaHistEnabled(false) {}
 
 IoStatisticsSet::~IoStatisticsSet() {}
 
@@ -71,12 +72,14 @@ void IoStatisticsSet::count(const proto::trace::ParsedEvent &event) {
 
 IoStatisticsSet::IoStatisticsSet(const IoStatisticsSet &other)
         : m_map(other.m_map)
-        , m_lbaHitRangeSize(other.m_lbaHitRangeSize) {}
+        , m_lbaHitRangeSize(other.m_lbaHitRangeSize)
+        , m_lbaHistEnabled(other.m_lbaHistEnabled) {}
 
 IoStatisticsSet &IoStatisticsSet::operator=(const IoStatisticsSet &other) {
     if (this != &other) {
         m_map = other.m_map;
         m_lbaHitRangeSize = other.m_lbaHitRangeSize;
+        m_lbaHistEnabled = other.m_lbaHistEnabled;
     }
 
     return *this;
@@ -130,6 +133,9 @@ IoStatistics &IoStatisticsSet::getIoStatistics(const Key &key) {
 }
 
 void IoStatisticsSet::getIoStatisticsSet(proto::IoStatisticsSet *set) const {
+    // Allocate statistics then it will be printed in JSON
+    set->mutable_statistics();
+
     // For each pair in map
     for (const auto &stats : m_map) {
         auto dst = set->add_statistics();
@@ -145,6 +151,9 @@ void IoStatisticsSet::getIoStatisticsSet(proto::IoStatisticsSet *set) const {
 
 void IoStatisticsSet::getIoLatencyHistogramSet(
         proto::IoHistogramSet *set) const {
+    // Allocate histogram then it will be printed in JSON
+    set->mutable_histogram();
+
     // For each pair in map
     for (const auto &stats : m_map) {
         auto dst = set->add_histogram();
