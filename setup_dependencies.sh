@@ -138,10 +138,6 @@ function setup_cmake
     fi
 }
 
-function setup_dependencies () {
-    setup_cmake
-}
-
 function get_distribution_pkg_manager () {
     distro=$(detect_distribution)
     case "${distro}" in
@@ -175,12 +171,12 @@ function get_distribution_pkg_dependencies () {
     esac
 }
 
+setup_cmake
+
 if [ "$EUID" -ne 0 ]
 then
     error "Please run as root to allow using package manager"
 fi
-
-setup_dependencies
 
 DISTRO=$(detect_distribution)
 if [ "" == "${DISTRO}" ]
