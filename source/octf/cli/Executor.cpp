@@ -17,6 +17,7 @@
 #include <octf/cli/internal/cmd/CmdVersion.h>
 #include <octf/cli/internal/cmd/CommandProtobuf.h>
 #include <octf/cli/internal/cmd/CommandProtobufLocal.h>
+#include <octf/proto/opts.pb.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/ModulesDiscover.h>
@@ -347,6 +348,17 @@ void Executor::addInterface(InterfaceShRef interface, CommandSet &commandSet) {
 void Executor::addMethod(const ::google::protobuf::MethodDescriptor *method,
                          InterfaceShRef interface,
                          CommandSet &commandSet) {
+    if (&commandSet == m_localCmdSet.get()) {
+        // This method is added to local module set (to gloabl scope), check if
+        // there is no long and short key conflict among local command set and
+        // local modules.
+
+        const auto &mOpts = method->options().GetExtension(proto::opts_command);
+        const auto &shortKey = mOpts.cli_short_key();
+        const auto &LongKey = mOpts.cli_long_key();
+        checkIsKeyRepeated(shortKey, LongKey);
+    }
+
     // TODO(trybicki): Don't create commands upfront for every interface
     // method Create local command and add it to command set
     std::shared_ptr<CommandProtobufLocal> cmd =
@@ -358,7 +370,7 @@ void Executor::addLocalModule(InterfaceShRef interface,
                               const std::string &longKey,
                               const std::string &desc,
                               const std::string &shortKey) {
-    std::shared_ptr<CommandSet> cmdSet;
+    checkIsKeyRepeated(shortKey, longKey);
 
     Module module;
     module.setDesc(desc);
@@ -366,40 +378,11 @@ void Executor::addLocalModule(InterfaceShRef interface,
     module.setShortKey(shortKey);
     module.setLocal(true);
 
-    if (shortKey != "" && m_localCmdSet->hasCmd(shortKey)) {
-        // Short key cannot repeat, clear it, the module will be invoked using
-        // long key only
-        module.setShortKey("");
-    }
-
-    if (m_localCmdSet->hasCmd(longKey)) {
-        // Specified module already exist
-        throw Exception("Cannot add module, because command already exist: " +
-                        longKey);
-    }
-
-    if (m_modules.end() == m_modules.find(module)) {
-        cmdSet = std::make_shared<CommandSet>();
-        m_modules[module] = cmdSet;
-    } else {
-        if (shortKey != "") {
-            // Maybe short key is repeated, so for the new module clear short
-            // key. It will be invoked by long key only
-            module.setShortKey("");
-
-            if (m_modules.end() == m_modules.find(module)) {
-                cmdSet = std::make_shared<CommandSet>();
-                m_modules[module] = cmdSet;
-            }
-        }
-    }
-
-    if (!cmdSet) {
-        // Specified module already exist
-        throw Exception("Trying to add already existing module: " + longKey);
-    }
-
     // Create command set for interface
+    auto cmdSet = std::make_shared<CommandSet>();
+    m_modules[module] = cmdSet;
+
+    // Add interface to the command set
     addInterface(interface, *cmdSet);
 }
 
@@ -490,6 +473,33 @@ void Executor::setupOutputsForCommandsLogs() const {
     log::cerr << log::enable << log::json << log::prefix << prefix;
     log::critical << log::enable << log::json << log::prefix << prefix;
     log::cout << log::enable << log::json << log::prefix << prefix;
+}
+
+void Executor::checkIsKeyRepeated(const std::string &shortKey,
+                                  const std::string &longKey) const {
+    if (m_localCmdSet->hasCmd(longKey)) {
+        throw Exception("Cannot add command because of long key conflict: " +
+                        longKey);
+    }
+
+    if (!shortKey.empty() && m_localCmdSet->hasCmd(shortKey)) {
+        throw Exception("Cannot add command because of short key conflict: " +
+                        shortKey);
+    }
+
+    for (const auto iter : m_modules) {
+        if (iter.first.getLongKey() == longKey) {
+            throw Exception(
+                    "Cannot add command because of long key conflict: " +
+                    longKey);
+        }
+
+        if (!shortKey.empty() && iter.first.getShortKey() == shortKey) {
+            throw Exception(
+                    "Cannot add command because of short key conflict: " +
+                    shortKey);
+        }
+    }
 }
 
 }  // namespace cli
