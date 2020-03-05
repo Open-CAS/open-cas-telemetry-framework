@@ -40,18 +40,18 @@ function detect_distribution ()
 {
     if [ -f /etc/redhat-release ]
     then
-        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release 7." &>/dev/null )
+        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release [78]." &>/dev/null )
         then
-            echo RHEL7
+            echo RHEL
             return 0
         fi
     fi
 
     if [ -f /etc/centos-release ]
     then
-        if ( cat /etc/centos-release | grep "CentOS Linux release 7." &>/dev/null )
+        if ( cat /etc/centos-release | grep "CentOS Linux release [78]." &>/dev/null )
         then
-            echo CENTOS7
+            echo CENTOS
             return 0
         fi
     fi
@@ -141,7 +141,7 @@ function setup_cmake
 function get_distribution_pkg_manager () {
     distro=$(detect_distribution)
     case "${distro}" in
-    "RHEL7"|"CENTOS7"|"FEDORA")
+    "RHEL"|"CENTOS"|"FEDORA")
         echo "yum -y install"
         ;;
     "UBUNTU")
@@ -158,7 +158,7 @@ function get_distribution_pkg_dependencies () {
     distro=$(detect_distribution)
 
     case "${distro}" in
-    "RHEL7"|"CENTOS7"|"FEDORA")
+    "RHEL"|"CENTOS"|"FEDORA")
         echo "${PKGS}"
         ;;
     "UBUNTU")
