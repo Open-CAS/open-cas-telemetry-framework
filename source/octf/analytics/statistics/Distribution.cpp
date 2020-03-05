@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -146,7 +146,6 @@ void Distribution::getStatistics(
     statistics->set_average(m_count ? m_total / m_count : 0);
     statistics->set_min(m_count ? m_min : 0);
     statistics->set_max(m_max);
-    statistics->set_count(m_count);
     statistics->set_total(m_total);
     statistics->set_unit(m_unit);
 
