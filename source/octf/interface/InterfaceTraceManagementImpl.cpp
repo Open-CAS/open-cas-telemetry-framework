@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 #include <octf/interface/InterfaceTraceManagementImpl.h>
@@ -51,6 +51,8 @@ void InterfaceTraceManagementImpl::listTraces(
 
     // Check for trace summaries in these directories
     proto::TraceSummary summary;
+    traceDirs.sort();
+
     for (const auto &dir : traceDirs) {
         ProtobufReaderWriter rw(traceRootDir + "/" + dir + "/" +
                                 SUMMARY_FILE_NAME);
