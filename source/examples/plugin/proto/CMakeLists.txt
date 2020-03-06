@@ -5,6 +5,7 @@ set(protoListExamples
 
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${protoListExamples})
 add_library(protoexamples STATIC ${PROTO_HEADER} ${PROTO_SRC} ${protoListExamples})
+target_link_libraries(protoexamples protooctf)
 target_include_directories(protoexamples
 	PUBLIC
 	${PROTOBUF_INCLUDE_DIR}
