@@ -114,15 +114,20 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
     if (event.has_file()) {
         const auto &file = event.file();
         const auto &device = event.device();
-        auto id = file.id();
 
-        auto &statistics = getStatisticsByIds(viewer, viewer->getParentId(id),
-                                              device.id(), device.partition());
+        timespec cdate;
+        cdate.tv_sec = file.cdate().sec();
+        cdate.tv_nsec = file.cdate().nsec();
+        InodeId inodeid = InodeId(file.id(), cdate);
+
+        auto &statistics =
+                getStatisticsByIds(viewer, viewer->getParentId(inodeid),
+                                   device.id(), device.partition());
         statistics.updateIoStats(event);
 
         {
             // Update statistics by file extension
-            auto ext = viewer->getFileExtension(id);
+            auto ext = viewer->getFileExtension(inodeid);
             if (ext != "") {
                 Key key(StatisticsCase::kFileExtension, ext, device.id(),
                         device.partition());
@@ -131,7 +136,7 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
         }
         {
             // Update statistics by base name
-            auto basename = viewer->getFileNamePrefix(id);
+            auto basename = viewer->getFileNamePrefix(inodeid);
             if (basename != "") {
                 Key key(StatisticsCase::kFileNamePrefix, basename, device.id(),
                         device.partition());
@@ -148,11 +153,11 @@ void FilesystemStatistics::getFilesystemStatistics(
 
 FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
         IFileSystemViewer *viewer,
-        uint64_t dirId,
+        InodeId dirId,
         uint64_t devId,
         uint64_t partId) {
     FilesystemStatistics *statistics = NULL;
-    uint64_t parentId = viewer->getParentId(dirId);
+    InodeId parentId = viewer->getParentId(dirId);
 
     if (parentId == dirId) {
         statistics = this;

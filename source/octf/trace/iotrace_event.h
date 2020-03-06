@@ -13,6 +13,7 @@ extern "C" {
 #include <linux/types.h>
 #else
 #include <stdint.h>
+#include <time.h>
 #endif
 
 typedef uint64_t log_sid_t;
@@ -196,6 +197,11 @@ struct iotrace_event_fs_meta {
 
     /** ID of the partition the file belongs to */
     uint64_t partition_id;
+
+    /**
+     * inode creation date stored in entry
+     */
+    struct timespec ctime;
 } __attribute__((packed, aligned(8)));
 
 struct iotrace_event_fs_file_name {
@@ -210,6 +216,15 @@ struct iotrace_event_fs_file_name {
 
     /** File parent ID */
     uint64_t file_parent_id;
+
+    /**
+     * inode creation date
+     */
+    struct timespec ctime;
+    /**
+     * File parent inode creation date
+     */
+    struct timespec parent_ctime;
 
     /** File name */
     char file_name[64];
@@ -254,6 +269,11 @@ struct iotrace_event_fs_file_event {
 
     /** File ID */
     uint64_t file_id;
+
+    /**
+     * inode creation date stored in entry
+     */
+    struct timespec ctime;
 } __attribute__((packed, aligned(8)));
 
 #ifdef __cplusplus

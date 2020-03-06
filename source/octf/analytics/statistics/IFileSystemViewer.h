@@ -10,6 +10,22 @@
 
 namespace octf {
 
+struct InodeId {
+    uint64_t inode;
+    timespec cdate;
+
+    InodeId()
+            : inode(0)
+            , cdate{} {}
+    InodeId(uint64_t id, struct timespec cdate)
+            : inode(id)
+            , cdate(cdate) {}
+    bool operator==(const InodeId other) const {
+        return inode == other.inode && cdate.tv_sec == other.cdate.tv_sec &&
+               cdate.tv_nsec == other.cdate.tv_nsec;
+    }
+};
+
 /**
  * @ingroup Statistics
  * @interface File system viewer
@@ -30,7 +46,7 @@ public:
      * @param id File ID
      * @return Parent ID
      */
-    virtual uint64_t getParentId(uint64_t id) const = 0;
+    virtual InodeId getParentId(InodeId id) const = 0;
 
     /**
      * @brief Gets base name of file
@@ -54,7 +70,7 @@ public:
      * @param id %File ID
      * @return %File name prefix
      */
-    virtual std::string getFileNamePrefix(uint64_t id) const = 0;
+    virtual std::string getFileNamePrefix(InodeId id) const = 0;
 
     /**
      * @brief Gets file name of specified file ID
@@ -62,7 +78,7 @@ public:
      * @param id File ID
      * @return File name
      */
-    virtual std::string getFileName(uint64_t id) const = 0;
+    virtual std::string getFileName(InodeId id) const = 0;
 
     /**
      * @brief Gets file extension of specified file ID
@@ -70,7 +86,7 @@ public:
      * @param id File ID
      * @return File extension
      */
-    virtual std::string getFileExtension(uint64_t id) const = 0;
+    virtual std::string getFileExtension(InodeId id) const = 0;
 
     /**
      * @brief Gets file path of specified file ID on a file system
@@ -78,7 +94,7 @@ public:
      * @param id File ID
      * @return File path
      */
-    virtual std::string getFilePath(uint64_t id) const = 0;
+    virtual std::string getFilePath(InodeId id) const = 0;
 
     /**
      * @brief Gets FS directory path of specified file ID
@@ -86,7 +102,7 @@ public:
      * @param id File Id
      * @return Directory path
      */
-    virtual std::string getDirPath(uint64_t id) const = 0;
+    virtual std::string getDirPath(InodeId id) const = 0;
 };
 
 }  // namespace octf

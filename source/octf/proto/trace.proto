@@ -94,6 +94,11 @@ message EventIoCompletion {
     uint64 deviceId = 4;
 }
 
+message EventIoTimestamp {
+    uint64 sec = 1;
+    uint64 nsec = 2;
+};
+
 /**
  * @brief IO trace event metadata (e.g. filesystem meta information)
  *
@@ -119,6 +124,9 @@ message EventIoFilesystemMeta {
 
     /** ID of the partition the file belongs to */
     uint64 partitionId = 5;
+
+    /** File creation date */
+    EventIoTimestamp creationDate = 6;
 };
 
 message EventIoFilesystemFileName {
@@ -133,6 +141,12 @@ message EventIoFilesystemFileName {
 
     /** File Name */
     string fileName = 4;
+
+    /** File creation date */
+    EventIoTimestamp creationDate = 5;
+
+    /** File parent creation date */
+    EventIoTimestamp parentCreationDate = 6;
 }
 
 message EventIoFilesystemFileEvent {
@@ -143,7 +157,10 @@ message EventIoFilesystemFileEvent {
     uint64 fileId = 2;
 
     /** Type of FS event */
-    FsEventType fsEventType = 4;
+    FsEventType fsEventType = 3;
+
+    /** File creation date */
+    EventIoTimestamp creationDate = 4;
 }
 
 message Event {

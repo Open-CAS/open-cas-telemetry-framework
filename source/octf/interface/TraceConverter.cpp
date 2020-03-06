@@ -35,6 +35,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
     // event variants.
 
     trace::EventHeader *protobufHdr;
+    trace::EventIoTimestamp *timestamp;
 
     switch (hdr->type) {
     case iotrace_event_type_device_desc: {
@@ -131,6 +132,10 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsMeta->set_filesize(event->file_size);
         protoFsMeta->set_partitionid(event->partition_id);
 
+        timestamp = protoFsMeta->mutable_creationdate();
+        timestamp->set_sec(event->ctime.tv_sec);
+        timestamp->set_nsec(event->ctime.tv_nsec);
+
         return m_evFsMeta;
     }
 
@@ -151,6 +156,13 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsFileName->set_fileparentid(event->file_parent_id);
         protoFsFileName->set_filename(event->file_name);
 
+        timestamp = protoFsFileName->mutable_creationdate();
+        timestamp->set_sec(event->ctime.tv_sec);
+        timestamp->set_nsec(event->ctime.tv_nsec);
+
+        timestamp = protoFsFileName->mutable_parentcreationdate();
+        timestamp->set_sec(event->parent_ctime.tv_sec);
+        timestamp->set_nsec(event->parent_ctime.tv_nsec);
         return m_evFsFileName;
     }
 
@@ -168,6 +180,10 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         auto protoFsFileEvent = m_evFsFileEvent->mutable_filesystemfileevent();
         protoFsFileEvent->set_partitionid(event->partition_id);
         protoFsFileEvent->set_fileid(event->file_id);
+
+        timestamp = protoFsFileEvent->mutable_creationdate();
+        timestamp->set_sec(event->ctime.tv_sec);
+        timestamp->set_nsec(event->ctime.tv_nsec);
 
         switch (event->fs_event_type) {
         case iotrace_fs_event_create:

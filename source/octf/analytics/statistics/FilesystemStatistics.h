@@ -52,7 +52,7 @@ private:
     FilesystemStatistics &getStatisticsByKey(const Key &key);
 
     FilesystemStatistics &getStatisticsByIds(IFileSystemViewer *viewer,
-                                             uint64_t dirId,
+                                             InodeId dirId,
                                              uint64_t devId,
                                              uint64_t partId);
 

@@ -65,6 +65,9 @@ message ParsedEvent {
         /** File size in sectors */
         uint64 size = 3;
 
+        /** File creation date */
+        EventIoTimestamp cdate = 4;
+
         /** File path */
         string path = 1000;
 
