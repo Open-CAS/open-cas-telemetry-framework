@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -34,19 +34,14 @@ message StatisticsEntryValues {
     uint64 max = 4;
 
     /**
-     * Count of items in this distribution
-     */
-    uint64 count = 5;
-
-    /**
      * Total sum of items in this distribution
      */
-    uint64 total = 6;
+    uint64 total = 5;
 
     /**
      * Reserve fields for other distribution's items
      */
-    reserved 7 to 10;
+    reserved 6 to 10;
 
     /**
      * Map of percentiles values
@@ -80,19 +75,24 @@ message IoStatisticsEntry {
     StatisticsEntryValues latency = 2;
 
     /**
-     * Reserve fields for other distribution
+     * Reserve fields for other distributions
      */
     reserved 3 to 10;
 
     /**
+     * Number of IO events
+     */
+    uint64 count = 11;
+
+    /**
      * Metrics
      */
-    map<string, StatisticsMetric> metrics = 11;
+    map<string, StatisticsMetric> metrics = 12;
 
     /**
      * Reserve fields for other metrics
      */
-    reserved 12 to 100;
+    reserved 13 to 100;
 
     /**
      * Number of IO errors

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -11,6 +11,7 @@ namespace octf {
 struct IoStatistics::Stats {
     Stats(uint64_t lbaHitMapRangeSize)
             : sizeDistribution("sector", 4096, 2)
+            , count(0)
             , latencyDistribution("ns", 1, 2)
             , errors(0)
             , wc()
@@ -19,6 +20,7 @@ struct IoStatistics::Stats {
 
     Stats(const Stats &other)
             : sizeDistribution(other.sizeDistribution)
+            , count(other.count)
             , latencyDistribution(other.latencyDistribution)
             , errors(other.errors)
             , wc(other.wc)
@@ -28,6 +30,7 @@ struct IoStatistics::Stats {
     Stats &operator=(const Stats &other) {
         if (this != &other) {
             sizeDistribution = other.sizeDistribution;
+            count = other.count;
             latencyDistribution = other.latencyDistribution;
             errors = other.errors;
             wc = other.wc;
@@ -40,6 +43,7 @@ struct IoStatistics::Stats {
                               uint64_t beginTime,
                               uint64_t endTime) const {
         sizeDistribution.getStatistics(entry->mutable_size());
+        entry->set_count(count);
         latencyDistribution.getStatistics(entry->mutable_latency());
         entry->set_errors(errors);
 
@@ -48,7 +52,6 @@ struct IoStatistics::Stats {
 
         {
             // Set IOPS
-            double count = sizeDistribution.getCount();
             double iops = durationS != 0.0 ? count / durationS : 0;
 
             auto &metric = (*entry->mutable_metrics())["throughput"];
@@ -91,6 +94,7 @@ struct IoStatistics::Stats {
     }
 
     Distribution sizeDistribution;
+    uint64_t count;
     Distribution latencyDistribution;
     uint64_t errors;
     WorksetCalculator wc;
@@ -203,6 +207,9 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
             m_total->wc.insertRange(io.lba(), len);
         }
     }
+    
+    stats->count++;
+    m_total->count++;
 
     // Update time
     if (!m_startTime) {
