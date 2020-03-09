@@ -188,10 +188,10 @@ private:
     void setupOutputsForCommandsLogs() const;
 
     /**
-     * @brief Check if long key or short key already available in executor
+     * @brief Check if long key or short key is already available in executor
      *
+     * @param shortKey CLI short key to be checked if repeated
      * @param longKey CLI long key to be checked if repeated
-     * @param shortKey CLI long key to be checked if repeated
      *
      * @throw Exception When key is repeated Exception is thrown
      */
