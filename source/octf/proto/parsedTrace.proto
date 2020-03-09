@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 syntax = "proto3";
+import "defs.proto";
 import "trace.proto";
 package octf.proto.trace;
 
@@ -57,16 +58,13 @@ message ParsedEvent {
 
     message FileInfo {
         /** File ID */
-        uint64 id = 1;
+        EventNodeId id = 1;
 
         /** File offset in sectors */
         uint64 offset = 2;
 
         /** File size in sectors */
         uint64 size = 3;
-
-        /** File creation date */
-        EventIoTimestamp cdate = 4;
 
         /** File path */
         string path = 1000;

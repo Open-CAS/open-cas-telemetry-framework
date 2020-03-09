@@ -18,7 +18,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 3
+#define IOTRACE_EVENT_VERSION_MAJOR 4
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
@@ -169,6 +169,16 @@ struct iotrace_event_completion {
     uint32_t dev_id;
 } __attribute__((packed, aligned(8)));
 
+struct iotrace_event_file_id {
+    /** File ID */
+    uint64_t file_id;
+
+    /**
+     * inode creation date stored in entry
+     */
+    struct timespec ctime;
+};
+
 /**
  * @brief IO trace event metadata (e.g. filesystem meta information)
  *
@@ -187,7 +197,7 @@ struct iotrace_event_fs_meta {
     log_sid_t ref_sid;
 
     /** File ID */
-    uint64_t file_id;
+    struct iotrace_event_file_id file_id;
 
     /** File offset in sectors */
     uint64_t file_offset;
@@ -197,11 +207,6 @@ struct iotrace_event_fs_meta {
 
     /** ID of the partition the file belongs to */
     uint64_t partition_id;
-
-    /**
-     * inode creation date stored in entry
-     */
-    struct timespec ctime;
 } __attribute__((packed, aligned(8)));
 
 struct iotrace_event_fs_file_name {
@@ -212,19 +217,10 @@ struct iotrace_event_fs_file_name {
     uint64_t partition_id;
 
     /** File ID */
-    uint64_t file_id;
+    struct iotrace_event_file_id file_id;
 
     /** File parent ID */
-    uint64_t file_parent_id;
-
-    /**
-     * inode creation date
-     */
-    struct timespec ctime;
-    /**
-     * File parent inode creation date
-     */
-    struct timespec parent_ctime;
+    struct iotrace_event_file_id file_parent_id;
 
     /** File name */
     char file_name[64];
@@ -268,12 +264,7 @@ struct iotrace_event_fs_file_event {
     iotrace_fs_event_type fs_event_type;
 
     /** File ID */
-    uint64_t file_id;
-
-    /**
-     * inode creation date stored in entry
-     */
-    struct timespec ctime;
+    struct iotrace_event_file_id file_id;
 } __attribute__((packed, aligned(8)));
 
 #ifdef __cplusplus

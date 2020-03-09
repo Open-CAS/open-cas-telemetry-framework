@@ -70,6 +70,23 @@ message LogTrace {
     string trace = 4;
 }
 
+message EventIoTimestamp {
+    uint64 sec = 1;
+    uint64 nsec = 2;
+};
+
+/**
+ * @brief Structure describing a given inode
+ *
+ * Combines inode file id with its creation date for more unambigious
+ * identification of specific file.
+ */
+message EventNodeId {
+    uint64 fileId = 1;
+
+    EventIoTimestamp creationDate = 2;
+}
+
 enum OutputFormat {
     option (opts_enum_param).cli_enum.default_value = 0;
     option (opts_enum_param).cli_required = false;

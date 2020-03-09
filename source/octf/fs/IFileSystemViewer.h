@@ -3,24 +3,31 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
-#define SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
+#ifndef SOURCE_OCTF_FS_IFILESYSTEMVIEWER_H
+#define SOURCE_OCTF_FS_IFILESYSTEMVIEWER_H
 
 #include <string>
+#include <octf/proto/parsedTrace.pb.h>
 
 namespace octf {
 
-struct InodeId {
+struct FileNodeId {
     uint64_t inode;
     timespec cdate;
 
-    InodeId()
+    FileNodeId()
             : inode(0)
             , cdate{} {}
-    InodeId(uint64_t id, struct timespec cdate)
+    FileNodeId(uint64_t id, struct timespec cdate)
             : inode(id)
             , cdate(cdate) {}
-    bool operator==(const InodeId other) const {
+    FileNodeId(const proto::trace::ParsedEvent &event)
+    : inode(event.file().id().fileid())
+    {
+        cdate.tv_sec = event.file().id().creationdate().sec();
+        cdate.tv_nsec = event.file().id().creationdate().nsec();
+    }
+    bool operator==(const FileNodeId other) const {
         return inode == other.inode && cdate.tv_sec == other.cdate.tv_sec &&
                cdate.tv_nsec == other.cdate.tv_nsec;
     }
@@ -46,7 +53,7 @@ public:
      * @param id File ID
      * @return Parent ID
      */
-    virtual InodeId getParentId(InodeId id) const = 0;
+    virtual FileNodeId getParentId(const FileNodeId& id) const = 0;
 
     /**
      * @brief Gets base name of file
@@ -70,7 +77,7 @@ public:
      * @param id %File ID
      * @return %File name prefix
      */
-    virtual std::string getFileNamePrefix(InodeId id) const = 0;
+    virtual std::string getFileNamePrefix(const FileNodeId& id) const = 0;
 
     /**
      * @brief Gets file name of specified file ID
@@ -78,7 +85,7 @@ public:
      * @param id File ID
      * @return File name
      */
-    virtual std::string getFileName(InodeId id) const = 0;
+    virtual std::string getFileName(const FileNodeId& id) const = 0;
 
     /**
      * @brief Gets file extension of specified file ID
@@ -86,7 +93,7 @@ public:
      * @param id File ID
      * @return File extension
      */
-    virtual std::string getFileExtension(InodeId id) const = 0;
+    virtual std::string getFileExtension(const FileNodeId& id) const = 0;
 
     /**
      * @brief Gets file path of specified file ID on a file system
@@ -94,7 +101,7 @@ public:
      * @param id File ID
      * @return File path
      */
-    virtual std::string getFilePath(InodeId id) const = 0;
+    virtual std::string getFilePath(const FileNodeId& id) const = 0;
 
     /**
      * @brief Gets FS directory path of specified file ID
@@ -102,9 +109,9 @@ public:
      * @param id File Id
      * @return Directory path
      */
-    virtual std::string getDirPath(InodeId id) const = 0;
+    virtual std::string getDirPath(const FileNodeId& id) const = 0;
 };
 
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_ANALYTICS_STATISTICS_IFILESYSTEMVIEWER_H
+#endif  // SOURCE_OCTF_FS_IFILESYSTEMVIEWER_H

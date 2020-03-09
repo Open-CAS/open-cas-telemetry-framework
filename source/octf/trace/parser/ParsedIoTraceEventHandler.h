@@ -10,7 +10,8 @@
 #include <memory>
 #include <queue>
 #include <set>
-#include <octf/analytics/statistics/IFileSystemViewer.h>
+#include <octf/fs/IFileSystemViewer.h>
+#include <octf/fs/FileId.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
@@ -104,7 +105,6 @@ private:
     class Map;
     struct IoQueueDepth;
     class FileSystemViewer;
-    struct FileId;
     struct FileInfo;
     std::queue<proto::trace::ParsedEvent> m_queue;
     std::unique_ptr<Map> m_eventMapping;
