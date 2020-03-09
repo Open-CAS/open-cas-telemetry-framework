@@ -34,13 +34,14 @@ message EventDeviceDescription {
 
 /** @brief IO operation direction */
 enum IoType {
-    Read = 0;
-    Write = 1;
-    Discard = 2;
+    UnknownIoType = 0;
+    Read = 1;
+    Write = 2;
+    Discard = 3;
 }
 
 enum FsEventType {
-    Unknown = 0;
+    UnknownFsType = 0;
     Create = 1;
     Delete = 2;
     MoveTo = 3;

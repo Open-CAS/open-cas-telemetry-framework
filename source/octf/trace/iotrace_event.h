@@ -17,7 +17,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 3
+#define IOTRACE_EVENT_VERSION_MAJOR 4
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
