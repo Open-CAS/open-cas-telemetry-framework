@@ -187,6 +187,17 @@ private:
      */
     void setupOutputsForCommandsLogs() const;
 
+    /**
+     * @brief Check if long key or short key is already available in executor
+     *
+     * @param shortKey CLI short key to be checked if repeated
+     * @param longKey CLI long key to be checked if repeated
+     *
+     * @throw Exception When key is repeated Exception is thrown
+     */
+    void checkIsKeyRepeated(const std::string &shortKey,
+                            const std::string &longKey) const;
+
 private:
     CLIProperties m_cliProperties;
     std::shared_ptr<CommandSet> m_localCmdSet;

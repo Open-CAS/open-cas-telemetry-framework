@@ -64,14 +64,16 @@ void CommandSet::addCmd(std::shared_ptr<ICommand> cmd) {
         throw InvalidParameterException("Added command has no long key.");
     }
 
-    if (m_cmds.end() != m_cmds.find(cmd->getLongKey())) {
-        // Replace existing command
-        auto existingCmdIter = m_cmds.find(cmd->getLongKey());
+    const auto &shortKey = cmd->getShortKey();
+    if (!shortKey.empty() && hasCmd(shortKey)) {
+        throw Exception("Cannot add command because of short key conflict: " +
+                        shortKey);
+    }
 
-        if (existingCmdIter != m_cmds.end()) {
-            // Overwrite
-            existingCmdIter->second = cmd;
-        }
+    const auto &longKey = cmd->getLongKey();
+    if (hasCmd(longKey)) {
+        throw Exception("Cannot add command because of long key conflict: " +
+                        longKey);
     }
 
     m_cmds[cmd->getLongKey()] = cmd;
