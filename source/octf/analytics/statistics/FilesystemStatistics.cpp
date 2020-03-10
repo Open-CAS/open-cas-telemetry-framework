@@ -114,16 +114,16 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
     if (event.has_file()) {
         const auto &device = event.device();
 
-        FileId inodeid = FileId(event);
+        FileId id = FileId(event);
 
         auto &statistics =
-                getStatisticsByIds(viewer, viewer->getParentId(inodeid),
-                                   device.id(), device.partition());
+                getStatisticsByIds(viewer, viewer->getParentId(id),
+                                   device.id());
         statistics.updateIoStats(event);
 
         {
             // Update statistics by file extension
-            auto ext = viewer->getFileExtension(inodeid);
+            auto ext = viewer->getFileExtension(id);
             if (ext != "") {
                 Key key(StatisticsCase::kFileExtension, ext, device.id(),
                         device.partition());
@@ -132,7 +132,7 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
         }
         {
             // Update statistics by base name
-            auto basename = viewer->getFileNamePrefix(inodeid);
+            auto basename = viewer->getFileNamePrefix(id);
             if (basename != "") {
                 Key key(StatisticsCase::kFileNamePrefix, basename, device.id(),
                         device.partition());
@@ -149,20 +149,19 @@ void FilesystemStatistics::getFilesystemStatistics(
 
 FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
         IFileSystemViewer *viewer,
-        FileId dirId,
-        uint64_t devId,
-        uint64_t partId) {
+        const FileId &dirId,
+        uint64_t devId) {
     FilesystemStatistics *statistics = NULL;
     FileId parentId = viewer->getParentId(dirId);
 
     if (parentId == dirId) {
         statistics = this;
     } else {
-        statistics = &getStatisticsByIds(viewer, parentId, devId, partId);
+        statistics = &getStatisticsByIds(viewer, parentId, devId);
     }
 
     std::string name = viewer->getFileName(dirId);
-    Key key(StatisticsCase::kDirectory, name, devId, partId);
+    Key key(StatisticsCase::kDirectory, name, devId, dirId.partitionId);
 
     return statistics->getStatisticsByKey(key);
 }

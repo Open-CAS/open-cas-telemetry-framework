@@ -159,37 +159,30 @@ private:
  * instead of using protocol buffer one
  */
 struct ParsedIoTraceEventHandler::FileInfo {
-    uint64_t parentId;
+    FileId parent;
     std::string name;
     uint64_t size;
-    timespec parentcdate;
 
     FileInfo()
-            : parentId(0)
+            : parent()
             , name()
-            , size(0)
-            , parentcdate{0, 0} {}
+            , size(0) {}
 
     FileInfo(const proto::trace::EventIoFilesystemFileName &event)
-            : parentId(event.fileparentid().fileid())
+            : parent(event)
             , name(event.filename())
-            , size(0) {
-        parentcdate.tv_nsec = event.fileparentid().creationdate().nanos();
-        parentcdate.tv_sec = event.fileparentid().creationdate().seconds();
-    }
+            , size(0) {}
 
     FileInfo(const FileInfo &other)
-            : parentId(other.parentId)
+            : parent(other.parent)
             , name(other.name)
-            , size(other.size)
-            , parentcdate(other.parentcdate) {}
+            , size(other.size) {}
 
     FileInfo &operator=(const FileInfo &other) {
         if (this != &other) {
-            parentId = other.parentId;
+            parent = other.parent;
             name = other.name;
             size = other.size;
-            parentcdate = other.parentcdate;
         }
 
         return *this;
@@ -217,6 +210,7 @@ ParsedIoTraceEventHandler::~ParsedIoTraceEventHandler() {}
 void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
     using namespace proto::trace;
+    using octf::FileId;
 
     if (!m_timestampOffset) {
         // This event handler presents traces from time '0', and SID '0',
@@ -356,13 +350,13 @@ void ParsedIoTraceEventHandler::handleEvent(
         if (iter != m_sidMapping.end()) {
             auto &dst = *iter->second->mutable_file();
             const auto &src = traceEvent->filesystemmeta();
-            dst.mutable_id()->set_fileid(src.fileid().fileid());
+            dst.set_id(src.fileid().id());
             dst.set_offset(src.fileoffset());
             dst.set_size(src.filesize());
 
             // Update filesystem event type to just file access
             dst.set_eventtype(proto::trace::FsEventType::Access);
-            dst.mutable_id()->mutable_creationdate()->CopyFrom(src.fileid().creationdate());
+            dst.mutable_creationdate()->CopyFrom(src.fileid().creationdate());
 
             // Set partition ID
             auto partId = traceEvent->filesystemmeta().fileid().partitionid();
@@ -396,8 +390,8 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Setup file event type and parent id
         auto &dstFileInfo = *cachedEvent.mutable_file();
         dstFileInfo.set_eventtype(fsEvent.fseventtype());
-        dstFileInfo.mutable_id()->set_fileid(fsEvent.fileid().fileid());
-        dstFileInfo.mutable_id()->mutable_creationdate()->CopyFrom(fsEvent.fileid().creationdate());
+        dstFileInfo.set_id(fsEvent.fileid().id());
+        dstFileInfo.mutable_creationdate()->CopyFrom(fsEvent.fileid().creationdate());
 
         auto &destDevInfo = *cachedEvent.mutable_device();
         const auto &srcDevInfo = m_devices[partId];
@@ -414,15 +408,12 @@ void ParsedIoTraceEventHandler::handleEvent(
     } break;
 
     case Event::kFilesystemFileNameFieldNumber: {
-        FileId fileId(traceEvent->filesystemfilename());
+        const auto &fsNameEvent = traceEvent->filesystemfilename();
+        FileId fileId(fsNameEvent);
         auto &fileInfo = m_fileInfo[fileId];
 
-        fileInfo.name = traceEvent->filesystemfilename().filename();
-        fileInfo.parentId = traceEvent->filesystemfilename().fileparentid().fileid();
-        fileInfo.parentcdate.tv_sec =
-                traceEvent->filesystemfilename().fileparentid().creationdate().seconds();
-        fileInfo.parentcdate.tv_nsec =
-                traceEvent->filesystemfilename().fileparentid().creationdate().nanos();
+        fileInfo.name = fsNameEvent.filename();
+        fileInfo.parent = FileId(fsNameEvent.fileparentid());
     } break;
 
     default:
@@ -586,9 +577,7 @@ public:
         auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             try {
-                getPath(FileId(m_partId, iter->second.parentId,
-                                iter->second.parentcdate),
-                        dir, len);
+                getPath(iter->second.parent, dir, len);
             } catch (MaxPathExceededException &e) {
                 log::cerr << e.getMessage() << std::endl;
             }
@@ -624,9 +613,7 @@ public:
         auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
-            parentId.id = info.parentId;
-            parentId.creationDate = info.parentcdate;
-            parentId.partitionId = m_partId;
+            return info.parent;
         }
 
         return parentId;
@@ -641,8 +628,8 @@ private:
             if (len > PATH_MAX) {
                 throw MaxPathExceededException(id.id);
             }
-            if (id.id != info.parentId) {
-                if (!getPath(FileId(m_partId, info.parentId, info.parentcdate), path,
+            if (id != info.parent) {
+                if (!getPath(info.parent, path,
                              len)) {
                     path = "";
                     return false;

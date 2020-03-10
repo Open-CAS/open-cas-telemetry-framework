@@ -10,6 +10,7 @@
 #include <string>
 #include <octf/interface/ITraceConverter.h>
 #include <octf/proto/trace.pb.h>
+#include <octf/trace/iotrace_event.h>
 
 namespace octf {
 
@@ -27,6 +28,9 @@ public:
             uint32_t size) override;
 
 private:
+    void setFileId(proto::trace::FileId *fileId,
+            uint64_t partition, const iotrace_event_file_id &file_id);
+
     std::shared_ptr<proto::trace::Event> m_evDesc;
     std::shared_ptr<proto::trace::Event> m_evIO;
     std::shared_ptr<proto::trace::Event> m_evIOCmpl;

@@ -52,9 +52,8 @@ private:
     FilesystemStatistics &getStatisticsByKey(const Key &key);
 
     FilesystemStatistics &getStatisticsByIds(IFileSystemViewer *viewer,
-                                             FileId dirId,
-                                             uint64_t devId,
-                                             uint64_t partId);
+                                             const FileId &dirId,
+                                             uint64_t devId);
 
     void fillProtoStatistics(proto::FilesystemStatistics *statistics,
                              const std::string &dir) const;

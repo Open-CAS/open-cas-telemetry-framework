@@ -26,32 +26,28 @@ struct FileId {
             , id(fileId)
             , creationDate(cdate) {}
 
-    FileId(const proto::trace::EventIoFilesystemFileName &event)
-            : partitionId(event.fileid().partitionid())
-            , id(event.fileid().fileid()) {
-        creationDate.tv_sec = event.fileid().creationdate().seconds();
-        creationDate.tv_nsec = event.fileid().creationdate().nanos();
+    FileId(const proto::trace::FileId &fileid)
+            : partitionId(fileid.partitionid())
+            , id(fileid.id()) {
+        creationDate.tv_sec = fileid.creationdate().seconds();
+        creationDate.tv_nsec = fileid.creationdate().nanos();
     }
+
+    FileId(const proto::trace::EventIoFilesystemFileName &event)
+            : FileId(event.fileid()) {}
 
     FileId(const proto::trace::EventIoFilesystemMeta &event)
-            : partitionId(event.fileid().partitionid())
-            , id(event.fileid().fileid()) {
-        creationDate.tv_sec = event.fileid().creationdate().seconds();
-        creationDate.tv_nsec = event.fileid().creationdate().nanos();
-    }
+            : FileId(event.fileid()) {}
 
     FileId(const proto::trace::EventIoFilesystemFileEvent &event)
-            : partitionId(event.fileid().partitionid())
-            , id(event.fileid().fileid()) {
-        creationDate.tv_sec = event.fileid().creationdate().seconds();
-        creationDate.tv_nsec = event.fileid().creationdate().nanos();
-    }
+            : FileId(event.fileid()) {}
+
     FileId(const proto::trace::ParsedEvent &event)
        : partitionId(event.device().partition())
-       , id(event.file().id().fileid())
+       , id(event.file().id())
        {
-        creationDate.tv_sec = event.file().id().creationdate().seconds();
-        creationDate.tv_nsec = event.file().id().creationdate().nanos();
+        creationDate.tv_sec = event.file().creationdate().seconds();
+        creationDate.tv_nsec = event.file().creationdate().nanos();
        }
     FileId(const FileId &other)
             : partitionId(other.partitionId)

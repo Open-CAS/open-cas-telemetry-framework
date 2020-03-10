@@ -55,10 +55,10 @@ enum FsEventType {
  * Combines inode file id with its creation date and partition for more unambigious
  * identification of specific file.
  */
-message FileNodeId {
+message FileId {
     uint64 partitionId = 1;
 
-    uint64 fileId = 2;
+    uint64 id = 2;
 
     google.protobuf.Timestamp creationDate = 3;
 }
@@ -124,7 +124,7 @@ message EventIoFilesystemMeta {
     uint64 refSid = 1;
 
     /** File ID */
-    FileNodeId fileId = 2;
+    FileId fileId = 2;
 
     /** File offset in sectors */
     uint64 fileOffset = 3;
@@ -135,10 +135,10 @@ message EventIoFilesystemMeta {
 
 message EventIoFilesystemFileName {
     /** File ID */
-    FileNodeId fileId = 1;
+    FileId fileId = 1;
 
     /** File parent ID */
-    FileNodeId fileParentId = 2;
+    FileId fileParentId = 2;
 
     /** File Name */
     string fileName = 3;
@@ -146,7 +146,7 @@ message EventIoFilesystemFileName {
 
 message EventIoFilesystemFileEvent {
     /** File ID */
-    FileNodeId fileId = 1;
+    FileId fileId = 1;
 
     /** Type of FS event */
     FsEventType fsEventType = 2;
