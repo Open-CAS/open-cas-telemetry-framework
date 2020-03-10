@@ -9,6 +9,7 @@
 #include <chrono>
 #include <list>
 #include <map>
+#include <octf/fs/FileId.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/NonCopyable.h>
@@ -173,8 +174,8 @@ struct ParsedIoTraceEventHandler::FileInfo {
             : parentId(event.fileparentid().fileid())
             , name(event.filename())
             , size(0) {
-        parentcdate.tv_nsec = event.fileparentid().creationdate().nsec();
-        parentcdate.tv_sec = event.fileparentid().creationdate().sec();
+        parentcdate.tv_nsec = event.fileparentid().creationdate().nanos();
+        parentcdate.tv_sec = event.fileparentid().creationdate().seconds();
     }
 
     FileInfo(const FileInfo &other)
@@ -364,7 +365,7 @@ void ParsedIoTraceEventHandler::handleEvent(
             dst.mutable_id()->mutable_creationdate()->CopyFrom(src.fileid().creationdate());
 
             // Set partition ID
-            auto partId = traceEvent->filesystemmeta().partitionid();
+            auto partId = traceEvent->filesystemmeta().fileid().partitionid();
             auto devInfo = iter->second->mutable_device();
             devInfo->set_partition(partId);
 
@@ -382,7 +383,7 @@ void ParsedIoTraceEventHandler::handleEvent(
 
     case Event::EventTypeCase::kFilesystemFileEvent: {
         const auto &fsEvent = traceEvent->filesystemfileevent();
-        auto partId = fsEvent.partitionid();
+        auto partId = fsEvent.fileid().partitionid();
         FileId file = FileId(fsEvent);
 
         // Allocate new parsed IO event in the queue
@@ -418,10 +419,10 @@ void ParsedIoTraceEventHandler::handleEvent(
 
         fileInfo.name = traceEvent->filesystemfilename().filename();
         fileInfo.parentId = traceEvent->filesystemfilename().fileparentid().fileid();
-        fileInfo.parentcdate.tv_nsec =
-                traceEvent->filesystemfilename().fileparentid().creationdate().nsec();
         fileInfo.parentcdate.tv_sec =
-                traceEvent->filesystemfilename().fileparentid().creationdate().sec();
+                traceEvent->filesystemfilename().fileparentid().creationdate().seconds();
+        fileInfo.parentcdate.tv_nsec =
+                traceEvent->filesystemfilename().fileparentid().creationdate().nanos();
     } break;
 
     default:
@@ -502,7 +503,7 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     if (event.has_file()) {
         auto viewer = getFileSystemViewer(partId);
         event.mutable_file()->set_path(
-                viewer->getFilePath(FileNodeId(event)));
+                viewer->getFilePath(FileId(event)));
     }
 
     // Call handler
@@ -531,12 +532,10 @@ public:
             , m_partId(partId)
             , m_fileInfo(fileInfo) {}
 
-    virtual std::string getFileNamePrefix(const FileNodeId& id) const override {
+    virtual std::string getFileNamePrefix(const FileId& id) const override {
         std::string basename = "";
 
-        FileId fid(m_partId, id);
-
-        auto iter = m_fileInfo.find(fid);
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
@@ -557,10 +556,8 @@ public:
         return basename;
     }
 
-    virtual std::string getFileName(const FileNodeId& id) const override {
-        FileId fid(m_partId, id);
-
-        auto iter = m_fileInfo.find(fid);
+    virtual std::string getFileName(const FileId& id) const override {
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             return iter->second.name;
         }
@@ -568,11 +565,10 @@ public:
         return "";
     }
 
-    virtual std::string getFileExtension(const FileNodeId& id) const override {
+    virtual std::string getFileExtension(const FileId& id) const override {
         std::string extension = "";
-        FileId fid(m_partId, id);
 
-        auto iter = m_fileInfo.find(fid);
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
@@ -583,15 +579,14 @@ public:
         return extension;
     }
 
-    virtual std::string getDirPath(const FileNodeId& id) const override {
+    virtual std::string getDirPath(const FileId& id) const override {
         std::string dir = "";
-        FileId fid(m_partId, id);
         uint64_t len = 0;
 
-        auto iter = m_fileInfo.find(fid);
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             try {
-                getPath(FileNodeId(iter->second.parentId,
+                getPath(FileId(m_partId, iter->second.parentId,
                                 iter->second.parentcdate),
                         dir, len);
             } catch (MaxPathExceededException &e) {
@@ -602,11 +597,10 @@ public:
         return dir;
     }
 
-    virtual std::string getFilePath(const FileNodeId& id) const override {
+    virtual std::string getFilePath(const FileId& id) const override {
         std::string path = "";
-        FileId fid(m_partId, id);
 
-        auto iter = m_fileInfo.find(fid);
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             path = getDirPath(id);
 
@@ -624,32 +618,31 @@ public:
         return path;
     }
 
-    virtual FileNodeId getParentId(const FileNodeId& id) const override {
-        FileId fid(m_partId, id);
-        FileNodeId parentId = FileNodeId();
+    virtual FileId getParentId(const FileId& id) const override {
+        FileId parentId = FileId();
 
-        auto iter = m_fileInfo.find(fid);
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
-            parentId.inode = iter->second.parentId;
-            parentId.cdate = iter->second.parentcdate;
+            const auto &info = iter->second;
+            parentId.id = info.parentId;
+            parentId.creationDate = info.parentcdate;
+            parentId.partitionId = m_partId;
         }
 
         return parentId;
     }
 
 private:
-    bool getPath(const FileNodeId& id, std::string &path, uint64_t &len) const {
-        FileId fid(m_partId, id);
-
-        auto iter = m_fileInfo.find(fid);
+    bool getPath(const FileId& id, std::string &path, uint64_t &len) const {
+        auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
             len += info.name.length();
             if (len > PATH_MAX) {
-                throw MaxPathExceededException(id.inode);
+                throw MaxPathExceededException(id.id);
             }
-            if (id.inode != info.parentId) {
-                if (!getPath(FileNodeId(info.parentId, info.parentcdate), path,
+            if (id.id != info.parentId) {
+                if (!getPath(FileId(m_partId, info.parentId, info.parentcdate), path,
                              len)) {
                     path = "";
                     return false;

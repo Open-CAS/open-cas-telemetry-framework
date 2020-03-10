@@ -114,7 +114,7 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
     if (event.has_file()) {
         const auto &device = event.device();
 
-        FileNodeId inodeid = FileNodeId(event);
+        FileId inodeid = FileId(event);
 
         auto &statistics =
                 getStatisticsByIds(viewer, viewer->getParentId(inodeid),
@@ -149,11 +149,11 @@ void FilesystemStatistics::getFilesystemStatistics(
 
 FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
         IFileSystemViewer *viewer,
-        FileNodeId dirId,
+        FileId dirId,
         uint64_t devId,
         uint64_t partId) {
     FilesystemStatistics *statistics = NULL;
-    FileNodeId parentId = viewer->getParentId(dirId);
+    FileId parentId = viewer->getParentId(dirId);
 
     if (parentId == dirId) {
         statistics = this;

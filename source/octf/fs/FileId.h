@@ -26,31 +26,33 @@ struct FileId {
             , id(fileId)
             , creationDate(cdate) {}
 
-    FileId(uint64_t partId, FileNodeId id)
-            : partitionId(partId)
-            , id(id.inode)
-            , creationDate(id.cdate) {}
     FileId(const proto::trace::EventIoFilesystemFileName &event)
-            : partitionId(event.partitionid())
+            : partitionId(event.fileid().partitionid())
             , id(event.fileid().fileid()) {
-        creationDate.tv_nsec = event.fileid().creationdate().nsec();
-        creationDate.tv_sec = event.fileid().creationdate().sec();
+        creationDate.tv_sec = event.fileid().creationdate().seconds();
+        creationDate.tv_nsec = event.fileid().creationdate().nanos();
     }
 
     FileId(const proto::trace::EventIoFilesystemMeta &event)
-            : partitionId(event.partitionid())
+            : partitionId(event.fileid().partitionid())
             , id(event.fileid().fileid()) {
-        creationDate.tv_nsec = event.fileid().creationdate().nsec();
-        creationDate.tv_sec = event.fileid().creationdate().sec();
+        creationDate.tv_sec = event.fileid().creationdate().seconds();
+        creationDate.tv_nsec = event.fileid().creationdate().nanos();
     }
 
     FileId(const proto::trace::EventIoFilesystemFileEvent &event)
-            : partitionId(event.partitionid())
+            : partitionId(event.fileid().partitionid())
             , id(event.fileid().fileid()) {
-        creationDate.tv_nsec = event.fileid().creationdate().nsec();
-        creationDate.tv_sec = event.fileid().creationdate().sec();
+        creationDate.tv_sec = event.fileid().creationdate().seconds();
+        creationDate.tv_nsec = event.fileid().creationdate().nanos();
     }
-
+    FileId(const proto::trace::ParsedEvent &event)
+       : partitionId(event.device().partition())
+       , id(event.file().id().fileid())
+       {
+        creationDate.tv_sec = event.file().id().creationdate().seconds();
+        creationDate.tv_nsec = event.file().id().creationdate().nanos();
+       }
     FileId(const FileId &other)
             : partitionId(other.partitionId)
             , id(other.id)

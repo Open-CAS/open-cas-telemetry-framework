@@ -58,7 +58,7 @@ message ParsedEvent {
 
     message FileInfo {
         /** File ID */
-        EventNodeId id = 1;
+        FileNodeId id = 1;
 
         /** File offset in sectors */
         uint64 offset = 2;

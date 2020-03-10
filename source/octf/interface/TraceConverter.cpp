@@ -35,8 +35,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
     // event variants.
 
     trace::EventHeader *protobufHdr;
-    proto::EventNodeId *nodeId;
-    proto::EventIoTimestamp *timestamp;
+    trace::FileNodeId *fileId;
 
     switch (hdr->type) {
     case iotrace_event_type_device_desc: {
@@ -130,14 +129,15 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsMeta->set_refsid(event->ref_sid);
         protoFsMeta->set_fileoffset(event->file_offset);
         protoFsMeta->set_filesize(event->file_size);
-        protoFsMeta->set_partitionid(event->partition_id);
 
 
-        nodeId = protoFsMeta->mutable_fileid();
-        nodeId->set_fileid(event->file_id.file_id);
-        timestamp = nodeId->mutable_creationdate();
-        timestamp->set_sec(event->file_id.ctime.tv_sec);
-        timestamp->set_nsec(event->file_id.ctime.tv_nsec);
+        fileId = protoFsMeta->mutable_fileid();
+        fileId->set_fileid(event->file_id.id);
+        fileId->set_partitionid(event->partition_id);
+
+        auto timestamp = fileId->mutable_creationdate();
+        timestamp->set_seconds(event->file_id.ctime.tv_sec);
+        timestamp->set_nanos(event->file_id.ctime.tv_nsec);
 
         return m_evFsMeta;
     }
@@ -154,21 +154,23 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsFileName = m_evFsFileName->mutable_filesystemfilename();
-        protoFsFileName->set_partitionid(event->partition_id);
         protoFsFileName->set_filename(event->file_name);
 
 
-        nodeId = protoFsFileName->mutable_fileid();
-        nodeId->set_fileid(event->file_id.file_id);
-        timestamp = nodeId->mutable_creationdate();
-        timestamp->set_sec(event->file_id.ctime.tv_sec);
-        timestamp->set_nsec(event->file_id.ctime.tv_nsec);
+        fileId = protoFsFileName->mutable_fileid();
+        fileId->set_fileid(event->file_id.id);
+        fileId->set_partitionid(event->partition_id);
 
-        nodeId = protoFsFileName->mutable_fileparentid();
-        nodeId->set_fileid(event->file_parent_id.file_id);
-        timestamp = nodeId->mutable_creationdate();
-        timestamp->set_sec(event->file_parent_id.ctime.tv_sec);
-        timestamp->set_nsec(event->file_parent_id.ctime.tv_nsec);
+        auto timestamp = fileId->mutable_creationdate();
+        timestamp->set_seconds(event->file_id.ctime.tv_sec);
+        timestamp->set_nanos(event->file_id.ctime.tv_nsec);
+
+        fileId = protoFsFileName->mutable_fileparentid();
+        fileId->set_fileid(event->file_parent_id.id);
+        fileId->set_partitionid(event->partition_id);
+        timestamp = fileId->mutable_creationdate();
+        timestamp->set_seconds(event->file_parent_id.ctime.tv_sec);
+        timestamp->set_nanos(event->file_parent_id.ctime.tv_nsec);
         return m_evFsFileName;
     }
 
@@ -184,13 +186,14 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsFileEvent = m_evFsFileEvent->mutable_filesystemfileevent();
-        protoFsFileEvent->set_partitionid(event->partition_id);
 
-        nodeId = protoFsFileEvent->mutable_fileid();
-        nodeId->set_fileid(event->file_id.file_id);
-        timestamp = nodeId->mutable_creationdate();
-        timestamp->set_sec(event->file_id.ctime.tv_sec);
-        timestamp->set_nsec(event->file_id.ctime.tv_nsec);
+        fileId = protoFsFileEvent->mutable_fileid();
+        fileId->set_fileid(event->file_id.id);
+        fileId->set_partitionid(event->partition_id);
+
+        auto timestamp = fileId->mutable_creationdate();
+        timestamp->set_seconds(event->file_id.ctime.tv_sec);
+        timestamp->set_nanos(event->file_id.ctime.tv_nsec);
 
         switch (event->fs_event_type) {
         case iotrace_fs_event_create:
