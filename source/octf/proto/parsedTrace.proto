@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 import "trace.proto";
 package octf.proto.trace;
 
@@ -64,6 +65,9 @@ message ParsedEvent {
 
         /** File size in sectors */
         uint64 size = 3;
+
+        /** File creation date */
+        google.protobuf.Timestamp creationDate = 4;
 
         /** File path */
         string path = 1000;

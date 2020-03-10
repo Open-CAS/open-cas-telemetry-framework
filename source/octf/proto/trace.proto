@@ -4,6 +4,7 @@
  */
 syntax = "proto3";
 option cc_generic_services = true;
+import "google/protobuf/timestamp.proto";
 package octf.proto.trace;
 
 /**
@@ -46,6 +47,20 @@ enum FsEventType {
     MoveTo = 3;
     MoveFrom = 4;
     Access = 5;
+}
+
+/**
+ * @brief Structure describing a given inode
+ *
+ * Combines inode file id with its creation date and partition for more unambigious
+ * identification of specific file.
+ */
+message FileId {
+    uint64 partitionId = 1;
+
+    uint64 id = 2;
+
+    google.protobuf.Timestamp creationDate = 3;
 }
 
 /**
@@ -109,41 +124,32 @@ message EventIoFilesystemMeta {
     uint64 refSid = 1;
 
     /** File ID */
-    uint64 fileId = 2;
+    FileId fileId = 2;
 
     /** File offset in sectors */
     uint64 fileOffset = 3;
 
     /** File size in sectors */
     uint64 fileSize = 4;
-
-    /** ID of the partition the file belongs to */
-    uint64 partitionId = 5;
 };
 
 message EventIoFilesystemFileName {
-    /** ID of the partition the file belongs to */
-    uint64 partitionId = 1;
-
     /** File ID */
-    uint64 fileId = 2;
+    FileId fileId = 1;
 
     /** File parent ID */
-    uint64 fileParentId = 3;
+    FileId fileParentId = 2;
 
     /** File Name */
-    string fileName = 4;
+    string fileName = 3;
 }
 
 message EventIoFilesystemFileEvent {
-    /** ID of the partition the file belongs to */
-    uint64 partitionId = 1;
-
     /** File ID */
-    uint64 fileId = 2;
+    FileId fileId = 1;
 
     /** Type of FS event */
-    FsEventType fsEventType = 4;
+    FsEventType fsEventType = 2;
 }
 
 message Event {

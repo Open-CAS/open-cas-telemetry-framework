@@ -8,8 +8,8 @@
 
 #include <map>
 #include <string>
-#include <octf/analytics/statistics/IFileSystemViewer.h>
 #include <octf/analytics/statistics/IoStatistics.h>
+#include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/statistics.pb.h>
 
@@ -52,9 +52,8 @@ private:
     FilesystemStatistics &getStatisticsByKey(const Key &key);
 
     FilesystemStatistics &getStatisticsByIds(IFileSystemViewer *viewer,
-                                             uint64_t dirId,
-                                             uint64_t devId,
-                                             uint64_t partId);
+                                             const FileId &dirId,
+                                             uint64_t devId);
 
     void fillProtoStatistics(proto::FilesystemStatistics *statistics,
                              const std::string &dir) const;

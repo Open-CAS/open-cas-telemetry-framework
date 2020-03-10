@@ -112,12 +112,12 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
     }
 
     if (event.has_file()) {
-        const auto &file = event.file();
         const auto &device = event.device();
-        auto id = file.id();
+
+        FileId id = FileId(event);
 
         auto &statistics = getStatisticsByIds(viewer, viewer->getParentId(id),
-                                              device.id(), device.partition());
+                                              device.id());
         statistics.updateIoStats(event);
 
         {
@@ -148,20 +148,19 @@ void FilesystemStatistics::getFilesystemStatistics(
 
 FilesystemStatistics &FilesystemStatistics::getStatisticsByIds(
         IFileSystemViewer *viewer,
-        uint64_t dirId,
-        uint64_t devId,
-        uint64_t partId) {
+        const FileId &dirId,
+        uint64_t devId) {
     FilesystemStatistics *statistics = NULL;
-    uint64_t parentId = viewer->getParentId(dirId);
+    FileId parentId = viewer->getParentId(dirId);
 
     if (parentId == dirId) {
         statistics = this;
     } else {
-        statistics = &getStatisticsByIds(viewer, parentId, devId, partId);
+        statistics = &getStatisticsByIds(viewer, parentId, devId);
     }
 
     std::string name = viewer->getFileName(dirId);
-    Key key(StatisticsCase::kDirectory, name, devId, partId);
+    Key key(StatisticsCase::kDirectory, name, devId, dirId.partitionId);
 
     return statistics->getStatisticsByKey(key);
 }
