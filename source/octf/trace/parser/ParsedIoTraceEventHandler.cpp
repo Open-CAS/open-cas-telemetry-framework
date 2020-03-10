@@ -391,7 +391,8 @@ void ParsedIoTraceEventHandler::handleEvent(
         auto &dstFileInfo = *cachedEvent.mutable_file();
         dstFileInfo.set_eventtype(fsEvent.fseventtype());
         dstFileInfo.set_id(fsEvent.fileid().id());
-        dstFileInfo.mutable_creationdate()->CopyFrom(fsEvent.fileid().creationdate());
+        dstFileInfo.mutable_creationdate()->CopyFrom(
+                fsEvent.fileid().creationdate());
 
         auto &destDevInfo = *cachedEvent.mutable_device();
         const auto &srcDevInfo = m_devices[partId];
@@ -493,8 +494,7 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
 
     if (event.has_file()) {
         auto viewer = getFileSystemViewer(partId);
-        event.mutable_file()->set_path(
-                viewer->getFilePath(FileId(event)));
+        event.mutable_file()->set_path(viewer->getFilePath(FileId(event)));
     }
 
     // Call handler
@@ -523,7 +523,7 @@ public:
             , m_partId(partId)
             , m_fileInfo(fileInfo) {}
 
-    virtual std::string getFileNamePrefix(const FileId& id) const override {
+    virtual std::string getFileNamePrefix(const FileId &id) const override {
         std::string basename = "";
 
         auto iter = m_fileInfo.find(id);
@@ -547,7 +547,7 @@ public:
         return basename;
     }
 
-    virtual std::string getFileName(const FileId& id) const override {
+    virtual std::string getFileName(const FileId &id) const override {
         auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             return iter->second.name;
@@ -556,7 +556,7 @@ public:
         return "";
     }
 
-    virtual std::string getFileExtension(const FileId& id) const override {
+    virtual std::string getFileExtension(const FileId &id) const override {
         std::string extension = "";
 
         auto iter = m_fileInfo.find(id);
@@ -570,7 +570,7 @@ public:
         return extension;
     }
 
-    virtual std::string getDirPath(const FileId& id) const override {
+    virtual std::string getDirPath(const FileId &id) const override {
         std::string dir = "";
         uint64_t len = 0;
 
@@ -586,7 +586,7 @@ public:
         return dir;
     }
 
-    virtual std::string getFilePath(const FileId& id) const override {
+    virtual std::string getFilePath(const FileId &id) const override {
         std::string path = "";
 
         auto iter = m_fileInfo.find(id);
@@ -607,7 +607,7 @@ public:
         return path;
     }
 
-    virtual FileId getParentId(const FileId& id) const override {
+    virtual FileId getParentId(const FileId &id) const override {
         FileId parentId = FileId();
 
         auto iter = m_fileInfo.find(id);
@@ -620,7 +620,7 @@ public:
     }
 
 private:
-    bool getPath(const FileId& id, std::string &path, uint64_t &len) const {
+    bool getPath(const FileId &id, std::string &path, uint64_t &len) const {
         auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
@@ -629,8 +629,7 @@ private:
                 throw MaxPathExceededException(id.id);
             }
             if (id != info.parent) {
-                if (!getPath(info.parent, path,
-                             len)) {
+                if (!getPath(info.parent, path, len)) {
                     path = "";
                     return false;
                 }

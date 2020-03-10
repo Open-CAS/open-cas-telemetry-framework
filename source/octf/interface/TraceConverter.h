@@ -29,7 +29,8 @@ public:
 
 private:
     void setFileId(proto::trace::FileId *fileId,
-            uint64_t partition, const iotrace_event_file_id &file_id);
+                   uint64_t partition,
+                   const iotrace_event_file_id *file_id);
 
     std::shared_ptr<proto::trace::Event> m_evDesc;
     std::shared_ptr<proto::trace::Event> m_evIO;

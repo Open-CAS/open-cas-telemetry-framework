@@ -10,8 +10,8 @@
 #include <memory>
 #include <queue>
 #include <set>
-#include <octf/fs/IFileSystemViewer.h>
 #include <octf/fs/FileId.h>
+#include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>

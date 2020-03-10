@@ -129,7 +129,8 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoFsMeta->set_fileoffset(event->file_offset);
         protoFsMeta->set_filesize(event->file_size);
 
-        setFileId(protoFsMeta->mutable_fileid(), event->partition_id, event->file_id);
+        setFileId(protoFsMeta->mutable_fileid(), event->partition_id,
+                  &event->file_id);
 
         return m_evFsMeta;
     }
@@ -148,8 +149,10 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         auto protoFsFileName = m_evFsFileName->mutable_filesystemfilename();
         protoFsFileName->set_filename(event->file_name);
 
-        setFileId(protoFsFileName->mutable_fileid(), event->partition_id, event->file_id);
-        setFileId(protoFsFileName->mutable_fileparentid(), event->partition_id, event->file_parent_id);
+        setFileId(protoFsFileName->mutable_fileid(), event->partition_id,
+                  &event->file_id);
+        setFileId(protoFsFileName->mutable_fileparentid(), event->partition_id,
+                  &event->file_parent_id);
 
         return m_evFsFileName;
     }
@@ -166,7 +169,8 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsFileEvent = m_evFsFileEvent->mutable_filesystemfileevent();
-        setFileId(protoFsFileEvent->mutable_fileid(), event->partition_id, event->file_id);
+        setFileId(protoFsFileEvent->mutable_fileid(), event->partition_id,
+                  &event->file_id);
 
         switch (event->fs_event_type) {
         case iotrace_fs_event_create:
@@ -194,14 +198,14 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
 }
 
 void TraceConverter::setFileId(proto::trace::FileId *fileId,
-        uint64_t partition, const iotrace_event_file_id &file_id)
-{
-    fileId->set_id(file_id.id);
+                               uint64_t partition,
+                               const iotrace_event_file_id *file_id) {
+    fileId->set_id(file_id->id);
     fileId->set_partitionid(partition);
 
     auto timestamp = fileId->mutable_creationdate();
-    timestamp->set_seconds(file_id.ctime.tv_sec);
-    timestamp->set_nanos(file_id.ctime.tv_nsec);
+    timestamp->set_seconds(file_id->ctime.tv_sec);
+    timestamp->set_nanos(file_id->ctime.tv_nsec);
 }
 
 }  // namespace octf

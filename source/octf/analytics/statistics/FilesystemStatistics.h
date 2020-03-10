@@ -8,8 +8,8 @@
 
 #include <map>
 #include <string>
-#include <octf/fs/IFileSystemViewer.h>
 #include <octf/analytics/statistics/IoStatistics.h>
+#include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/statistics.pb.h>
 

@@ -7,8 +7,8 @@
 #define SOURCE_OCTF_FS_IFILESYSTEMVIEWER_H
 
 #include <string>
-#include <octf/proto/parsedTrace.pb.h>
 #include <octf/fs/FileId.h>
+#include <octf/proto/parsedTrace.pb.h>
 
 namespace octf {
 
@@ -32,7 +32,7 @@ public:
      * @param id File ID
      * @return Parent ID
      */
-    virtual FileId getParentId(const FileId& id) const = 0;
+    virtual FileId getParentId(const FileId &id) const = 0;
 
     /**
      * @brief Gets base name of file
@@ -56,7 +56,7 @@ public:
      * @param id %File ID
      * @return %File name prefix
      */
-    virtual std::string getFileNamePrefix(const FileId& id) const = 0;
+    virtual std::string getFileNamePrefix(const FileId &id) const = 0;
 
     /**
      * @brief Gets file name of specified file ID
@@ -64,7 +64,7 @@ public:
      * @param id File ID
      * @return File name
      */
-    virtual std::string getFileName(const FileId& id) const = 0;
+    virtual std::string getFileName(const FileId &id) const = 0;
 
     /**
      * @brief Gets file extension of specified file ID
@@ -72,7 +72,7 @@ public:
      * @param id File ID
      * @return File extension
      */
-    virtual std::string getFileExtension(const FileId& id) const = 0;
+    virtual std::string getFileExtension(const FileId &id) const = 0;
 
     /**
      * @brief Gets file path of specified file ID on a file system
@@ -80,7 +80,7 @@ public:
      * @param id File ID
      * @return File path
      */
-    virtual std::string getFilePath(const FileId& id) const = 0;
+    virtual std::string getFilePath(const FileId &id) const = 0;
 
     /**
      * @brief Gets FS directory path of specified file ID
@@ -88,7 +88,7 @@ public:
      * @param id File Id
      * @return Directory path
      */
-    virtual std::string getDirPath(const FileId& id) const = 0;
+    virtual std::string getDirPath(const FileId &id) const = 0;
 };
 
 }  // namespace octf

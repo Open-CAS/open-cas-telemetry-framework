@@ -43,12 +43,11 @@ struct FileId {
             : FileId(event.fileid()) {}
 
     FileId(const proto::trace::ParsedEvent &event)
-       : partitionId(event.device().partition())
-       , id(event.file().id())
-       {
+            : partitionId(event.device().partition())
+            , id(event.file().id()) {
         creationDate.tv_sec = event.file().creationdate().seconds();
         creationDate.tv_nsec = event.file().creationdate().nanos();
-       }
+    }
     FileId(const FileId &other)
             : partitionId(other.partitionId)
             , id(other.id)
@@ -87,6 +86,6 @@ struct FileId {
     }
 };
 
-}
+}  // namespace octf
 
 #endif /* SOURCE_OCTF_FS_FILEID_H */

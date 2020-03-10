@@ -116,9 +116,8 @@ void FilesystemStatistics::count(IFileSystemViewer *viewer,
 
         FileId id = FileId(event);
 
-        auto &statistics =
-                getStatisticsByIds(viewer, viewer->getParentId(id),
-                                   device.id());
+        auto &statistics = getStatisticsByIds(viewer, viewer->getParentId(id),
+                                              device.id());
         statistics.updateIoStats(event);
 
         {
