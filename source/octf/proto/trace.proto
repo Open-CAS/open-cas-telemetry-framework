@@ -41,7 +41,7 @@ enum IoType {
 }
 
 enum FsEventType {
-    UnknownFsType = 0;
+    UnknownFsEventType = 0;
     Create = 1;
     Delete = 2;
     MoveTo = 3;
