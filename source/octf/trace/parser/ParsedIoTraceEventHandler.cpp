@@ -311,26 +311,28 @@ void ParsedIoTraceEventHandler::handleEvent(
             uint64_t completionTime = traceEvent->header().timestamp();
 
             if (completionTime < submissionTime) {
-                throw Exception(
-                        "Trace file error, completion time before "
-                        "submission");
-            }
+                // Submission after completion - IO event to same lba was
+                // probably dropped
+                if (qd.Adjustment) {
+                    qd.Adjustment--;
+                }
+            } else {
+                uint64_t latency = completionTime - submissionTime;
 
-            uint64_t latency = completionTime - submissionTime;
+                // IO found, set latency and result of IO
+                io->set_latency(latency);
+                io->set_error(traceEvent->iocompletion().error());
 
-            // IO found, set latency and result of IO
-            io->set_latency(latency);
-            io->set_error(traceEvent->iocompletion().error());
+                // Update queue depth for device
+                if (qd.Value) {
+                    qd.Value--;
 
-            // Update queue depth for device
-            if (qd.Value) {
-                qd.Value--;
-
-                if (qd.Value < qd.Adjustment) {
-                    // taking into account adjustment, we reached zero queue
-                    // depth, so reset both counters
-                    qd.Value = 0;
-                    qd.Adjustment = 0;
+                    if (qd.Value < qd.Adjustment) {
+                        // taking into account adjustment, we reached zero queue
+                        // depth, so reset both counters
+                        qd.Value = 0;
+                        qd.Adjustment = 0;
+                    }
                 }
             }
         } else {
