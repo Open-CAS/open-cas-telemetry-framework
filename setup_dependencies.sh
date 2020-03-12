@@ -40,7 +40,7 @@ function detect_distribution ()
 {
     if [ -f /etc/redhat-release ]
     then
-        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux Server release [78]." &>/dev/null )
+        if ( cat /etc/redhat-release | grep "Red Hat Enterprise Linux" | grep "release [78]." &>/dev/null )
         then
             echo RHEL
             return 0
