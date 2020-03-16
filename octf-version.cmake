@@ -11,6 +11,18 @@ execute_process(
 )
 
 message(STATUS "OCTF VERSION: ${OCTF_VERSION}")
+
+if (NOT OCTF_VERSION_LABEL)
+    message(STATUS "git repository not found, trying label from VERSION file")
+    execute_process(
+        COMMAND bash -c "grep LABEL < ${CMAKE_CURRENT_LIST_DIR}/VERSION | awk -F '=' '{print $2}' \
+        | tr -d '\n'"
+        OUTPUT_VARIABLE OCTF_VERSION_LABEL
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        ERROR_QUIET
+   )
+endif()
+
 if (OCTF_VERSION_LABEL)
     message(STATUS "OCTF LABEL: ${OCTF_VERSION_LABEL}")
 endif()
