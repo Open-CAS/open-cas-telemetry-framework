@@ -233,7 +233,7 @@ message IoHistogramSet {
  * Filesystem statistics
  */
 message FilesystemStatisticsEntry {
-    uint64 deviceId = 1;
+    IoStatisticsDescription desc = 1;
 
     uint64 partitionId = 2;
 

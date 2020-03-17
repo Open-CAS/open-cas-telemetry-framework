@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -24,6 +24,11 @@ void TraceEventHandlerFilesystemStatistics::handleIO(
 void TraceEventHandlerFilesystemStatistics::getFilesystemStatistics(
         proto::FilesystemStatistics *fsStats) const {
     m_fsStats.getFilesystemStatistics(fsStats);
+}
+
+void TraceEventHandlerFilesystemStatistics::handleDeviceDescription(
+        const proto::trace::EventDeviceDescription &devDesc) {
+	m_fsStats.addDevice(devDesc);
 }
 
 }  // namespace octf

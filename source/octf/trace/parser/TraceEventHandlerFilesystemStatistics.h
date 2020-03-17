@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_TRACE_PARSER_TRACEEVENTHANDLERFILESYSTEMSTATISTICS_H
 
 #include <octf/analytics/statistics/FilesystemStatistics.h>
+#include <octf/analytics/statistics/FilesystemStatisticsEntry.h>
 #include <octf/proto/statistics.pb.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
@@ -30,6 +31,10 @@ public:
      * @param[out] fsStats Filesystem statistics in protocol buffer format
      */
     void getFilesystemStatistics(proto::FilesystemStatistics *fsStats) const;
+
+protected:
+    void handleDeviceDescription(
+            const proto::trace::EventDeviceDescription &devDesc) override;
 
 private:
     FilesystemStatistics m_fsStats;

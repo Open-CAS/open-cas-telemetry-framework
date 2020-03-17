@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <octf/analytics/statistics/IoStatistics.h>
+#include <octf/analytics/statistics/FilesystemStatisticsEntry.h>
 #include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/statistics.pb.h>
@@ -38,6 +39,13 @@ public:
                const proto::trace::ParsedEvent &event);
 
     /**
+     * @brief Add devices to the FS statistics
+     *
+     * @param devDesc Device description trace event
+     */
+    void addDevice(const proto::trace::EventDeviceDescription &devDesc);
+
+    /**
      * Get Filesystem statistics in protocol buffer format
      *
      * @param[out] statistics Protocol buffer filesystem statistics
@@ -49,19 +57,7 @@ public:
 private:
     struct Key;
 
-    FilesystemStatistics &getStatisticsByKey(const Key &key);
-
-    FilesystemStatistics &getStatisticsByIds(IFileSystemViewer *viewer,
-                                             const FileId &dirId,
-                                             uint64_t devId);
-
-    void fillProtoStatistics(proto::FilesystemStatistics *statistics,
-                             const std::string &dir) const;
-
-    void fillProtoStatisticsEntry(proto::FilesystemStatisticsEntry *entry,
-                                  const std::string &name) const;
-
-    void updateIoStats(const proto::trace::ParsedEvent &event);
+    FilesystemStatisticsEntry &getStatisticsByKey(const Key &key);
 
     void discard(const proto::trace::ParsedEvent &event);
 
@@ -69,21 +65,7 @@ private:
     /**
      * Filesystem statistics for children directories
      */
-    std::map<Key, FilesystemStatistics> m_children;
-
-    /**
-     * IO statistics
-     */
-    IoStatistics m_ioStats;
-
-    uint64_t m_devId;
-    uint64_t m_partId;
-
-    using StatisticsCase = proto::FilesystemStatisticsEntry::NameCase;
-    /**
-     * Statistics Case
-     */
-    StatisticsCase m_statsCase;
+    std::map<Key, FilesystemStatisticsEntry> m_map;
 };
 
 }  // namespace octf

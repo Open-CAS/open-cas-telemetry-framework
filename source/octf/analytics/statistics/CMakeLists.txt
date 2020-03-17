@@ -12,4 +12,6 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/WorksetCalculatorDevices.cpp
     ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatistics.h
     ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatistics.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatisticsEntry.h
+    ${CMAKE_CURRENT_LIST_DIR}/FilesystemStatisticsEntry.cpp
 )

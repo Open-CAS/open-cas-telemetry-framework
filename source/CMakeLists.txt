@@ -156,4 +156,4 @@ file(APPEND ${CMAKE_BINARY_DIR}/octf-vars.cmake
 # Install it next to octf-config
 install(FILES ${CMAKE_BINARY_DIR}/octf-vars.cmake DESTINATION ${OCTF_PACKAGE_DIR} COMPONENT octf-install-cmake)
 
-add_subdirectory(examples)
+# add_subdirectory(examples)
