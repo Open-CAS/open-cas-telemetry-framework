@@ -73,6 +73,8 @@ void InterfaceTraceCreatingImpl::StopTracing(
         fillTraceSummary(response);
     } catch (Exception &e) {
         controller->SetFailed(e.what());
+    } catch (std::exception &e) {
+        controller->SetFailed(e.what());
     }
     done->Run();
 }

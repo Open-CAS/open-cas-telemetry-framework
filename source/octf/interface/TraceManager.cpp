@@ -77,6 +77,9 @@ void TraceManager::handleJobs() {
     } catch (Exception &e) {
         log::cerr << e.getMessage() << std::endl;
         setState(TracingState::ERROR);
+    } catch (std::exception &e) {
+        log::cerr << e.what() << std::endl;
+        setState(TracingState::ERROR);
     }
 
     for (const auto &job : m_jobs) {

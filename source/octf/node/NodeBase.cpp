@@ -58,6 +58,9 @@ bool NodeBase::readSettings() {
         } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             throw Exception("Could not read node settings.");
+        } catch (std::exception &ex) {
+            log::cerr << ex.what() << std::endl;
+            throw Exception("Could not read node settings.");
         }
     }
 
@@ -81,6 +84,9 @@ bool NodeBase::writeSettings() {
             }
         } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
+            return false;
+        } catch (std::exception &ex) {
+            log::cerr << ex.what() << std::endl;
             return false;
         }
     }
@@ -108,6 +114,9 @@ bool NodeBase::removeSettings() {
         } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
             return false;
+        } catch (std::exception &ex) {
+            log::cerr << ex.what() << std::endl;
+            return false;
         }
     }
 
@@ -125,6 +134,9 @@ bool NodeBase::areSettingsAvailable() {
 
         } catch (Exception &ex) {
             log::cerr << ex.getMessage() << std::endl;
+            return false;
+        } catch (std::exception &ex) {
+            log::cerr << ex.what() << std::endl;
             return false;
         }
     }

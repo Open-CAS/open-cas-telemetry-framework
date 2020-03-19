@@ -131,10 +131,15 @@ void TraceJob::doWork() {
     try {
         consumeTraces();
         endState = TracingState::COMPLETE;
+
     } catch (Exception &e) {
         endState = TracingState::ERROR;
         log::cerr << e.getMessage() << std::endl;
+    } catch (std::exception &e) {
+        endState = TracingState::ERROR;
+        log::cerr << e.what() << std::endl;
     }
+
     {
         std::lock_guard<std::mutex> lock(m_stateMutex);
         m_state = endState;
