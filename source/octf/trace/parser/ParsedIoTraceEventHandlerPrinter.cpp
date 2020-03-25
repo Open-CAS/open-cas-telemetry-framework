@@ -15,7 +15,7 @@ ParsedIoTraceEventHandlerPrinter::ParsedIoTraceEventHandlerPrinter(
         , m_format(format)
         , m_jsonOptions()
         , m_jsonTrace() {
-    m_jsonOptions.always_print_primitive_fields = false;
+    m_jsonOptions.always_print_primitive_fields = true;
     m_jsonOptions.add_whitespace = false;
 }
 
