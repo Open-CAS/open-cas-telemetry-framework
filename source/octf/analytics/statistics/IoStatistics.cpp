@@ -199,7 +199,13 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
         // update working set
         if (proto::trace::Discard == io.operation()) {
             for (auto &s : m_statistics) {
-                s.wc.removeRange(io.lba(), len);
+                // For discards we want to add the range value
+                // All other stats should have reduced range
+                if (&s == stats) {
+                    s.wc.insertRange(io.lba(), len);
+                } else {
+                    s.wc.removeRange(io.lba(), len);
+                }
             }
             m_total->wc.removeRange(io.lba(), len);
         } else {
@@ -207,7 +213,7 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
             m_total->wc.insertRange(io.lba(), len);
         }
     }
-    
+
     stats->count++;
     m_total->count++;
 
