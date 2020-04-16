@@ -77,6 +77,25 @@ public:
      */
     bool makeReadOnly();
 
+    /**
+     * @brief Checks if printing errors is enabled
+     * @retval true Errors messages will be printed
+     * @retval false Errors message will be suppressed
+     */
+    bool isVerbose() const {
+        return m_verbose;
+    }
+
+    /**
+     * @brief Enables printing error message
+     *
+     * @param verbose Flags controlling printing error messages. If verbose true
+     * then error messages will be printed. Otherwise not.
+     */
+    void setVerbose(bool verbose) {
+        m_verbose = verbose;
+    }
+
 private:
     /**
      * @brief This opens the file and gets a file descriptor for reading.
@@ -119,6 +138,11 @@ private:
      * File descriptor for writing
      */
     int m_writeFd;
+
+    /**
+     * Flags to control if print error
+     */
+    bool m_verbose;
 };
 
 }  // namespace octf

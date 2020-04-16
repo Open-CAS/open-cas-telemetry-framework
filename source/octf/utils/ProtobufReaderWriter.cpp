@@ -24,7 +24,8 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         : m_filePath(filePath)
         , m_directoryPath("")
         , m_readFd(-1)
-        , m_writeFd(-1) {
+        , m_writeFd(-1)
+        , m_verbose(false) {
     std::size_t dirEndPos = filePath.rfind('/');
 
     if (dirEndPos == 0) {
@@ -44,8 +45,11 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     openFileToRead();
 
     if (m_readFd == -1) {
-        log::cerr << "Could not open file " << m_filePath
-                  << " for reading: " << std::string(strerror(errno));
+        if (m_verbose) {
+            log::cerr << "Could not open file " << m_filePath
+                      << " for reading: " << std::string(strerror(errno))
+                      << std::endl;
+        }
         return false;
     }
 
@@ -86,8 +90,11 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     openFileToWrite();
 
     if (m_writeFd == -1) {
-        log::cerr << "Could not open file " << m_filePath
-                  << " for writing: " << std::string(strerror(errno));
+        if (m_verbose) {
+            log::cerr << "Could not open file " << m_filePath
+                      << " for writing: " << std::string(strerror(errno))
+                      << std::endl;
+        }
         return false;
     }
 
