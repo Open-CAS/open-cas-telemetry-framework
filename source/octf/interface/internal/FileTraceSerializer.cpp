@@ -94,7 +94,7 @@ bool FileTraceSerializer::serialize(
         return false;
     }
 
-    int messageLength = message->ByteSize();
+    auto messageLength = message->ByteSizeLong();
 
     uint8_t *buffer = getBuffer(protoconverter::MAX_VARINT32_BYTES);
     if (!buffer) {
