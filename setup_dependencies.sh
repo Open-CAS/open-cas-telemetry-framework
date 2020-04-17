@@ -33,7 +33,7 @@ function error () {
 # Usage: info <INFO_MESSAGE_1> [ <INFO_MESSAGE_2> ... ]
 #
 function info () {
-    echo "[OCTF][INFO] $*" 1>&2
+    echo "[OCTF][INFO] $*"
 }
 
 function detect_distribution ()
