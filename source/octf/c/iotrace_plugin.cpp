@@ -161,9 +161,10 @@ extern "C" void octf_iotrace_plugin_destroy(
     }
 
     auto plugin = static_cast<IOTracePluginC *>(context->plugin);
-    NodeId id = plugin->getNodeId();
 
     if (plugin) {
+        NodeId id = plugin->getNodeId();
+
         try {
             plugin->deinit();
         } catch (Exception &e) {
@@ -171,9 +172,9 @@ extern "C" void octf_iotrace_plugin_destroy(
         }
 
         delete plugin;
-    }
 
-    log::cout << "Plugin " << id.getId() << " stopped" << std::endl;
+        log::cout << "Plugin " << id.getId() << " stopped" << std::endl;
+    }
 
     delete context;
     *_context = nullptr;
