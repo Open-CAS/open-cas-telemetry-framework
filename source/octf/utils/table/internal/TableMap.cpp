@@ -102,9 +102,9 @@ const Row &TableMap::getRow(index_t index) const {
     auto iter = m_rows.find(index);
 
     if (iter != m_rows.end()) {
-        throw Exception("Accessing non-existing row in table");
-    } else {
         return iter->second;
+    } else {
+        throw Exception("Accessing non-existing row in table");
     }
 }
 
