@@ -410,7 +410,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         }
     } break;
 
-    case Event::kFilesystemFileNameFieldNumber: {
+    case Event::EventTypeCase::kFilesystemFileName: {
         const auto &fsNameEvent = traceEvent->filesystemfilename();
         FileId fileId(fsNameEvent);
         auto &fileInfo = m_fileInfo[fileId];
