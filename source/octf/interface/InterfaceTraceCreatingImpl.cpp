@@ -104,6 +104,10 @@ bool InterfaceTraceCreatingImpl::checkIntegerParameters(
         const std::string &fieldName,
         const ::google::protobuf::Descriptor *bufferDescriptor) {
     const auto field = bufferDescriptor->FindFieldByLowercaseName(fieldName);
+    if (field == nullptr) {
+        throw Exception("Invalid parameter name");
+    }
+
     const auto &valueInfo =
             field->options().GetExtension(proto::opts_param).cli_num();
 
