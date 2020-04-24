@@ -258,6 +258,10 @@ void static streamMapPairToRow(Row &row,
     auto key = description->FindFieldByName("key");
     auto value = description->FindFieldByName("value");
 
+    if (key == nullptr || value == nullptr) {
+        throw Exception("Invalid map pair");
+    }
+
     std::string name;
 
     switch (key->cpp_type()) {
@@ -338,6 +342,10 @@ static void streamMessageToRow(Row &row,
             // Given field is a part of oneof, let's get oneof selected field
             auto oneofField =
                     reflection->GetOneofFieldDescriptor(msg, oneofDesc);
+
+            if (oneofField == nullptr) {
+                throw Exception("Invalid field descriptor");
+            }
 
             if (oneofField == field) {
                 // This field is selected by oneof, set name of used case
