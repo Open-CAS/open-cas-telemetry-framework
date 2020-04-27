@@ -83,17 +83,6 @@ public:
 };
 
 /**
- * @brief Exception which occurred during shell execution
- */
-class ShellExecutorException : public octf::Exception {
-public:
-    ShellExecutorException(const std::string &message, const std::string &cmd)
-            : Exception(std::string("Exception occurred during '") + cmd +
-                        "' execution: " + message) {}
-    virtual ~ShellExecutorException() = default;
-};
-
-/**
  * @brief Exception which occurred during file system path traversing
  */
 class MaxPathExceededException : public octf::Exception {
