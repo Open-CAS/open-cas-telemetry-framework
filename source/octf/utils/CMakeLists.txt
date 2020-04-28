@@ -5,6 +5,8 @@ target_sources(octf
 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.h
+	${CMAKE_CURRENT_LIST_DIR}/ResourcesGuarder.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ResourcesGuarder.h
 	${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.cpp
 	${CMAKE_CURRENT_LIST_DIR}/SignalHandler.h
 	${CMAKE_CURRENT_LIST_DIR}/Exception.h
