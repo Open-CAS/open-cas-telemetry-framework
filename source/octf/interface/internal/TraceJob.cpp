@@ -126,7 +126,8 @@ void TraceJob::doWork() {
         m_state = TracingState::RUNNING;
         m_initializationFinished.notify_all();
     }
-    log::cout << "Trace collecting has started" << std::endl;
+    log::verbose << "Trace collecting has started of queue"
+                 << m_producer->getQueueId() << std::endl;
 
     try {
         consumeTraces();
@@ -145,7 +146,8 @@ void TraceJob::doWork() {
         m_state = endState;
     }
     m_serializer->close();
-    log::cout << "Trace collecting has completed" << std::endl;
+    log::verbose << "Trace collecting has completed of queue "
+                 << m_producer->getQueueId() << std::endl;
 }
 
 int TraceJob::pushTrace(const void *trace, const uint32_t traceSize) {

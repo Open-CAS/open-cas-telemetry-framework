@@ -89,6 +89,7 @@ void TraceManager::handleJobs() {
         job->joinThread();
     }
 
+    log::cout << "Trace collecting has completed" << std::endl;
     updateState();
 }
 
@@ -150,6 +151,8 @@ void TraceManager::setupJobs() {
     }
 
     setState(TracingState::RUNNING);
+
+    log::cout << "Trace collecting has started" << std::endl;
 }
 
 void TraceManager::startJobs(uint32_t maxDuration,
