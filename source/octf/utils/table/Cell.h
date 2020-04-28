@@ -117,6 +117,16 @@ private:
                 : IData()
                 , m_value(other.m_value) {}
 
+        Data<T> &operator=(const Data<T> &other) {
+            if (&other == this) {
+                return *this;
+            }
+
+            m_value = other->m_value;
+
+            return *this;
+        };
+
         virtual void print(std::ostream &os) const override {
             os << m_value;
         };
