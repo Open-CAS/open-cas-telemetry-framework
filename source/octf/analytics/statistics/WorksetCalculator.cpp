@@ -180,7 +180,6 @@ void WorksetCalculator::mergeRanges(const Range &newRange,
 uint64_t WorksetCalculator::removeRange(uint64_t begin, uint64_t length) {
     // Create range to be removed
     Range rangeToRemove(begin, begin + length);
-    Range splitBegin, splitEnd;
     bool removeRange = false;
     uint64_t lengthRemoved = 0;
 
@@ -197,6 +196,8 @@ uint64_t WorksetCalculator::removeRange(uint64_t begin, uint64_t length) {
 
     while (iter != m_hitRanges.end() &&
            Range::doRangesOverlap(rangeToRemove, *iter)) {
+        Range splitBegin, splitEnd;
+
         // Don't remove ranges which are just continuous - e.g. [0;1] and [1;2]
         removeRange = false;
 
