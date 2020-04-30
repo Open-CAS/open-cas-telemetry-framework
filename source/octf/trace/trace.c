@@ -239,6 +239,10 @@ static inline bool _integrity_check(struct octf_trace *trace,
         return false;
     }
 
+    if (ptr + count < count) {
+        return false;
+    }
+
     return true;
 }
 
@@ -678,7 +682,7 @@ int octf_trace_release_rd_buffer(octf_trace_t trace,
     return 0;
 }
 
-int octf_trace_is_empty(octf_trace_t trace) {
+int octf_trace_is_empty(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
@@ -694,7 +698,7 @@ int octf_trace_is_empty(octf_trace_t trace) {
     }
 }
 
-int octf_trace_is_almost_full(octf_trace_t trace) {
+int octf_trace_is_almost_full(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
@@ -710,7 +714,7 @@ int octf_trace_is_almost_full(octf_trace_t trace) {
     }
 }
 
-int octf_trace_is_closed(octf_trace_t trace) {
+int octf_trace_is_closed(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         if (env_atomic64_read(&trace->phdr->closed)) {
             return 1;
@@ -723,7 +727,7 @@ int octf_trace_is_closed(octf_trace_t trace) {
     }
 }
 
-int64_t octf_trace_get_lost_count(octf_trace_t trace) {
+int64_t octf_trace_get_lost_count(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         return env_atomic64_read(&trace->phdr->lost);
     } else {
@@ -731,7 +735,7 @@ int64_t octf_trace_get_lost_count(octf_trace_t trace) {
     }
 }
 
-int64_t octf_trace_get_free_space(octf_trace_t trace) {
+int64_t octf_trace_get_free_space(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
         uint64_t ptr_rd = env_atomic64_read(&trace->chdr->rd_ptr);
