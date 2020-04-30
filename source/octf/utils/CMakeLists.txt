@@ -3,28 +3,30 @@ add_subdirectory(container)
 add_subdirectory(table)
 target_sources(octf
 PRIVATE
-	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.cpp
-	${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.h
-	${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.cpp
-	${CMAKE_CURRENT_LIST_DIR}/SignalHandler.h
-	${CMAKE_CURRENT_LIST_DIR}/Exception.h
-	${CMAKE_CURRENT_LIST_DIR}/FileOperations.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Log.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Semaphore.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Log.h
-	${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.h
-	${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.h
-	${CMAKE_CURRENT_LIST_DIR}/FileOperations.h
-	${CMAKE_CURRENT_LIST_DIR}/Exception.cpp
-	${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.cpp
-	${CMAKE_CURRENT_LIST_DIR}/Semaphore.h
-	${CMAKE_CURRENT_LIST_DIR}/NonCopyable.h
-	${CMAKE_CURRENT_LIST_DIR}/SignalHandler.cpp
-	${CMAKE_CURRENT_LIST_DIR}/DateTime.cpp
-	${CMAKE_CURRENT_LIST_DIR}/DateTime.h
-	${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.cpp
-	${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.h
-	${CMAKE_CURRENT_LIST_DIR}/SizeConversion.h
-	${CMAKE_CURRENT_LIST_DIR}/CsvParser.cpp
-	${CMAKE_CURRENT_LIST_DIR}/CsvParser.h
+    ${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ModulesDiscover.h
+    ${CMAKE_CURRENT_LIST_DIR}/ResourcesGuarder.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ResourcesGuarder.h
+    ${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/SignalHandler.h
+    ${CMAKE_CURRENT_LIST_DIR}/Exception.h
+    ${CMAKE_CURRENT_LIST_DIR}/FileOperations.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Log.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Semaphore.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Log.h
+    ${CMAKE_CURRENT_LIST_DIR}/ProtobufReaderWriter.h
+    ${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.h
+    ${CMAKE_CURRENT_LIST_DIR}/FileOperations.h
+    ${CMAKE_CURRENT_LIST_DIR}/Exception.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Semaphore.h
+    ${CMAKE_CURRENT_LIST_DIR}/NonCopyable.h
+    ${CMAKE_CURRENT_LIST_DIR}/SignalHandler.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/DateTime.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/DateTime.h
+    ${CMAKE_CURRENT_LIST_DIR}/ProtoConverter.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/FrameworkConfiguration.h
+    ${CMAKE_CURRENT_LIST_DIR}/SizeConversion.h
+    ${CMAKE_CURRENT_LIST_DIR}/CsvParser.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/CsvParser.h
 )
