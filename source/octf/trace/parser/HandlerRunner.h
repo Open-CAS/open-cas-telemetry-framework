@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <list>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <octf/trace/parser/TraceEventHandler.h>
@@ -24,13 +25,9 @@ namespace octf {
  * handlers in order to not exceed the machine available resources (e.g. memory)
  *
  * @tparam Handler type of handler to be run
- * @tparam Event template type of event handled by handler
  */
-template <typename Handler, typename Event>
+template <typename Handler>
 class HandlerRunner : NonCopyable {
-    static_assert(std::is_base_of<TraceEventHandler<Event>, Handler>(),
-                  "Attempted to instantiate template with wrong event type.");
-
 public:
     HandlerRunner()
             : NonCopyable()
@@ -39,6 +36,15 @@ public:
             , m_jobs() {}
     virtual ~HandlerRunner() = default;
 
+    typedef std::shared_ptr<Handler> HandlerShRef;
+
+    /**
+     * @brief Factory used to create handler in job thread
+     *
+     * @return Event handler
+     */
+    typedef std::function<HandlerShRef(void)> Factory;
+
     /**
      * @brief Completion callback invoked when the handle has ended its job
      *
@@ -46,8 +52,7 @@ public:
      *
      * @note Callbacks are synchronized
      */
-    typedef std::function<void(std::shared_ptr<Handler> hndlr)>
-            CompletionCallback;
+    typedef std::function<void(HandlerShRef)> CompletionCallback;
 
     /**
      * @brief Error callback which is invoked when an error occurs
@@ -65,15 +70,20 @@ public:
     /**
      * @brief Add a new handler to be executed when calling HandlerRunner::run
      *
+     * @param factory Handler factory
      * @param cmpl Completion callback called when a handler will end
      * @param error Error handler called when an error will occur
-     * @param args Arguments used for creation handler
      *
      * @code
      *
      * // Declare your runner for given handler
      * using Handler = TraceEventHandlerStats;
-     * octf::HandlerRunner<Handler, Handler::eventType> runner;
+     * octf::HandlerRunner<Handler> runner;
+     *
+     * // Define handler factory
+     * auto factory = []() {
+     *      return std::make_shared<Handler>();
+     * }
      *
      * // Define completion callback
      * auto cmpl = [](std::shared_ptr<Handler> hndlr) {
@@ -86,10 +96,8 @@ public:
      * };
      *
      * // Add handlers
-     * runner.addHandler(cmpl, error, tracepath,
-     *                      otherRequiredArgumentsToCreateHandler_1);
-     * runner.addHandler(cmpl, error, tracepath,
-     *                      otherRequiredArgumentsToCreateHandler_2);
+     * runner.addHandler(factory, cmpl, error);
+     * // Add other handlers
      *
      * // Run all handlers concurrently
      * runner.run();
@@ -98,28 +106,31 @@ public:
      * // Good luck!!!
      * @endcode
      */
-    template <typename... Args>
-    void addHandler(CompletionCallback cmplCallback,
-                    ErrorCallback errorCallback,
-                    Args... args) {
-        auto func = [this, cmplCallback, errorCallback, args...]() {
+    void addHandler(Factory factory,
+                    CompletionCallback cmpl,
+                    ErrorCallback error) {
+        auto func = [this, factory, cmpl, error]() {
             try {
                 ResourcesGuarder rGuarder(0.75);
                 rGuarder.lock();  // Grab resources lock to be sure not running
                                   // out of resources
 
                 {
-                    auto handler = std::make_shared<Handler>(args...);
+                    HandlerShRef handler = factory();
                     handler->processEvents();
-                    complete(cmplCallback, handler);
+
+                    std::lock_guard<std::mutex> guard(m_lock);
+                    cmpl(handler);
                 }
 
                 // Release resources
                 rGuarder.unlock();
             } catch (Exception &e) {
-                error(errorCallback, e.getMessage());
+                std::lock_guard<std::mutex> guard(m_lock);
+                error(e.getMessage());
             } catch (std::exception &e) {
-                error(errorCallback, e.what());
+                std::lock_guard<std::mutex> guard(m_lock);
+                error(e.what());
             }
         };
 
@@ -137,17 +148,6 @@ public:
         for (auto &job : m_jobs) {
             job.join();
         }
-    }
-
-private:
-    void complete(CompletionCallback cmpl, std::shared_ptr<Handler> handler) {
-        std::lock_guard<std::mutex> guard(m_lock);
-        cmpl(handler);
-    }
-
-    void error(ErrorCallback error, const std::string &message) {
-        std::lock_guard<std::mutex> guard(m_lock);
-        error(message);
     }
 
 private:
