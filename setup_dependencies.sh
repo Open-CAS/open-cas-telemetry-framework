@@ -153,22 +153,72 @@ function get_distribution_pkg_manager () {
     esac
 }
 
-PKGS="autoconf automake libtool curl make gcc gcc-c++ unzip git wget"
-function get_distribution_pkg_dependencies () {
-    distro=$(detect_distribution)
+#
+# Usage: is_package_installed <PACKAGE>
+#
+function is_package_installed () {
+    local cmd=""
+    local pkg=$1
 
-    case "${distro}" in
+    if [ "${pkg}" == "" ]
+    then
+        error "No package specified to be checked if installed"
+        exit 1
+    fi
+
+    case "${DISTRO}" in
     "RHEL"|"CENTOS"|"FEDORA")
-        echo "${PKGS}"
+        cmd="rpm -q"
         ;;
     "UBUNTU")
-        echo "autoconf automake libtool curl make gcc g++ unzip git wget"
+        cmd="dpkg -s"
         ;;
     *)
         error "Unknown Linux distribution"
         exit 1
         ;;
     esac
+
+    ${cmd} ${pkg} &>/dev/null
+    return $?
+}
+
+function get_distribution_pkg_dependencies () {
+    local pkgs_common="autoconf automake libtool curl make gcc unzip git wget"
+    local pkgs_required=""
+
+    case "${DISTRO}" in
+    "RHEL"|"CENTOS"|"FEDORA")
+        pkgs_required="${pkgs_common} gcc-c++"
+        ;;
+    "UBUNTU")
+        pkgs_required="${pkgs_common} g++"
+        ;;
+    *)
+        error "Unknown Linux distribution"
+        exit 1
+        ;;
+    esac
+
+    echo ${pkgs_required}
+}
+
+#
+# Usage: get_distribution_missing_pkg_dependencies <PKG1> <PKG2> ...
+#
+function get_distribution_missing_pkg_dependencies () {
+    local pkgs_required=$*
+    local pkgs_missing=""
+
+    for pkg in ${pkgs_required}
+    do
+        if ! is_package_installed ${pkg}
+        then
+            pkgs_missing="${pkg} ${pkgs_missing}"
+        fi
+    done
+
+    echo ${pkgs_missing}
 }
 
 setup_cmake
@@ -189,6 +239,14 @@ info "${DISTRO} detected"
 PKGS=$(get_distribution_pkg_dependencies)
 PKG_INSTALLER=$(get_distribution_pkg_manager)
 
-info "Installing packages: ${PKGS}"
-${PKG_INSTALLER} ${PKGS}
-check_result $? "Cannot install required dependencies"
+info "Required packages: ${PKGS}"
+PKGS=$(get_distribution_missing_pkg_dependencies $PKGS)
+
+if [ "${PKGS}" != "" ]
+then
+    info "Installing packages: ${PKGS}"
+    ${PKG_INSTALLER} ${PKGS}
+    check_result $? "Cannot install required dependencies"
+else
+    info "All required packages already installed"
+fi
