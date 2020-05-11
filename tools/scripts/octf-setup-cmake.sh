@@ -42,7 +42,11 @@ function is_cmake_version_ok ()
         return 1
     fi
 
-    if [ ${major} -lt 3 ] || [ ${minor} -lt 10 ]
+    if [ ${major} -lt ${OCTF_CMAKE_MIN_VER_MAJOR} ]
+    then
+        return 1
+    elif [ ${major} -eq ${OCTF_CMAKE_MIN_VER_MAJOR} ] && \
+            [ ${minor} -lt ${OCTF_CMAKE_MIN_VER_MINOR} ]
     then
         return 1
     fi
