@@ -5,7 +5,7 @@ set(protoListExamples
 
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${protoListExamples})
 add_library(protoexamples STATIC ${PROTO_HEADER} ${PROTO_SRC} ${protoListExamples})
-target_link_libraries(protoexamples protooctf)
+add_dependencies(protoexamples protooctf)
 target_include_directories(protoexamples
 	PUBLIC
 	${PROTOBUF_INCLUDE_DIR}
@@ -13,3 +13,4 @@ target_include_directories(protoexamples
 	${CMAKE_CURRENT_BINARY_DIR}
 	${OCTF_PROTO_DIR}
 	)
+
