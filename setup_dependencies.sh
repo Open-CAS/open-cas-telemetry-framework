@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright(c) 2012-2018 Intel Corporation
+# Copyright(c) 2012-2020 Intel Corporation
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 # This script dir name
@@ -39,7 +39,7 @@ script="${OCTF_DIR}/tools/scripts/octf-setup-cmake.sh"
 ${script}
 if [ $? -ne 0 ]
 then
-    info "Cannot find or setup minimal versionm of cmake"
+    info "Cannot find or setup minimal version of cmake"
     info "Please provide it "
     info "Or execute ${script} when network access works"
     error "No minimal cmake version avaialbe"
