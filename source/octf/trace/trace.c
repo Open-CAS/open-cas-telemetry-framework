@@ -77,10 +77,6 @@ static bool _is_trace_valid(octf_trace_t trace) {
         return false;
     }
 
-    if (!trace->phdr) {
-        return false;
-    }
-
     if (env_atomic64_read(&trace->phdr->magic) != TRACE_MAGIC_BUFFER) {
         return false;
     }
@@ -254,6 +250,17 @@ static uint64_t _get_continuous_space(struct octf_trace *trace,
                                       uint64_t rdp,
                                       uint64_t wrp) {
     uint64_t space = 0;
+
+    // Inconsistent state of read/write pointers
+    // Stop all tracing and don't return any space
+    if (wrp >= trace->ring_size) {
+        env_atomic64_set(&trace->phdr->magic, 0);
+        return 0;
+    }
+    if (rdp >= trace->ring_size) {
+        env_atomic64_set(&trace->phdr->magic, 0);
+        return 0;
+    }
 
     if (wrp >= rdp) {
         space = trace->ring_size - wrp;
