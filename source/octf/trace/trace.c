@@ -77,10 +77,6 @@ static bool _is_trace_valid(octf_trace_t trace) {
         return false;
     }
 
-    if (!trace->phdr) {
-        return false;
-    }
-
     if (env_atomic64_read(&trace->phdr->magic) != TRACE_MAGIC_BUFFER) {
         return false;
     }
