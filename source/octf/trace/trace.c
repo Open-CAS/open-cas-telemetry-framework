@@ -254,6 +254,14 @@ static uint64_t _get_continuous_space(struct octf_trace *trace,
                                       uint64_t rdp,
                                       uint64_t wrp) {
     uint64_t space = 0;
+    if (wrp >= trace->ring_size) {
+        env_atomic64_set(&trace->phdr->magic, 0);
+        return 0;
+    }
+    if (rdp >= trace->ring_size) {
+        env_atomic64_set(&trace->phdr->magic, 0);
+        return 0;
+    }
 
     if (wrp >= rdp) {
         space = trace->ring_size - wrp;
