@@ -250,6 +250,9 @@ static uint64_t _get_continuous_space(struct octf_trace *trace,
                                       uint64_t rdp,
                                       uint64_t wrp) {
     uint64_t space = 0;
+
+    // Inconsistent state of read/write pointers
+    // Stop all tracing and don't return any space
     if (wrp >= trace->ring_size) {
         env_atomic64_set(&trace->phdr->magic, 0);
         return 0;
