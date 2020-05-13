@@ -215,8 +215,6 @@ void octf_trace_close(octf_trace_t *trace) {
     if (_trace->mode == octf_trace_open_mode_producer) {
         if (_is_trace_valid(_trace)) {
             env_atomic64_set(&_trace->phdr->closed, 1);
-        } else {
-            ENV_WARN(true, "Attempt of closing not initialized trace");
         }
     }
 
