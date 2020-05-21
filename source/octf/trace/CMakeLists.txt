@@ -7,4 +7,8 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/iotrace_event.h
 	${CMAKE_CURRENT_LIST_DIR}/IOTracePlugin.h
 	${CMAKE_CURRENT_LIST_DIR}/IOTracePlugin.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ITrace.h
+	${CMAKE_CURRENT_LIST_DIR}/ITraceRepository.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceLibrary.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceLibrary.h
 )

@@ -1,4 +1,10 @@
 target_sources(octf
 PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/trace_env_usr.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceLocal.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceLocal.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceBase.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceBase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceRepositoryLocal.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceRepositoryLocal.cpp
 )
