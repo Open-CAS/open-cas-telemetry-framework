@@ -253,8 +253,8 @@ bool readDirectoryContentsRecursive(const std::string &path,
     }
 
     // Scan them recursively
-    std::list<std::string> nestedFiles;
     for (const auto &dir : directories) {
+        std::list<std::string> nestedFiles;
         if (!readDirectoryContentsRecursive(path + "/" + dir, nestedFiles,
                                             type)) {
             result = false;
