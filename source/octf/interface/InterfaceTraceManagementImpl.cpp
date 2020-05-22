@@ -6,8 +6,10 @@
 
 #include <dirent.h>
 #include <string>
+#include <octf/communication/RpcOutputStream.h>
 #include <octf/interface/TraceManager.h>
 #include <octf/proto/InterfaceTraceManagement.pb.h>
+#include <octf/trace/TraceLibrary.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/FileOperations.h>
 #include <octf/utils/FrameworkConfiguration.h>
@@ -15,8 +17,6 @@
 #include <octf/utils/ProtobufReaderWriter.h>
 
 namespace octf {
-
-constexpr char InterfaceTraceManagementImpl::ASTERISK;
 
 InterfaceTraceManagementImpl::InterfaceTraceManagementImpl(
         std::string tracePrefix) {
@@ -26,57 +26,28 @@ InterfaceTraceManagementImpl::InterfaceTraceManagementImpl(
 InterfaceTraceManagementImpl::~InterfaceTraceManagementImpl(){};
 
 void InterfaceTraceManagementImpl::listTraces(
-        ::google::protobuf::RpcController *controller,
+        ::google::protobuf::RpcController *,
         const ::octf::proto::TracePathPrefix *request,
         ::octf::proto::TraceList *response,
         ::google::protobuf::Closure *done) {
-    (void) controller;
-    const std::string &traceRootDir = getFrameworkConfiguration().getTraceDir();
-    std::string cliPrefix = request->prefix();
-    bool matchMultipleTraces = false;
+    const auto &prefix = request->prefix();
 
-    if (cliPrefix.length() == 0) {
-        // Empty prefix - match all traces
-        matchMultipleTraces = true;
-    } else if (cliPrefix.back() == ASTERISK) {
-        // Remember user used an asterisk and remove it from prefix
-        matchMultipleTraces = true;
-        cliPrefix.pop_back();
+    // If trace directory name does not match this node's name
+    if (prefix.compare(0, m_tracePrefix.size(), m_tracePrefix) != 0) {
+        done->Run();
+        return;
     }
 
-    // Get a list of directories in root trace directory
-    std::list<std::string> traceDirs;
-    fsutils::readDirectoryContentsRecursive(traceRootDir, traceDirs,
-                                            fsutils::FileType::Directory);
+    std::list<TraceShRef> traceList;
+    TraceLibrary::get().getTraceList(prefix, traceList);
 
-    // Check for trace summaries in these directories
-    proto::TraceSummary summary;
-    traceDirs.sort();
-
-    for (const auto &dir : traceDirs) {
-        ProtobufReaderWriter rw(traceRootDir + "/" + dir + "/" +
-                                SUMMARY_FILE_NAME);
-
-        // Succesfully read summary - valid trace directory, now check if
-        // TracePath argument is in the beginning of the directory path
-        if (rw.read(summary)) {
-            // Check if summary is valid
-            if (!isValidSummary(summary)) {
-                log::cerr << "Invalid trace summary found in " + dir
-                          << std::endl;
-                continue;
-            }
-
-            // Check if this trace path has this node's prefix
-            // and if it matches cli prefix
-            if (isMatchingPrefix(dir, cliPrefix, matchMultipleTraces)) {
-                auto trace = response->add_trace();
-                trace->set_tracepath(dir);
-                trace->set_state(summary.state());
-                trace->set_label(summary.label());
-            }
-        }
+    for (auto const &trace : traceList) {
+        auto itme = response->add_trace();
+        itme->set_tracepath(trace->getSummary().tracepath());
+        itme->set_state(trace->getSummary().state());
+        itme->set_label(trace->getSummary().label());
     }
+
     done->Run();
 }
 
@@ -85,72 +56,42 @@ void InterfaceTraceManagementImpl::removeTraces(
         const ::octf::proto::RemoveTracesRequest *request,
         ::octf::proto::TraceList *response,
         ::google::protobuf::Closure *done) {
-    (void) response;
+    const auto &prefix = request->prefix();
+    RpcOutputStream cerr(log::Severity::Error, controller);
 
-    proto::TraceList tracesToRemove;
-    const std::string &traceRootDir = getFrameworkConfiguration().getTraceDir();
-    std::string cliPrefix = request->prefix();
-    proto::TraceSummary summary;
-    bool matchMultipleTraces = false;
-
-    if (cliPrefix == "") {
-        controller->SetFailed("No trace files specified.");
+    // If trace directory name does not match this node's name
+    if (prefix.compare(0, m_tracePrefix.size(), m_tracePrefix) != 0) {
+        controller->SetFailed("No traces removed.");
         done->Run();
         return;
     }
 
-    if (cliPrefix.back() == ASTERISK) {
-        // Remember user used an asterisk and remove it from prefix
-        matchMultipleTraces = true;
-        cliPrefix.pop_back();
-    }
+    std::list<TraceShRef> tracesToRemove;
+    TraceLibrary::get().getTraceList(prefix, tracesToRemove);
 
-    // Get a list of directories
-    std::list<std::string> traceDirs;
-    fsutils::readDirectoryContentsRecursive(traceRootDir, traceDirs,
-                                            fsutils::FileType::Directory);
-
-    for (const auto &dir : traceDirs) {
-        // Check if this trace path has this node's prefix
-        // and if it matches cliPrefix
-        if (isMatchingPrefix(dir, cliPrefix, matchMultipleTraces)) {
-            std::string summaryPath =
-                    traceRootDir + "/" + dir + "/" + SUMMARY_FILE_NAME;
-            ProtobufReaderWriter rw(summaryPath);
-            // Check if a valid summary exists in directory
-            if (rw.read(summary)) {
-                // Remove only completed or traces with errors
-                if (request->force() ||
-                    summary.state() == proto::TraceState::COMPLETE ||
-                    summary.state() == proto::TraceState::ERROR) {
-                    auto trace = tracesToRemove.add_trace();
-                    trace->set_tracepath(dir);
-                    trace->set_state(summary.state());
-
-                } else {
-                    log::cout
-                            << "Skipping trace, as it may still be running: " +
-                                       dir
-                            << std::endl;
-                }
+    if (!request->force()) {
+        // We are allowed to remove only done traces
+        auto iter = tracesToRemove.begin();
+        for (; iter != tracesToRemove.end();) {
+            if ((*iter)->isTracingEnd()) {
+                iter++;
+            } else {
+                iter = tracesToRemove.erase(iter);
             }
         }
     }
 
-    // Remove directories matching prefixes and having summary file
-    for (int i = 0; i < tracesToRemove.trace_size(); i++) {
-        const auto &traceToRemove = tracesToRemove.trace(i);
-        std::string absolutePath =
-                traceRootDir + "/" + traceToRemove.tracepath();
+    for (auto &trace : tracesToRemove) {
+        try {
+            trace->remove(request->force());
 
-        if (!fsutils::removeFile(absolutePath)) {
-            log::cerr << "Could not remove trace: " + traceToRemove.tracepath()
-                      << std::endl;
-        } else {
             // Add removed traces to response
             auto removedTrace = response->add_trace();
-            removedTrace->set_tracepath(traceToRemove.tracepath());
-            removedTrace->set_state(traceToRemove.state());
+            removedTrace->set_tracepath(trace->getSummary().tracepath());
+            removedTrace->set_state(trace->getSummary().state());
+            removedTrace->set_label(trace->getSummary().label());
+        } catch (Exception &e) {
+            cerr << e.getMessage() << std::endl;
         }
     }
 
@@ -162,73 +103,13 @@ void InterfaceTraceManagementImpl::removeTraces(
     done->Run();
 }
 void InterfaceTraceManagementImpl::getTraceSummary(
-        ::google::protobuf::RpcController *controller,
+        ::google::protobuf::RpcController *,
         const ::octf::proto::TracePath *request,
         ::octf::proto::TraceSummary *response,
         ::google::protobuf::Closure *done) {
-    // Get directory with traces
-    std::string traceRootDir = getFrameworkConfiguration().getTraceDir();
-
-    // Check for existence of summary
-    std::string summaryPath =
-            traceRootDir + "/" + request->tracepath() + "/" + SUMMARY_FILE_NAME;
-    ProtobufReaderWriter rw(summaryPath);
-
-    // Try to read it
-    if (!rw.read(*response)) {
-        // Could not read summary
-        controller->SetFailed("Could not find specified trace summary.");
-    }
-
+    auto trace = TraceLibrary::get().getTrace(request->tracepath());
+    response->CopyFrom(trace->getSummary());
     done->Run();
-}
-
-bool InterfaceTraceManagementImpl::isValidSummary(
-        const proto::TraceSummary &summary) {
-    if (summary.sourcenode().node_size() == 0) {
-        return false;
-    }
-
-    if (summary.queuecount() < 1) {
-        return 0;
-    }
-
-    if (summary.traceduration() < 0) {
-        return false;
-    }
-
-    if (summary.tracestartdatetime() == "") {
-        return false;
-    }
-
-    return true;
-}
-
-bool InterfaceTraceManagementImpl::isMatchingPrefix(std::string traceDir,
-                                                    std::string prefix,
-                                                    bool matchMultiple) {
-    // If trace directory name does not match this node's name - return false
-    if (traceDir.compare(0, m_tracePrefix.size(), m_tracePrefix) != 0) {
-        return false;
-    }
-
-    if (matchMultiple) {
-        // We want to match multiple traces
-        // - match if prefix is in the beginning of traceDir
-        if (!traceDir.compare(0, prefix.size(), prefix)) {
-            return true;
-        }
-
-    } else {
-        // We are not matching multiple traces
-        // - match only if prefix is the same as complete path
-        if (traceDir.size() == prefix.length() &&
-            !traceDir.compare(0, traceDir.length(), prefix)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 }  // namespace octf

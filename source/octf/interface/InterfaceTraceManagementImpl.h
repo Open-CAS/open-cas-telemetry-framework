@@ -38,11 +38,6 @@ public:
                                  ::google::protobuf::Closure *done) override;
 
 private:
-    bool isMatchingPrefix(std::string traceDir,
-                          std::string prefix,
-                          bool matchMultiple);
-    static constexpr char ASTERISK = '*';
-    bool isValidSummary(const proto::TraceSummary &summary);
     std::string m_tracePrefix;
 };
 
