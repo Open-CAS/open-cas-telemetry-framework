@@ -66,6 +66,9 @@ message OptsParamNum {
 message OptsParamString {
     // specifies default value of string parameter
     string default_value = 1;
+
+    // In case of repeated field, limit of array size, 0 means no limit
+    uint32 repeated_limit = 2;
 }
 
 message OptsEnumValue {

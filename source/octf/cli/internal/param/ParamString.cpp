@@ -21,48 +21,64 @@ namespace cli {
 ParamString::ParamString()
         : Parameter()
         , m_values()
-        , m_defaultValue(1, "")
+        , m_defaultValues(1, "")
+        , m_hasDefaultValue(false)
         , m_maxLength(MAX_STRING_LENGTH)
-        , m_multipleValue(false) {}
+        , m_multipleValue(false)
+        , m_multipleValueLimit(0) {}
 
 void ParamString::setValue(CLIElement element) {
     if (!isValueSet()) {
-        string inputValue = element.getValue();
+        const auto &inputValue = element.getValue();
 
         if (inputValue.size() > m_maxLength) {
             throw InvalidParameterException("Value length of option '" +
                                             getLongKey() + "' is too long.");
         }
 
-        // Parse input for delimited multiple values
-        m_values = parseValuesToVector(inputValue);
-        setValueSet();
-
+        setValue(inputValue);
     } else {
         throw InvalidParameterException("Value of option '" + getLongKey() +
                                         "' is set multiple times.");
     }
 }
 
-const std::vector<std::string> &ParamString::getValue() const {
-    if (!isValueSet()) {
-        return m_defaultValue;
+const std::string &ParamString::getValue() const {
+    if (!isMultipleValue()) {
+        if (isValueSet()) {
+            return m_values[0];
+        } else {
+            return m_defaultValues[0];
+        }
     } else {
-        return m_values;
+        throw InvalidParameterException("Option '" + getLongKey() +
+                                        "' access error, use multiple getter");
+    }
+}
+
+const std::vector<std::string> &ParamString::getMultipleValue() const {
+    if (isMultipleValue()) {
+        if (isValueSet()) {
+            return m_values;
+        } else {
+            return m_defaultValues;
+        }
+    } else {
+        throw InvalidParameterException("Option '" + getLongKey() +
+                                        "' access error, use regural getter");
     }
 }
 
 void ParamString::setValue(std::string value) {
-    m_values = parseValuesToVector(value);
-    setValueSet();
-}
-
-bool ParamString::isValid(const std::string &value) {
-    if (value.size() > MAX_STRING_LENGTH) {
-        return false;
+    if (isMultipleValue()) {
+        m_values = parseValuesToVector(value);
     } else {
-        return true;
+        m_values.clear();
+        m_values.push_back(value);
     }
+
+    validate();
+    setValueSet();
 }
 
 uint32_t ParamString::getMaxLength() const {
@@ -73,22 +89,40 @@ void ParamString::setMaxLength(uint32_t maxLength) {
     m_maxLength = maxLength;
 }
 
-void ParamString::setDefault(std::string values) {
-    // Parse delimited values to vector
-    m_defaultValue = parseValuesToVector(values);
+void ParamString::setDefault(std::string value) {
+    if (isMultipleValue()) {
+        m_defaultValues = parseValuesToVector(value);
+    } else {
+        m_defaultValues.clear();
+        m_defaultValues.push_back(value);
+    }
+
+    validate();
+    m_hasDefaultValue = true;
+}
+
+bool ParamString::hasDefaultValue() const {
+    return m_hasDefaultValue;
 }
 
 void ParamString::parseToProtobuf(
         google::protobuf::Message *message,
         const google::protobuf::FieldDescriptor *fieldDescriptor) {
-    if (fieldDescriptor->is_repeated()) {
-        for (unsigned int i = 0; i < m_values.size(); i++) {
-            message->GetReflection()->AddString(message, fieldDescriptor,
-                                                m_values[i]);
+    if (isMultipleValue()) {
+        if (!fieldDescriptor->is_repeated()) {
+            throw InvalidParameterException("Option '" + getLongKey() +
+                                            "' cannot be parsed to protocol "
+                                            "buffer, multiple value mismatch");
         }
-    } else if (m_values.size()) {
+
+        const auto &values = getMultipleValue();
+        for (const auto &value : values) {
+            message->GetReflection()->AddString(message, fieldDescriptor,
+                                                value);
+        }
+    } else {
         message->GetReflection()->SetString(message, fieldDescriptor,
-                                            m_values[0]);
+                                            getValue());
     }
 }
 
@@ -109,6 +143,7 @@ void ParamString::setOptions(
     // If string-specific options are present, set them
     if (paramOps.has_cli_str()) {
         setDefault(paramOps.cli_str().default_value());
+        m_multipleValueLimit = paramOps.cli_str().repeated_limit();
     }
 }
 
@@ -142,6 +177,32 @@ std::vector<std::string> ParamString::parseValuesToVector(
     result.push_back(values);
 
     return result;
+}
+
+void ParamString::validate() const {
+    if (isMultipleValue()) {
+        const auto &values = getMultipleValue();
+
+        if (m_multipleValueLimit && m_multipleValueLimit > values.size()) {
+            throw InvalidParameterException(
+                    "Limit of multiple values of option '" + getLongKey() +
+                    "' exceed.");
+        }
+
+        for (const auto &value : values) {
+            if (value.length() > m_maxLength) {
+                throw InvalidParameterException(
+                        "Multiple value's item length of option '" +
+                        getLongKey() + "' is too long.");
+            }
+        }
+    } else {
+        const auto &value = getValue();
+        if (value.length() > m_maxLength) {
+            throw InvalidParameterException("Value length of option '" +
+                                            getLongKey() + "' is too long.");
+        }
+    }
 }
 
 }  // namespace cli
