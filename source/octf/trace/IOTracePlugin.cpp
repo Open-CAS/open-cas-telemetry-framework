@@ -21,8 +21,9 @@ IOTracePlugin::IOTracePlugin(const std::string &pluginId, uint32_t queueCount)
 IOTracePlugin::~IOTracePlugin() {}
 
 bool IOTracePlugin::initCustom() {
-    m_tracing =
-            createInterface<InterfaceTraceCreatingImpl>(getNodePath(), this);
+    m_tracing = createInterface<InterfaceTraceCreatingImpl>(
+            getNodePath(), this, IOTRACE_EVENT_VERSION_MAJOR,
+            IOTRACE_EVENT_VERSION_MINOR);
     if (!m_tracing) {
         throw Exception("Error creating CAS trace plugin interface");
     }

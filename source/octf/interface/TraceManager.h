@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -41,7 +41,10 @@ enum class TracingState {
  */
 class TraceManager {
 public:
-    TraceManager(const NodePath &ownerNodePath, ITraceExecutor *executor);
+    TraceManager(const NodePath &ownerNodePath,
+                 ITraceExecutor *executor,
+                 const int32_t majorVersion,
+                 const int32_t minorVersion);
     ~TraceManager();
 
     /**
@@ -225,6 +228,14 @@ private:
      * @brief User defined label
      */
     std::string m_label;
+    /**
+     * @brief Trace major version
+     */
+    int32_t m_majorVersion;
+    /**
+     * @brief Trace minor version
+     */
+    int32_t m_minorVersion;
 };
 
 }  // namespace octf

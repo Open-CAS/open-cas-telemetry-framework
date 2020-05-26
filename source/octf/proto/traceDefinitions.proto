@@ -97,4 +97,8 @@ message TraceSummary {
     int64 queueCount = 9 [ (opts_param).cli_desc = "Number of IO queues" ];
 
     string label = 10 [ (opts_param).cli_desc = "User defined label" ];
+
+    int32 major = 11 [ (opts_param).cli_desc = "Major version" ];
+
+    int32 minor = 12 [ (opts_param).cli_desc = "Minor version" ];
 }

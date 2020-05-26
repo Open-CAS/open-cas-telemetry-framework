@@ -96,6 +96,12 @@ public:
                                        b) {
         return true;
     }
+    /**
+     * @brief Gets used parser
+     */
+    virtual std::shared_ptr<ITraceParser> getParser() {
+        return m_parser;
+    }
 
     typedef EventType eventType;
 
@@ -117,12 +123,6 @@ protected:
      */
     virtual std::shared_ptr<EventType> getEventMessagePrototype() {
         return m_message;
-    }
-    /**
-     * @brief Gets used parser
-     */
-    virtual std::shared_ptr<ITraceParser> getParser() {
-        return m_parser;
     }
 
 private:

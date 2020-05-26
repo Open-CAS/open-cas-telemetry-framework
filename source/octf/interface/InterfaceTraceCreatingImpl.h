@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -22,9 +22,13 @@ public:
      * @brief InterfaceTraceCreatingImpl constructor
      * @param owner Node containing this interface
      * @param traceExecutor trace control object
+     * @param majorVersion Trace major version
+     * @param minorVersion Trace minor version
      */
     InterfaceTraceCreatingImpl(const NodePath &ownerNodePath,
-                               ITraceExecutor *traceExecutor);
+                               ITraceExecutor *traceExecutor,
+                               const int32_t majorVersion,
+                               const int32_t minorVersion);
 
     virtual ~InterfaceTraceCreatingImpl();
 

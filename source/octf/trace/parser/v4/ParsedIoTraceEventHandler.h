@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H
-#define SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H
+#ifndef SOURCE_OCTF_TRACE_PARSER_V4_PARSEDIOTRACEEVENTHANDLER_H
+#define SOURCE_OCTF_TRACE_PARSER_V4_PARSEDIOTRACEEVENTHANDLER_H
 
 #include <map>
 #include <memory>
@@ -15,10 +15,12 @@
 #include <octf/interface/IIoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
+#include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/trace/parser/TraceEventHandler.h>
 
 namespace octf {
 
+namespace v4 {
 /**
  * This is IO trace event handler of parsed IO
  *
@@ -29,38 +31,17 @@ namespace octf {
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler
-        : public TraceEventHandler<proto::trace::Event> {
+class ParsedIoTraceEventHandler : public IIoTraceParser {
 public:
-    ParsedIoTraceEventHandler(const std::string &tracePath);
+    ParsedIoTraceEventHandler(octf::ParsedIoTraceEventHandler *parentHandler);
     virtual ~ParsedIoTraceEventHandler();
-
-    /**
-     * @brief Handles parsed IO
-     *
-     * @param IO Parsed IO to be handle
-     */
-    virtual void handleIO(const proto::trace::ParsedEvent &io) = 0;
-
-    void processEvents() override {
-        TraceEventHandler<proto::trace::Event>::processEvents();
-        m_childParser->flushEvents();
-    }
 
     /**
      * @return Sum of all devices sizes in sectors
      */
     uint64_t getDevicesSize() const;
 
-    /**
-     * @brief Handles device description trace event
-     *
-     * @param devDesc Device description trace event
-     */
-    virtual void handleDeviceDescription(
-            const proto::trace::EventDeviceDescription &devDesc) {
-        (void) devDesc;
-    }
+    void flushEvents();
 
 protected:
     /**
@@ -87,20 +68,34 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
-    bool compareEvents(const proto::trace::Event *a,
-                       const proto::trace::Event *b) override {
-        return a->header().sid() < b->header().sid();
-    }
-
     void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
 
-    virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype()
-            override;
+    void pushOutEvent();
 
 private:
-    std::shared_ptr<IIoTraceParser> m_childParser;
+    struct Key;
+    class Map;
+    struct IoQueueDepth;
+    class FileSystemViewer;
+    struct FileInfo;
+    std::queue<proto::trace::ParsedEvent> m_queue;
+    std::unique_ptr<Map> m_eventMapping;
+    std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
+    std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
+    std::map<FileId, FileInfo> m_fileInfo;
+    uint64_t m_timestampOffset;
+    uint64_t m_sidOffset;
+    uint64_t m_limit;
+    uint64_t m_subrangeStart;
+    uint64_t m_subrangeEnd;
+    std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
+    std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
+
+    octf::ParsedIoTraceEventHandler *m_parentHandler;
 };
+
+}  // namespace v4
 
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_TRACE_PARSER_PARSEDIOTRACEEVENTHANDLER_H
+#endif  // SOURCE_OCTF_TRACE_PARSER_V4_PARSEDIOTRACEEVENTHANDLER_H

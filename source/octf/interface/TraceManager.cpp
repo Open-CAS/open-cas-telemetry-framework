@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -24,7 +24,9 @@
 namespace octf {
 
 TraceManager::TraceManager(const NodePath &ownerNodePath,
-                           ITraceExecutor *executor)
+                           ITraceExecutor *executor,
+                           const int32_t majorVersion,
+                           const int32_t minorVersion)
         : m_ownerNodePath(ownerNodePath)
         , m_executor(executor)
         , m_thread()
@@ -37,7 +39,9 @@ TraceManager::TraceManager(const NodePath &ownerNodePath,
         , m_numberOfJobs(executor->getTraceQueueCount())
         , m_memoryPoolSizeMiB(0)
         , m_serializerType(SerializerType::FileSerializer)
-        , m_traceDirRelativePath("") {}
+        , m_traceDirRelativePath("")
+        , m_majorVersion(majorVersion)
+        , m_minorVersion(minorVersion) {}
 
 TraceManager::~TraceManager() {
     m_finish = true;
@@ -218,6 +222,8 @@ void TraceManager::fillTraceSummary(proto::TraceSummary *summary,
     summary->set_droppedevents(getDroppedTraceCount());
     summary->set_queuecount(getQueueCount());
     summary->set_label(getLabel());
+    summary->set_major(m_majorVersion);
+    summary->set_minor(m_minorVersion);
 
     proto::TraceState tracingState = proto::TraceState::UNDEFINED;
     switch (state) {

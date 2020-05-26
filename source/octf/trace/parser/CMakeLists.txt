@@ -1,3 +1,5 @@
+add_subdirectory(v4)
+
 target_sources(octf
 PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/IoTraceEventHandlerCsvPrinter.h
