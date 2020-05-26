@@ -44,25 +44,26 @@ public:
      */
     virtual void setDefault(std::string value);
 
+    bool hasDefaultValue() const override;
+
     /**
      * @brief Gets value(s) of this parameter
      * @return Parameter value
      */
-    const std::vector<std::string> &getValue() const;
+    const std::string &getValue() const;
+
+    /**
+     * @brief Gets value(s) of this parameter
+     * @return Parameter value
+     */
+    const std::vector<std::string> &getMultipleValue() const;
 
     /**
      * @brief Sets value of this parameter
      * @param value Value(s) to be set (can be delimited
      * multiple values)
      */
-    void setValue(std::string value);
-
-    /**
-     * @brief Checks if this parameter value is valid
-     * @param value Value to validate
-     * @return If this parameter value is valid
-     */
-    static bool isValid(const std::string &value);
+    void setValue(const std::string &value);
 
     /**
      * @brief Gets maximal length of parameter value
@@ -87,14 +88,23 @@ public:
             google::protobuf::Message *message,
             const google::protobuf::FieldDescriptor *fieldDescriptor) override;
 
-protected:
+private:
     std::vector<std::string> parseValuesToVector(std::string values) const;
+
+    /**
+     * @brief Validates if value owned by string parameter is valid
+     *
+     * @throw InvalidParameterException in case of invalidation
+     */
+    void validate() const;
 
 private:
     std::vector<std::string> m_values;
-    std::vector<std::string> m_defaultValue;
+    std::vector<std::string> m_defaultValues;
+    bool m_hasDefaultValue;
     uint32_t m_maxLength;
     bool m_multipleValue;
+    uint32_t m_multipleValueLimit;
 };
 
 }  // namespace cli
