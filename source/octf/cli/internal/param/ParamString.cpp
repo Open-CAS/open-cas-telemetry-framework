@@ -65,11 +65,11 @@ const std::vector<std::string> &ParamString::getMultipleValue() const {
         }
     } else {
         throw InvalidParameterException("Option '" + getLongKey() +
-                                        "' access error, use regural getter");
+                                        "' access error, use regular getter");
     }
 }
 
-void ParamString::setValue(std::string value) {
+void ParamString::setValue(const std::string &value) {
     if (isMultipleValue()) {
         m_values = parseValuesToVector(value);
     } else {
