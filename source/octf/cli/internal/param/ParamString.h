@@ -63,7 +63,7 @@ public:
      * @param value Value(s) to be set (can be delimited
      * multiple values)
      */
-    void setValue(std::string value);
+    void setValue(const std::string &value);
 
     /**
      * @brief Gets maximal length of parameter value
