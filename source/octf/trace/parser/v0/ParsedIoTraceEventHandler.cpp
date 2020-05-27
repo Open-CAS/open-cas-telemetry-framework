@@ -15,7 +15,7 @@
 #include <octf/utils/NonCopyable.h>
 
 namespace octf {
-
+namespace trace {
 namespace v0 {
 
 struct ParsedIoTraceEventHandler::IoQueueDepth {
@@ -194,8 +194,10 @@ struct ParsedIoTraceEventHandler::FileInfo {
 constexpr uint64_t ParsedIoTraceEventHandler_QueueLimit = 10000;
 
 ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
-        octf::ParsedIoTraceEventHandler *parentHandler)
-        : m_queue()
+        octf::ParsedIoTraceEventHandler *parentHandler,
+        const std::string &tracePath)
+        : IIoTraceParser(tracePath)
+        , m_queue()
         , m_eventMapping(new ParsedIoTraceEventHandler::Map())
         , m_devices()
         , m_fileInfo()
@@ -208,6 +210,11 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         , m_parentHandler(parentHandler) {}
 
 ParsedIoTraceEventHandler::~ParsedIoTraceEventHandler() {}
+
+void ParsedIoTraceEventHandler::processEvents() {
+    TraceEventHandler<proto::trace::Event>::processEvents();
+    flushEvents();
+}
 
 void ParsedIoTraceEventHandler::handleEvent(
         std::shared_ptr<proto::trace::Event> traceEvent) {
@@ -435,7 +442,7 @@ void ParsedIoTraceEventHandler::flushEvents() {
         }
     }
 
-    bool isFinished = m_parentHandler->getParser()->isFinished();
+    bool isFinished = getParser()->isFinished();
 
     if (m_queue.size() < m_limit && !isFinished) {
         return;
@@ -700,5 +707,5 @@ uint64_t ParsedIoTraceEventHandler::getDevicesSize() const {
 }
 
 }  // namespace v0
-
+}  // namespace trace
 }  // namespace octf

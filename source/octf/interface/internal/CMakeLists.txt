@@ -4,4 +4,5 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/TraceJob.cpp
 	${CMAKE_CURRENT_LIST_DIR}/FileTraceSerializer.h
 	${CMAKE_CURRENT_LIST_DIR}/TraceJob.h
+	${CMAKE_CURRENT_LIST_DIR}/IIoTraceParser.h
 )

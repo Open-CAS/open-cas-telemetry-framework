@@ -103,15 +103,16 @@ public:
         return m_parser;
     }
 
-    typedef EventType eventType;
-
-protected:
     /**
      * @brief Checks if cancel of event processing has been requested.
      */
     virtual bool isCancelRequested() const {
         return m_cancelRequested;
     }
+
+    typedef EventType eventType;
+
+protected:
     /**
      * @brief Checks if trace event handler has finished.
      */

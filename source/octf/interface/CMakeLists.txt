@@ -1,7 +1,6 @@
 add_subdirectory(internal)
 target_sources(octf
 PRIVATE
-   ${CMAKE_CURRENT_LIST_DIR}/IIoTraceParser.h
    ${CMAKE_CURRENT_LIST_DIR}/ITraceSerializer.h
    ${CMAKE_CURRENT_LIST_DIR}/InterfaceCliImpl.h
    ${CMAKE_CURRENT_LIST_DIR}/InterfaceServiceImpl.h

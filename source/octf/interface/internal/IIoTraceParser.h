@@ -3,27 +3,24 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#ifndef SOURCE_OCTF_INTERFACE_IIOTRACEPARSER_H
-#define SOURCE_OCTF_INTERFACE_IIOTRACEPARSER_H
+#ifndef SOURCE_OCTF_INTERFACE_INTERNAL_IIOTRACEPARSER_H
+#define SOURCE_OCTF_INTERFACE_INTERNAL_IIOTRACEPARSER_H
 
 #include <memory>
 #include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
+#include <octf/trace/parser/TraceEventHandler.h>
 
 namespace octf {
-class IIoTraceParser {
+class IIoTraceParser : public TraceEventHandler<proto::trace::Event> {
 public:
-    virtual ~IIoTraceParser() {}
-    /**
-     * @brief Handles single trace event.
-     *
-     * @param traceEvent A trace event data.
-     */
-    virtual void handleEvent(
-            std::shared_ptr<proto::trace::Event> traceEvent) = 0;
+    IIoTraceParser(const std::string &tracePath)
+            : TraceEventHandler<proto::trace::Event>(tracePath) {}
 
-    /**
+    virtual ~IIoTraceParser() {}
+
+    /*
      * @brief Skip IO's outside of this defined subrange
      * @param start LBA of subrange start
      * @param end LBA of subrange end
@@ -50,12 +47,7 @@ public:
      * @return Sum of all devices sizes in sectors
      */
     virtual uint64_t getDevicesSize() const = 0;
-
-    /**
-     * @brief Flush any queued trace events
-     */
-    virtual void flushEvents() = 0;
 };
 }  // namespace octf
 
-#endif /* SOURCE_OCTF_INTERFACE_IIOTRACEPARSER_H */
+#endif /* SOURCE_OCTF_INTERFACE_INTERNAL_IIOTRACEPARSER_H */

@@ -12,13 +12,14 @@
 #include <set>
 #include <octf/fs/FileId.h>
 #include <octf/fs/IFileSystemViewer.h>
-#include <octf/interface/IIoTraceParser.h>
+#include <octf/interface/internal/IIoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
 
 namespace octf {
 
+class IIoTraceParser;
 /**
  * This is IO trace event handler of parsed IO
  *
@@ -29,8 +30,7 @@ namespace octf {
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler
-        : public TraceEventHandler<proto::trace::Event> {
+class ParsedIoTraceEventHandler {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
     virtual ~ParsedIoTraceEventHandler();
@@ -42,10 +42,11 @@ public:
      */
     virtual void handleIO(const proto::trace::ParsedEvent &io) = 0;
 
-    void processEvents() override {
-        TraceEventHandler<proto::trace::Event>::processEvents();
-        m_childParser->flushEvents();
-    }
+    virtual void processEvents();
+
+    virtual void cancel();
+
+    bool isCancelRequested();
 
     /**
      * @return Sum of all devices sizes in sectors
@@ -87,15 +88,9 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
-    bool compareEvents(const proto::trace::Event *a,
-                       const proto::trace::Event *b) override {
-        return a->header().sid() < b->header().sid();
-    }
+    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent);
 
-    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
-
-    virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype()
-            override;
+    virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype();
 
 private:
     std::unique_ptr<IIoTraceParser> m_childParser;

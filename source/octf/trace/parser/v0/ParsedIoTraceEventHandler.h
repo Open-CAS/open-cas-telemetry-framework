@@ -12,7 +12,7 @@
 #include <set>
 #include <octf/fs/FileId.h>
 #include <octf/fs/IFileSystemViewer.h>
-#include <octf/interface/IIoTraceParser.h>
+#include <octf/interface/internal/IIoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
@@ -20,6 +20,7 @@
 
 namespace octf {
 
+namespace trace {
 namespace v0 {
 /**
  * This is IO trace event handler of parsed IO
@@ -33,7 +34,8 @@ namespace v0 {
  */
 class ParsedIoTraceEventHandler : public IIoTraceParser {
 public:
-    ParsedIoTraceEventHandler(octf::ParsedIoTraceEventHandler *parentHandler);
+    ParsedIoTraceEventHandler(octf::ParsedIoTraceEventHandler *parentHandler,
+                              const std::string &tracePath);
     virtual ~ParsedIoTraceEventHandler();
 
     /**
@@ -41,7 +43,7 @@ public:
      */
     uint64_t getDevicesSize() const;
 
-    void flushEvents();
+    void processEvents() override;
 
 protected:
     /**
@@ -68,9 +70,16 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
+    bool compareEvents(const proto::trace::Event *a,
+                       const proto::trace::Event *b) override {
+        return a->header().sid() < b->header().sid();
+    }
+
     void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
 
     void pushOutEvent();
+
+    void flushEvents();
 
 private:
     struct Key;
@@ -95,7 +104,7 @@ private:
 };
 
 }  // namespace v0
-
+}  // namespace trace
 }  // namespace octf
 
 #endif  // SOURCE_OCTF_TRACE_PARSER_V0_PARSEDIOTRACEEVENTHANDLER_H
