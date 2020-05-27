@@ -269,13 +269,11 @@ int64_t TraceManager::getTraceSize() const {
 }
 
 int32_t TraceManager::getTraceVersion() const {
-    int32_t version = 0;
-
-    if (m_jobs.size()) {
-        version = m_jobs[0]->getTraceVersion();
+    if (m_jobs.size() == 0) {
+        return 0;
     }
 
-    return version;
+    return m_jobs[0]->getTraceVersion();
 }
 
 int64_t TraceManager::getTraceSizeMiB() const {

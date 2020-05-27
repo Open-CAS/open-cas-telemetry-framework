@@ -98,7 +98,7 @@ private:
             override;
 
 private:
-    std::shared_ptr<IIoTraceParser> m_childParser;
+    std::unique_ptr<IIoTraceParser> m_childParser;
 };
 
 }  // namespace octf

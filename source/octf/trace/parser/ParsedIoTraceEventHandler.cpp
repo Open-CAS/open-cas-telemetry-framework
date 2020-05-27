@@ -19,7 +19,8 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
 
     switch (majorVersion) {
     case 0:
-        m_childParser = std::make_shared<v0::ParsedIoTraceEventHandler>(this);
+        m_childParser = std::unique_ptr<v0::ParsedIoTraceEventHandler>(
+                new v0::ParsedIoTraceEventHandler(this));
         break;
     default:
         throw Exception("Trying to parse unrecognized trace version");

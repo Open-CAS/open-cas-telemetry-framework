@@ -40,7 +40,7 @@ public:
      *
      * @retval version
      */
-    virtual int32_t getTraceVersion() = 0;
+    virtual int32_t getTraceVersion() const = 0;
 };
 
 }  //  namespace octf

@@ -210,7 +210,7 @@ void TraceConverter::setFileId(proto::trace::FileId *fileId,
     timestamp->set_nanos(file_id->ctime.tv_nsec);
 }
 
-int32_t TraceConverter::getTraceVersion() {
+int32_t TraceConverter::getTraceVersion() const {
     return TRACE_VERSION;
 }
 

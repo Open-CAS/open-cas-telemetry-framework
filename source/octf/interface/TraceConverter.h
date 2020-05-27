@@ -27,7 +27,7 @@ public:
             const void *trace,
             uint32_t size) override;
 
-    int32_t getTraceVersion() override;
+    int32_t getTraceVersion() const override;
 
 private:
     void setFileId(proto::trace::FileId *fileId,
