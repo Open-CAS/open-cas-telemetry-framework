@@ -7,6 +7,7 @@
 #include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/trace/parser/v0/ParsedIoTraceEventHandler.h>
+#include <octf/trace/parser/v1/ParsedIoTraceEventHandler.h>
 
 #include <octf/utils/Exception.h>
 
@@ -21,6 +22,10 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
     case 0:
         m_childParser = std::unique_ptr<trace::v0::ParsedIoTraceEventHandler>(
                 new trace::v0::ParsedIoTraceEventHandler(this, tracePath));
+        break;
+    case 1:
+        m_childParser = std::unique_ptr<trace::v1::ParsedIoTraceEventHandler>(
+                new trace::v1::ParsedIoTraceEventHandler(this, tracePath));
         break;
     default:
         throw Exception("Trying to parse unrecognized trace version");

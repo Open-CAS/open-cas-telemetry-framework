@@ -18,7 +18,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 4
+#define IOTRACE_EVENT_VERSION_MAJOR 5
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
@@ -118,6 +118,14 @@ typedef enum {
 struct iotrace_event {
     /** Trace event header */
     struct iotrace_event_hdr hdr;
+    /**
+     * @brief IO ID
+     *
+     * This ID can be used by the tracing environment to assign an ID to the IO.
+     *
+     * @note Zero means not set.
+     */
+    uint64_t id;
 
     /** Address of IO in sectors */
     uint64_t lba;
@@ -131,14 +139,14 @@ struct iotrace_event {
     /** Device ID */
     uint32_t dev_id;
 
-    /** Operation type: read, write, discard
-     * (iotrace_event_operation_t enumerator) **/
-    uint32_t operation;
-
     /** Operation flags: flush, fua, ... .
      * Values according to iotrace_event_flag_t enum
      * are summed (OR-ed) together. */
     uint32_t flags;
+
+    /** Operation type: read, write, discard
+     * (iotrace_event_operation_t enumerator) **/
+    uint8_t operation;
 
     /** Write hint associated with IO */
     uint8_t write_hint;
@@ -150,6 +158,13 @@ struct iotrace_event {
 struct iotrace_event_completion {
     /** Trace event header */
     struct iotrace_event_hdr hdr;
+
+    /**
+     * @brief The ID of an IO which is completed
+     *
+     * Environment can set ID of IO which is completed
+     */
+    uint64_t ref_id;
 
     /** Address of completed IO in sectors */
     uint64_t lba;
