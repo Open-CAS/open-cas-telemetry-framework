@@ -41,10 +41,7 @@ enum class TracingState {
  */
 class TraceManager {
 public:
-    TraceManager(const NodePath &ownerNodePath,
-                 ITraceExecutor *executor,
-                 const int32_t majorVersion,
-                 const int32_t minorVersion);
+    TraceManager(const NodePath &ownerNodePath, ITraceExecutor *executor);
     ~TraceManager();
 
     /**
@@ -154,6 +151,10 @@ private:
     void deleteJobs();
 
     /**
+     * @brief Retrieves parsed protobuf trace version
+     */
+    int32_t getTraceVersion() const;
+    /**
      * @brief Creates trace files directory
      */
     void initializeTraceDirectory();
@@ -228,14 +229,6 @@ private:
      * @brief User defined label
      */
     std::string m_label;
-    /**
-     * @brief Trace major version
-     */
-    int32_t m_majorVersion;
-    /**
-     * @brief Trace minor version
-     */
-    int32_t m_minorVersion;
 };
 
 }  // namespace octf

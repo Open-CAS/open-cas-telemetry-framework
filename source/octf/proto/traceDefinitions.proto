@@ -98,7 +98,5 @@ message TraceSummary {
 
     string label = 10 [ (opts_param).cli_desc = "User defined label" ];
 
-    int32 major = 11 [ (opts_param).cli_desc = "Major version" ];
-
-    int32 minor = 12 [ (opts_param).cli_desc = "Minor version" ];
+    int32 version = 11 [ (opts_param).cli_desc = "Trace version" ];
 }

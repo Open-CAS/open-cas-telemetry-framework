@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -15,14 +15,9 @@ namespace octf {
 
 InterfaceTraceCreatingImpl::InterfaceTraceCreatingImpl(
         const NodePath &ownerNodePath,
-        ITraceExecutor *traceExecutor,
-        const int32_t majorVersion,
-        const int32_t minorVersion)
-        : m_traceManager(
-                  std::unique_ptr<TraceManager>(new TraceManager(ownerNodePath,
-                                                                 traceExecutor,
-                                                                 majorVersion,
-                                                                 minorVersion)))
+        ITraceExecutor *traceExecutor)
+        : m_traceManager(std::unique_ptr<TraceManager>(
+                  new TraceManager(ownerNodePath, traceExecutor)))
         , m_ownerNodePath(ownerNodePath) {}
 
 InterfaceTraceCreatingImpl::~InterfaceTraceCreatingImpl() = default;

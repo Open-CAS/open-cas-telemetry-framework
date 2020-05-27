@@ -20,7 +20,7 @@
 
 namespace octf {
 
-namespace v4 {
+namespace v0 {
 /**
  * This is IO trace event handler of parsed IO
  *
@@ -94,7 +94,7 @@ private:
     octf::ParsedIoTraceEventHandler *m_parentHandler;
 };
 
-}  // namespace v4
+}  // namespace v0
 
 }  // namespace octf
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
-#include <octf/trace/parser/v4/ParsedIoTraceEventHandler.h>
+#include <octf/trace/parser/v0/ParsedIoTraceEventHandler.h>
 
 #include <limits.h>
 #include <chrono>
@@ -16,7 +16,7 @@
 
 namespace octf {
 
-namespace v4 {
+namespace v0 {
 
 struct ParsedIoTraceEventHandler::IoQueueDepth {
     uint64_t Value;
@@ -699,6 +699,6 @@ uint64_t ParsedIoTraceEventHandler::getDevicesSize() const {
     return size;
 }
 
-}  // namespace v4
+}  // namespace v0
 
 }  // namespace octf

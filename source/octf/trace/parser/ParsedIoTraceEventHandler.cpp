@@ -5,7 +5,7 @@
 
 #include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
-#include <octf/trace/parser/v4/ParsedIoTraceEventHandler.h>
+#include <octf/trace/parser/v0/ParsedIoTraceEventHandler.h>
 
 #include <octf/utils/Exception.h>
 
@@ -15,12 +15,11 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         const std::string &tracePath)
         : TraceEventHandler<proto::trace::Event>(tracePath) {
     auto majorVersion =
-            TraceLibrary::get().getTrace(tracePath)->getSummary().major();
+            TraceLibrary::get().getTrace(tracePath)->getSummary().version();
 
     switch (majorVersion) {
     case 0:
-    case 4:
-        m_childParser = std::make_shared<v4::ParsedIoTraceEventHandler>(this);
+        m_childParser = std::make_shared<v0::ParsedIoTraceEventHandler>(this);
         break;
     default:
         throw Exception("Trying to parse unrecognized trace version");

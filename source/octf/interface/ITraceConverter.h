@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -34,6 +34,13 @@ public:
     virtual std::shared_ptr<const google::protobuf::Message> convertTrace(
             const void *trace,
             uint32_t size) = 0;
+
+    /**
+     * @brief Returns version of the converted protobuf traces
+     *
+     * @retval version
+     */
+    virtual int32_t getTraceVersion() = 0;
 };
 
 }  //  namespace octf
