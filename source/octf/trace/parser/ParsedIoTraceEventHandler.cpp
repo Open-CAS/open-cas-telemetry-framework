@@ -40,16 +40,6 @@ bool ParsedIoTraceEventHandler::isCancelRequested() {
     return m_childParser->isCancelRequested();
 }
 
-void ParsedIoTraceEventHandler::handleEvent(
-        std::shared_ptr<proto::trace::Event> traceEvent) {
-    m_childParser->handleEvent(traceEvent);
-}
-
-std::shared_ptr<proto::trace::Event>
-ParsedIoTraceEventHandler::getEventMessagePrototype() {
-    return std::make_shared<proto::trace::Event>();
-}
-
 void ParsedIoTraceEventHandler::setExclusiveSubrange(uint64_t start,
                                                      uint64_t end) {
     m_childParser->setExclusiveSubrange(start, end);

@@ -12,7 +12,7 @@
 #include <set>
 #include <octf/fs/FileId.h>
 #include <octf/fs/IFileSystemViewer.h>
-#include <octf/interface/internal/IIoTraceParser.h>
+#include <octf/interface/internal/IoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
@@ -88,12 +88,7 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
-    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent);
-
-    virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype();
-
-private:
-    std::unique_ptr<IIoTraceParser> m_childParser;
+    std::unique_ptr<IoTraceParser> m_childParser;
 };
 
 }  // namespace octf

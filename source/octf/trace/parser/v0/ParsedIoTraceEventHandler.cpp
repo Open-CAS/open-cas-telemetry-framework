@@ -196,7 +196,7 @@ constexpr uint64_t ParsedIoTraceEventHandler_QueueLimit = 10000;
 ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         octf::ParsedIoTraceEventHandler *parentHandler,
         const std::string &tracePath)
-        : IIoTraceParser(tracePath)
+        : IoTraceParser(tracePath)
         , m_queue()
         , m_eventMapping(new ParsedIoTraceEventHandler::Map())
         , m_devices()

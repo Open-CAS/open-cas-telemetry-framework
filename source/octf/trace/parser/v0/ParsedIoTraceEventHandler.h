@@ -12,7 +12,7 @@
 #include <set>
 #include <octf/fs/FileId.h>
 #include <octf/fs/IFileSystemViewer.h>
-#include <octf/interface/internal/IIoTraceParser.h>
+#include <octf/interface/internal/IoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
@@ -32,7 +32,7 @@ namespace v0 {
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler : public IIoTraceParser {
+class ParsedIoTraceEventHandler : public IoTraceParser {
 public:
     ParsedIoTraceEventHandler(octf::ParsedIoTraceEventHandler *parentHandler,
                               const std::string &tracePath);
@@ -70,11 +70,6 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
-    bool compareEvents(const proto::trace::Event *a,
-                       const proto::trace::Event *b) override {
-        return a->header().sid() < b->header().sid();
-    }
-
     void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
 
     void pushOutEvent();

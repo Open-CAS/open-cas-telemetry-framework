@@ -270,7 +270,7 @@ int64_t TraceManager::getTraceSize() const {
 
 int32_t TraceManager::getTraceVersion() const {
     if (m_jobs.size() == 0) {
-        return 0;
+        return -1;
     }
 
     return m_jobs[0]->getTraceVersion();
