@@ -12,14 +12,14 @@
 #include <set>
 #include <octf/fs/FileId.h>
 #include <octf/fs/IFileSystemViewer.h>
-#include <octf/interface/internal/IoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
+#include <octf/utils/NonCopyable.h>
 
 namespace octf {
 
-class IIoTraceParser;
+class IoTraceParser;
 /**
  * This is IO trace event handler of parsed IO
  *
@@ -30,7 +30,7 @@ class IIoTraceParser;
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler {
+class ParsedIoTraceEventHandler : NonCopyable {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
     virtual ~ParsedIoTraceEventHandler();

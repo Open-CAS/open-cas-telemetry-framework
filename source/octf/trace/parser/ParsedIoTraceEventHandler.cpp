@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
+#include <octf/interface/internal/IoTraceParser.h>
 #include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/trace/parser/v0/ParsedIoTraceEventHandler.h>
