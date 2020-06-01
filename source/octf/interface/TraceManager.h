@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -150,6 +150,10 @@ private:
      */
     void deleteJobs();
 
+    /**
+     * @brief Retrieves parsed protobuf trace version
+     */
+    int32_t getTraceVersion() const;
     /**
      * @brief Creates trace files directory
      */

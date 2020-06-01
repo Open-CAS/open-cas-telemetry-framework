@@ -97,4 +97,6 @@ message TraceSummary {
     int64 queueCount = 9 [ (opts_param).cli_desc = "Number of IO queues" ];
 
     string label = 10 [ (opts_param).cli_desc = "User defined label" ];
+
+    int32 version = 11 [ (opts_param).cli_desc = "Trace version" ];
 }

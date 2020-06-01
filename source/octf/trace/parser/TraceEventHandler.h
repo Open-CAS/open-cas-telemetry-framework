@@ -96,16 +96,23 @@ public:
                                        b) {
         return true;
     }
+    /**
+     * @brief Gets used parser
+     */
+    virtual std::shared_ptr<ITraceParser> getParser() {
+        return m_parser;
+    }
 
-    typedef EventType eventType;
-
-protected:
     /**
      * @brief Checks if cancel of event processing has been requested.
      */
     virtual bool isCancelRequested() const {
         return m_cancelRequested;
     }
+
+    typedef EventType eventType;
+
+protected:
     /**
      * @brief Checks if trace event handler has finished.
      */
@@ -117,12 +124,6 @@ protected:
      */
     virtual std::shared_ptr<EventType> getEventMessagePrototype() {
         return m_message;
-    }
-    /**
-     * @brief Gets used parser
-     */
-    virtual std::shared_ptr<ITraceParser> getParser() {
-        return m_parser;
     }
 
 private:
