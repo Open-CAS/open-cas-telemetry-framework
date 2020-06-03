@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -88,10 +88,6 @@ int64_t TraceJob::getDroppedTraceCount() const {
 
 TracingState TraceJob::getState() const {
     return m_state.load();
-}
-
-int32_t TraceJob::getTraceVersion() const {
-    return m_converter->getTraceVersion();
 }
 
 void TraceJob::startJobThread() {

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -26,8 +26,6 @@ public:
     std::shared_ptr<const google::protobuf::Message> convertTrace(
             const void *trace,
             uint32_t size) override;
-
-    int32_t getTraceVersion() const override;
 
 private:
     void setFileId(proto::trace::FileId *fileId,

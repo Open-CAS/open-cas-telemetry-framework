@@ -11,8 +11,6 @@
 
 namespace octf {
 
-constexpr int32_t TRACE_VERSION = 0;
-
 TraceConverter::TraceConverter()
         : m_evDesc(std::make_shared<proto::trace::Event>())
         , m_evIO(std::make_shared<proto::trace::Event>())
@@ -208,10 +206,6 @@ void TraceConverter::setFileId(proto::trace::FileId *fileId,
     auto timestamp = fileId->mutable_creationdate();
     timestamp->set_seconds(file_id->ctime.tv_sec);
     timestamp->set_nanos(file_id->ctime.tv_nsec);
-}
-
-int32_t TraceConverter::getTraceVersion() const {
-    return TRACE_VERSION;
 }
 
 }  // namespace octf

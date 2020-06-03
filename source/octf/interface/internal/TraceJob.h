@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -53,8 +53,6 @@ public:
      * running out of space in circular buffer)
      */
     int64_t getDroppedTraceCount() const;
-
-    int32_t getTraceVersion() const;
 
     TracingState getState() const;
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -218,7 +218,6 @@ void TraceManager::fillTraceSummary(proto::TraceSummary *summary,
     summary->set_droppedevents(getDroppedTraceCount());
     summary->set_queuecount(getQueueCount());
     summary->set_label(getLabel());
-    summary->set_version(getTraceVersion());
 
     proto::TraceState tracingState = proto::TraceState::UNDEFINED;
     switch (state) {
@@ -266,14 +265,6 @@ int64_t TraceManager::getTraceSize() const {
     }
 
     return result;
-}
-
-int32_t TraceManager::getTraceVersion() const {
-    if (m_jobs.size() == 0) {
-        return -1;
-    }
-
-    return m_jobs[0]->getTraceVersion();
 }
 
 int64_t TraceManager::getTraceSizeMiB() const {

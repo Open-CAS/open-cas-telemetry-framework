@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2020 Intel Corporation
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -15,11 +15,9 @@
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/TraceEventHandler.h>
-#include <octf/utils/NonCopyable.h>
 
 namespace octf {
 
-class IoTraceParser;
 /**
  * This is IO trace event handler of parsed IO
  *
@@ -30,7 +28,8 @@ class IoTraceParser;
  *
  * @note The order of handled IO respect the IOs queuing order
  */
-class ParsedIoTraceEventHandler : NonCopyable {
+class ParsedIoTraceEventHandler
+        : public TraceEventHandler<proto::trace::Event> {
 public:
     ParsedIoTraceEventHandler(const std::string &tracePath);
     virtual ~ParsedIoTraceEventHandler();
@@ -42,26 +41,15 @@ public:
      */
     virtual void handleIO(const proto::trace::ParsedEvent &io) = 0;
 
-    virtual void processEvents();
-
-    virtual void cancel();
-
-    bool isCancelRequested();
+    void processEvents() override {
+        TraceEventHandler<proto::trace::Event>::processEvents();
+        flushEvents();
+    }
 
     /**
      * @return Sum of all devices sizes in sectors
      */
     uint64_t getDevicesSize() const;
-
-    /**
-     * @brief Handles device description trace event
-     *
-     * @param devDesc Device description trace event
-     */
-    virtual void handleDeviceDescription(
-            const proto::trace::EventDeviceDescription &devDesc) {
-        (void) devDesc;
-    }
 
 protected:
     /**
@@ -77,6 +65,16 @@ protected:
     IFileSystemViewer *getFileSystemViewer(uint64_t partitionID);
 
     /**
+     * @brief Handles device description trace event
+     *
+     * @param devDesc Device description trace event
+     */
+    virtual void handleDeviceDescription(
+            const proto::trace::EventDeviceDescription &devDesc) {
+        (void) devDesc;
+    }
+
+    /**
      * @brief Skip IO's outside of this defined subrange
      * @param start LBA of subrange start
      * @param end LBA of subrange end
@@ -88,7 +86,38 @@ protected:
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
 private:
-    std::unique_ptr<IoTraceParser> m_childParser;
+    bool compareEvents(const proto::trace::Event *a,
+                       const proto::trace::Event *b) override {
+        return a->header().sid() < b->header().sid();
+    }
+
+    void handleEvent(std::shared_ptr<proto::trace::Event> traceEvent) override;
+
+    virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype()
+            override;
+
+    void flushEvents();
+
+    void pushOutEvent();
+
+private:
+    struct Key;
+    class Map;
+    struct IoQueueDepth;
+    class FileSystemViewer;
+    struct FileInfo;
+    std::queue<proto::trace::ParsedEvent> m_queue;
+    std::unique_ptr<Map> m_eventMapping;
+    std::map<uint64_t, proto::trace::ParsedEvent *> m_sidMapping;
+    std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
+    std::map<FileId, FileInfo> m_fileInfo;
+    uint64_t m_timestampOffset;
+    uint64_t m_sidOffset;
+    uint64_t m_limit;
+    uint64_t m_subrangeStart;
+    uint64_t m_subrangeEnd;
+    std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
+    std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
 };
 
 }  // namespace octf
