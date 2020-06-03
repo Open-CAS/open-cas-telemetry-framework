@@ -183,7 +183,7 @@ void ParamString::validate() const {
     if (isMultipleValue()) {
         const auto &values = getMultipleValue();
 
-        if (m_multipleValueLimit && m_multipleValueLimit > values.size()) {
+        if (m_multipleValueLimit && m_multipleValueLimit < values.size()) {
             throw InvalidParameterException(
                     "Limit of multiple values of option '" + getLongKey() +
                     "' exceed.");
