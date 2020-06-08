@@ -133,6 +133,7 @@ message EventIoCompletion {
 message EventIoFilesystemMeta {
     /**
      * Event sequence ID reference to IO trace event associated with this event
+     * TODO: For v1 of parser this is just reference IO trace event ID
      */
     uint64 refSid = 1;
 
