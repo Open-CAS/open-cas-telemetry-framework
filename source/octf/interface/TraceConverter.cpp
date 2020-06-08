@@ -11,7 +11,7 @@
 
 namespace octf {
 
-constexpr int32_t TRACE_VERSION = 0;
+constexpr int32_t TRACE_VERSION = 1;
 
 TraceConverter::TraceConverter()
         : m_evDesc(std::make_shared<proto::trace::Event>())
@@ -90,6 +90,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoIo->set_ioclass(event->io_class);
         protoIo->set_deviceid(event->dev_id);
         protoIo->set_writehint(event->write_hint);
+        protoIo->set_id(event->id);
 
         return m_evIO;
     }
@@ -112,6 +113,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoIoCmpl->set_len(event->len);
         protoIoCmpl->set_error(event->error);
         protoIoCmpl->set_deviceid(event->dev_id);
+        protoIoCmpl->set_refid(event->ref_id);
 
         return m_evIOCmpl;
     }

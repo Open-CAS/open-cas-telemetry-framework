@@ -91,6 +91,12 @@ message EventIo {
 
     /** Write (lifetime) hint */
     uint32 writeHint = 8;
+
+    /**
+     * This ID can be used by the tracing environment to assign an ID to the IO.
+     * Zero means not set.
+     */
+    uint64 id = 9;
 }
 
 /**
@@ -108,6 +114,12 @@ message EventIoCompletion {
 
     /** Device ID */
     uint64 deviceId = 4;
+
+    /**
+     * The ID of an IO which is completed. Environment can set ID of IO which is
+     * completed.
+     */
+    uint64 refId = 5;
 }
 
 /**
@@ -121,6 +133,7 @@ message EventIoCompletion {
 message EventIoFilesystemMeta {
     /**
      * Event sequence ID reference to IO trace event associated with this event
+     * TODO: For v1 of parser this is just reference IO trace event ID
      */
     uint64 refSid = 1;
 
