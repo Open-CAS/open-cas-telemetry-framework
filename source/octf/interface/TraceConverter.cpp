@@ -54,6 +54,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protoDeviceDesc->set_id(event->id);
         protoDeviceDesc->set_name(event->device_name);
         protoDeviceDesc->set_size(event->device_size);
+        protoDeviceDesc->set_model(event->device_model);
 
         return m_evDesc;
     }

@@ -145,6 +145,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         devInfo->set_name(m_devices[deviceId].name());
         devInfo->set_id(deviceId);
         devInfo->set_partition(deviceId);
+        devInfo->set_model(m_devices[deviceId].model());
 
         addMapping(*traceEvent, cachedEvent);
     } break;
@@ -269,6 +270,7 @@ void ParsedIoTraceEventHandler::handleEvent(
         destDevInfo.set_name(srcDevInfo.name());
         destDevInfo.set_id(srcDevInfo.id());
         destDevInfo.set_partition(partId);
+        destDevInfo.set_model(srcDevInfo.model());
 
         // Set file size from file info
         auto size = m_fileInfo[file].size;
