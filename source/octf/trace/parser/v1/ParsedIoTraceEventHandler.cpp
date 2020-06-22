@@ -187,8 +187,13 @@ void ParsedIoTraceEventHandler::handleEvent(
                 // IO found, set latency and result of IO
                 io->set_latency(latency);
                 io->set_error(cmpl.error());
-                io->set_lba(cmpl.lba());
-                io->set_len(cmpl.len());
+
+                // Only update these fields if valid - fixes behavior for
+                // discards in kernels < 4.10
+                if (cmpl.lba() != 0 && cmpl.len() != 0) {
+                    io->set_lba(cmpl.lba());
+                    io->set_len(cmpl.len());
+                }
 
                 // Update queue depth for device
                 if (qd.Value) {
