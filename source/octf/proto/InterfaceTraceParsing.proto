@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -8,6 +8,7 @@ option cc_generic_services = true;
 import "defs.proto";
 import "opts.proto";
 import "statistics.proto";
+import "trace.proto";
 package octf.proto;
 
 message ParseTraceRequest {
@@ -79,6 +80,10 @@ message GetTraceStatisticsRequest {
     OutputFormat format = 2;
 }
 
+message ListDevicesResponse {
+    repeated trace.EventDeviceDescription devices = 1;
+}
+
 service InterfaceTraceParsing {
     option (opts_interface).cli = true;
 
@@ -132,5 +137,13 @@ service InterfaceTraceParsing {
         option (opts_command).cli_long_key = "fs-statistics";
         option (opts_command).cli_short_key = "F";
         option (opts_command).cli_desc = "Returns filesystem statistics";
+    }
+
+    rpc GetDeviceList(GetTraceStatisticsRequest) returns (ListDevicesResponse) {
+        option (opts_command).cli = true;
+        option (opts_command).cli_long_key = "devices";
+        option (opts_command).cli_short_key = "D";
+        option (opts_command).cli_desc =
+            "Returns a list of devices which had been traced";
     }
 }

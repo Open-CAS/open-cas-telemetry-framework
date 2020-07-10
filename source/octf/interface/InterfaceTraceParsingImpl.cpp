@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -12,6 +12,7 @@
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
+#include <octf/trace/parser/TraceEventHandlerDevicesList.h>
 #include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
@@ -252,6 +253,49 @@ void InterfaceTraceParsingImpl::GetFileSystemStatistics(
         } else if (request->format() != proto::OutputFormat::JSON) {
             throw Exception("Invalid output format");
         }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
+void octf::InterfaceTraceParsingImpl::GetDeviceList(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::ListDevicesResponse *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        TraceEventHandlerDevicesList handler(request->tracepath());
+        handler.processEvents();
+
+        response->Clear();
+        handler.getDevicesList(response);
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            RpcOutputStream cout(log::Severity::Information, controller);
+            cout << log::reset;
+
+            table::Table table;
+            auto &hdr = table[0];
+
+            // Set header
+            for (int i = 0; i < response->devices_size(); i++) {
+                table::setHeader(hdr, &response->devices(i));
+            }
+
+            // Set rows
+            for (int i = 1; i <= response->devices_size(); i++) {
+                table[i] << response->devices(i - 1);
+            }
+
+            hdr.setupHeader();
+            cout << table << std::endl << log::disable;
+
+        } else if (request->format() != proto::OutputFormat::JSON) {
+            throw Exception("Invalid output format");
+        }
+
     } catch (const Exception &ex) {
         controller->SetFailed(ex.what());
     }

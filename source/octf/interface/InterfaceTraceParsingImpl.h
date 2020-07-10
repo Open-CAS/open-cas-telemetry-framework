@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -47,6 +47,12 @@ public:
             ::google::protobuf::RpcController *controller,
             const ::octf::proto::GetTraceStatisticsRequest *request,
             ::octf::proto::FilesystemStatistics *response,
+            ::google::protobuf::Closure *done) override;
+
+    virtual void GetDeviceList(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::ListDevicesResponse *response,
             ::google::protobuf::Closure *done) override;
 
 private:
