@@ -158,10 +158,13 @@ void Distribution::getStatistics(
     uint64_t iPercentile = 0;
     double sum = 0.0;
     double total = m_total;
+    bool check_next_percentile = false;
 
     for (const auto &bucket : m_histogram) {
-        for (uint64_t range = 0; range < bucket.Sum.size(); range++) {
-            sum += bucket.Sum[range];
+        for (uint64_t range = 0; range < bucket.Sum.size();) {
+            if (!check_next_percentile) {
+                sum += bucket.Sum[range];
+            }
 
             // Check if cumulative sum of occurrences in buckets exceeds
             // given percentile
@@ -171,7 +174,11 @@ void Distribution::getStatistics(
                 // middle of the range as approximation of given percentile
                 double value = bucket.Begin;
                 value += bucket.RangeSize * range;
-                value += (double) bucket.RangeSize / 2.0;
+
+                // For sector data this prevents results like 8.5 sectors
+                if (bucket.RangeSize > 1) {
+                    value += (double) bucket.RangeSize / 2.0;
+                }
 
                 auto &map = *statistics->mutable_percentiles();
                 auto &percentile =
@@ -179,7 +186,15 @@ void Distribution::getStatistics(
                 percentile = value;
 
                 iPercentile++;
+                // It's very possible that a given bucket contains information
+                // about multiple percentiles, especially for small data sets
+                // or higher 9s
+                check_next_percentile = true;
+                continue;
+            } else {
+                check_next_percentile = false;
             }
+            range++;
         }
     }
 }
