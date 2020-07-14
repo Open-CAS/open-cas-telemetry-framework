@@ -193,6 +193,20 @@ void IoStatisticsSet::getIoLbaHistogramSet(proto::IoHistogramSet *set) const {
     }
 }
 
+void IoStatisticsSet::getIoSizeHistogramSet(proto::IoHistogramSet *set) const {
+    // For each pair in map
+    for (const auto &stats : m_map) {
+        auto dst = set->add_histogram();
+
+        auto device = dst->mutable_desc()->mutable_device();
+        device->set_id(stats.first.Id);
+        device->set_name(stats.first.Name);
+        device->set_size(stats.first.Size);
+
+        stats.second.getIoSizeHistogram(dst);
+    }
+}
+
 void IoStatisticsSet::enableLbaHistogram() {
     m_lbaHistEnabled = true;
 }

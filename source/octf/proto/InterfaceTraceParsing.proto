@@ -130,6 +130,13 @@ service InterfaceTraceParsing {
         option (opts_command).cli_short_key = "B";
         option (opts_command).cli_desc = "Returns a histogram of LBA hits";
     }
+    
+    rpc GetSizeHistogram(GetTraceStatisticsRequest) returns (IoHistogramSet) {
+        option (opts_command).cli = true;
+        option (opts_command).cli_long_key = "size-histogram";
+        option (opts_command).cli_short_key = "I";
+        option (opts_command).cli_desc = "Returns a histogram of request sizes";
+    }
 
     rpc GetFileSystemStatistics(GetTraceStatisticsRequest)
         returns (FilesystemStatistics) {

@@ -66,6 +66,14 @@ public:
     void getIoLbaHistogram(proto::IoHistogram *histogram) const;
 
     /**
+     * @brief Copies gathered statistics of IOs size into protocol buffer IO
+     * histogram object
+     *
+     * @param[out] histogram protocol buffer histogram object to be filled
+     */
+    void getIoSizeHistogram(proto::IoHistogram *histogram) const;
+
+    /**
      * @brief Enables creation of LBA histogram.
      * This needs to be enabled because keeping LBA histogram is expensive
      */
