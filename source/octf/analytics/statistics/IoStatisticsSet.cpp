@@ -202,6 +202,7 @@ void IoStatisticsSet::getIoSizeHistogramSet(proto::IoHistogramSet *set) const {
         device->set_id(stats.first.Id);
         device->set_name(stats.first.Name);
         device->set_size(stats.first.Size);
+        device->set_model(stats.first.Model);
 
         stats.second.getIoSizeHistogram(dst);
     }
