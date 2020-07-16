@@ -10,30 +10,38 @@
 namespace octf {
 
 struct IoStatisticsSet::Key {
-    Key(uint64_t id, uint64_t size, const std::string &name)
+    Key(uint64_t id,
+        uint64_t size,
+        const std::string &name,
+        const std::string &model)
             : Id(id)
             , Size(size)
-            , Name(name) {}
+            , Name(name)
+            , Model(model) {}
     Key(uint64_t id)
             : Id(id)
             , Size(0)
-            , Name("") {}
+            , Name("")
+            , Model("") {}
     Key()
             : Id()
             , Size()
-            , Name("") {}
+            , Name("")
+            , Model("") {}
     virtual ~Key() {}
 
     Key(const Key &other)
             : Id(other.Id)
             , Size(other.Size)
-            , Name(other.Name) {}
+            , Name(other.Name)
+            , Model(other.Model) {}
 
     Key &operator=(const Key &other) {
         if (this != &other) {
             Id = other.Id;
             Size = other.Size;
             Name = other.Name;
+            Model = other.Model;
         }
 
         return *this;
@@ -54,6 +62,7 @@ struct IoStatisticsSet::Key {
     uint64_t Id;
     uint64_t Size;
     std::string Name;
+    std::string Model;
 };
 
 IoStatisticsSet::IoStatisticsSet(uint64_t lbaHitRangeSize)
@@ -87,7 +96,7 @@ IoStatisticsSet &IoStatisticsSet::operator=(const IoStatisticsSet &other) {
 
 void IoStatisticsSet::addDevice(
         const proto::trace::EventDeviceDescription &devDesc) {
-    Key key(devDesc.id(), devDesc.size(), devDesc.name());
+    Key key(devDesc.id(), devDesc.size(), devDesc.name(), devDesc.model());
 
     // Check maybe key already exists
     auto iter = m_map.find(key);
@@ -144,6 +153,7 @@ void IoStatisticsSet::getIoStatisticsSet(proto::IoStatisticsSet *set) const {
         device->set_id(stats.first.Id);
         device->set_name(stats.first.Name);
         device->set_size(stats.first.Size);
+        device->set_model(stats.first.Model);
 
         stats.second.getIoStatistics(dst);
     }
@@ -162,6 +172,7 @@ void IoStatisticsSet::getIoLatencyHistogramSet(
         device->set_id(stats.first.Id);
         device->set_name(stats.first.Name);
         device->set_size(stats.first.Size);
+        device->set_model(stats.first.Model);
 
         stats.second.getIoLatencyHistogram(dst);
     }
@@ -176,6 +187,7 @@ void IoStatisticsSet::getIoLbaHistogramSet(proto::IoHistogramSet *set) const {
         device->set_id(stats.first.Id);
         device->set_name(stats.first.Name);
         device->set_size(stats.first.Size);
+        device->set_model(stats.first.Model);
 
         stats.second.getIoLbaHistogram(dst);
     }
