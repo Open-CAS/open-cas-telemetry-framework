@@ -71,6 +71,14 @@ public:
     void getIoLbaHistogramSet(proto::IoHistogramSet *set) const;
 
     /**
+     * @brief Copies gathered IO size statistics into protocol buffer
+     * histogram set object
+     *
+     * @param[out] set protocol buffer IO histogram object to be filled
+     */
+    void getIoSizeHistogramSet(proto::IoHistogramSet *set) const;
+
+    /**
      * @brief Enables creation of LBA histogram.
      * This needs to be enabled because keeping LBA histogram is expensive
      */

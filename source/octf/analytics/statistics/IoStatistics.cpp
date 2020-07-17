@@ -10,7 +10,7 @@ namespace octf {
 
 struct IoStatistics::Stats {
     Stats(uint64_t lbaHitMapRangeSize)
-            : sizeDistribution("sector", 4096, 2)
+            : sizeDistribution("sector", 256, 2)
             , count(0)
             , latencyDistribution("ns", 1, 2)
             , errors(0)
@@ -80,6 +80,10 @@ struct IoStatistics::Stats {
 
     void getLatencyHistogramEntry(proto::Histogram *entry) const {
         latencyDistribution.getHistogram(entry);
+    }
+
+    void getSizeHistogramEntry(proto::Histogram *entry) const {
+        sizeDistribution.getHistogram(entry);
     }
 
     void getLbaHistogramEntry(proto::Histogram *entry) const {
@@ -283,6 +287,16 @@ void IoStatistics::getIoLbaHistogram(proto::IoHistogram *histogram) const {
 
     auto total = histogram->mutable_total();
     m_total->getLbaHistogramEntry(total);
+
+    histogram->set_duration(m_endTime - m_startTime);
+}
+
+void IoStatistics::getIoSizeHistogram(proto::IoHistogram *histogram) const {
+    auto write = histogram->mutable_write();
+    m_statistics[proto::trace::IoType::Write].getSizeHistogramEntry(write);
+
+    auto read = histogram->mutable_read();
+    m_statistics[proto::trace::IoType::Read].getSizeHistogramEntry(read);
 
     histogram->set_duration(m_endTime - m_startTime);
 }

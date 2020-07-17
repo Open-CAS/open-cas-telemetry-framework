@@ -43,6 +43,12 @@ public:
             ::octf::proto::IoHistogramSet *response,
             ::google::protobuf::Closure *done) override;
 
+    virtual void GetSizeHistogram(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::IoHistogramSet *response,
+            ::google::protobuf::Closure *done) override;
+
     virtual void GetFileSystemStatistics(
             ::google::protobuf::RpcController *controller,
             const ::octf::proto::GetTraceStatisticsRequest *request,
