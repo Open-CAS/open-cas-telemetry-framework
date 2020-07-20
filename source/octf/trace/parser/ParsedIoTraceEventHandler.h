@@ -87,6 +87,10 @@ protected:
      */
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
+    virtual void initParser();
+
+    virtual void deinitParser();
+
 private:
     std::unique_ptr<IoTraceParser> m_childParser;
 };

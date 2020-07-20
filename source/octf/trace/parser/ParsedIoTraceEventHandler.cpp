@@ -60,4 +60,12 @@ uint64_t ParsedIoTraceEventHandler::getDevicesSize() const {
     return m_childParser->getDevicesSize();
 }
 
+void ParsedIoTraceEventHandler::initParser() {
+    return m_childParser->initParser();
+}
+
+void ParsedIoTraceEventHandler::deinitParser() {
+    return m_childParser->deinitParser();
+}
+
 }  // namespace octf
