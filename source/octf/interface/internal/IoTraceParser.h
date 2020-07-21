@@ -52,6 +52,14 @@ public:
         return std::make_shared<proto::trace::Event>();
     }
 
+    virtual void initParser() {
+        getParser()->init();
+    }
+
+    virtual void deinitParser() {
+        getParser()->deinit();
+    }
+
 protected:
     virtual bool compareEvents(const proto::trace::Event *a,
                                const proto::trace::Event *b) override {
