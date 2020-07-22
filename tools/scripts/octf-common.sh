@@ -88,6 +88,11 @@ function detect_distribution () {
             echo UBUNTU
             return 0
         fi
+        if ( cat /etc/os-release | grep "Debian" &>/dev/null )
+        then
+            echo DEBIAN
+            return 0
+        fi
     fi
 
     return 1
@@ -97,7 +102,7 @@ if [ "${DISTRO}" == "" ]
 then
     export DISTRO=$(detect_distribution)
     case "${DISTRO}" in
-    "RHEL7"|"RHEL8"|"CENTOS7"|"CENTOS8"|"FEDORA"|"UBUNTU")
+    "RHEL7"|"RHEL8"|"CENTOS7"|"CENTOS8"|"FEDORA"|"UBUNTU"|"DEBIAN")
         info "${DISTRO} detected"
         ;;
     *)
@@ -115,7 +120,7 @@ function get_distribution_pkg_manager () {
     "FEDORA")
         echo "dnf -y install"
         ;;
-    "UBUNTU")
+    "UBUNTU"|"DEBIAN")
         echo "apt-get -y install"
         ;;
     *)
@@ -141,7 +146,7 @@ function is_package_installed () {
     "RHEL7"|"RHEL8"|"CENTOS7"|"CENTOS8"|"FEDORA")
         cmd="rpm -q"
         ;;
-    "UBUNTU")
+    "UBUNTU"|"DEBIAN")
         cmd="dpkg -s"
         ;;
     *)
