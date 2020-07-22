@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -205,6 +205,22 @@ void IoStatisticsSet::getIoSizeHistogramSet(proto::IoHistogramSet *set) const {
         device->set_model(stats.first.Model);
 
         stats.second.getIoSizeHistogram(dst);
+    }
+}
+
+void IoStatisticsSet::getQueueDepthHistogramSet(
+        proto::IoHistogramSet *set) const {
+    // For each pair in map
+    for (const auto &stats : m_map) {
+        auto dst = set->add_histogram();
+
+        auto device = dst->mutable_desc()->mutable_device();
+        device->set_id(stats.first.Id);
+        device->set_name(stats.first.Name);
+        device->set_size(stats.first.Size);
+        device->set_model(stats.first.Model);
+
+        stats.second.getQueueDepthHistogram(dst);
     }
 }
 

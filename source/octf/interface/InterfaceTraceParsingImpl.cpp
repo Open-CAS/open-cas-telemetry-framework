@@ -182,6 +182,31 @@ void InterfaceTraceParsingImpl::GetSizeHistogram(
     done->Run();
 }
 
+void InterfaceTraceParsingImpl::GetQueueDepthHistogram(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::GetTraceStatisticsRequest *request,
+        ::octf::proto::IoHistogramSet *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+        handler.processEvents();
+        handler.getStatisticsSet().getQueueDepthHistogramSet(response);
+
+        if (request->format() == proto::OutputFormat::CSV) {
+            RpcOutputStream cout(log::Severity::Information, controller);
+            printHistogramCsv(cout, response);
+
+            // The CSV output was requested, to prevent printing response in
+            // JSON format disable caller output
+            cout << log::disable;
+        }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
 void InterfaceTraceParsingImpl::printHistogramCsv(
         ::octf::RpcOutputStream &cout,
         const ::octf::proto::IoHistogramSet *histogramSet) {

@@ -49,6 +49,12 @@ public:
             ::octf::proto::IoHistogramSet *response,
             ::google::protobuf::Closure *done) override;
 
+    virtual void GetQueueDepthHistogram(
+            ::google::protobuf::RpcController *consroller,
+            const ::octf::proto::GetTraceStatisticsRequest *request,
+            ::octf::proto::IoHistogramSet *response,
+            ::google::protobuf::Closure *done) override;
+
     virtual void GetFileSystemStatistics(
             ::google::protobuf::RpcController *controller,
             const ::octf::proto::GetTraceStatisticsRequest *request,

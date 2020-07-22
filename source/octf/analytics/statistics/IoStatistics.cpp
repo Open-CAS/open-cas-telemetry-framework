@@ -13,6 +13,7 @@ struct IoStatistics::Stats {
             : sizeDistribution("sector", 256, 2)
             , count(0)
             , latencyDistribution("ns", 1, 2)
+            , qdDistribution("request", 128, 2)
             , errors(0)
             , wc()
             , lbaHitMap()
@@ -22,6 +23,7 @@ struct IoStatistics::Stats {
             : sizeDistribution(other.sizeDistribution)
             , count(other.count)
             , latencyDistribution(other.latencyDistribution)
+            , qdDistribution(other.qdDistribution)
             , errors(other.errors)
             , wc(other.wc)
             , lbaHitMap(other.lbaHitMap)
@@ -32,6 +34,7 @@ struct IoStatistics::Stats {
             sizeDistribution = other.sizeDistribution;
             count = other.count;
             latencyDistribution = other.latencyDistribution;
+            qdDistribution = other.qdDistribution;
             errors = other.errors;
             wc = other.wc;
         }
@@ -86,6 +89,10 @@ struct IoStatistics::Stats {
         sizeDistribution.getHistogram(entry);
     }
 
+    void getQueueDepthHistogramEntry(proto::Histogram *entry) const {
+        qdDistribution.getHistogram(entry);
+    }
+
     void getLbaHistogramEntry(proto::Histogram *entry) const {
         entry->set_unit("sector");
 
@@ -100,6 +107,7 @@ struct IoStatistics::Stats {
     Distribution sizeDistribution;
     uint64_t count;
     Distribution latencyDistribution;
+    Distribution qdDistribution;
     uint64_t errors;
     WorksetCalculator wc;
     /**
@@ -161,10 +169,11 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
 
     auto len = io.len();
     auto latency = io.latency();
+    auto qd = io.qd();
 
     // Update LBA hit maps
     if (m_lbaHistEnabled && len != 0) {
-        // Beggining LBAs of ranges where io begins and ends
+        // Beginning LBAs of ranges where io begins and ends
         uint64_t ioBeginRangeStart =
                 (io.lba() / m_lbaHistRangeSize) * m_lbaHistRangeSize;
         uint64_t ioEndRangeStart =
@@ -187,6 +196,11 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     if (latency) {
         m_total->latencyDistribution += latency;
         stats->latencyDistribution += latency;
+    }
+
+    if (qd) {
+        m_total->qdDistribution += qd;
+        stats->qdDistribution += qd;
     }
 
     // Update error
@@ -297,6 +311,20 @@ void IoStatistics::getIoSizeHistogram(proto::IoHistogram *histogram) const {
 
     auto read = histogram->mutable_read();
     m_statistics[proto::trace::IoType::Read].getSizeHistogramEntry(read);
+
+    histogram->set_duration(m_endTime - m_startTime);
+}
+
+void IoStatistics::getQueueDepthHistogram(proto::IoHistogram *histogram) const {
+    auto write = histogram->mutable_write();
+    m_statistics[proto::trace::IoType::Write].getQueueDepthHistogramEntry(
+            write);
+
+    auto read = histogram->mutable_read();
+    m_statistics[proto::trace::IoType::Read].getQueueDepthHistogramEntry(read);
+
+    auto total = histogram->mutable_total();
+    m_total->getQueueDepthHistogramEntry(total);
 
     histogram->set_duration(m_endTime - m_startTime);
 }
