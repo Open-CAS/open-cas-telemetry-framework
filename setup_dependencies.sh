@@ -15,7 +15,7 @@ function get_distribution_pkg_dependencies () {
     "RHEL7"|"RHEL8"|"CENTOS7"|"CENTOS8"|"FEDORA")
         pkgs_required="${pkgs_common} gcc-c++"
         ;;
-    "UBUNTU")
+    "UBUNTU"|"DEBIAN")
         pkgs_required="${pkgs_common} g++"
         ;;
     *)
