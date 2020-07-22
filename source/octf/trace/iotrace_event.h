@@ -14,6 +14,7 @@ extern "C" {
 #else
 #include <stdint.h>
 #include <time.h>
+#define timespec64 timespec
 #endif
 
 typedef uint64_t log_sid_t;
@@ -197,7 +198,7 @@ struct iotrace_event_file_id {
     /**
      * inode creation date stored in entry
      */
-    struct timespec ctime;
+    struct timespec64 ctime;
 } __attribute__((packed, aligned(8)));
 
 /**
