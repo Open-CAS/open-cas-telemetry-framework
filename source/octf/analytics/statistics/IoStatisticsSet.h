@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2020 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -77,6 +77,14 @@ public:
      * @param[out] set protocol buffer IO histogram object to be filled
      */
     void getIoSizeHistogramSet(proto::IoHistogramSet *set) const;
+
+    /**
+     * @brief Copies gathered IO queue depth statistics into protocol
+     * buffer hisgoragm set object
+     *
+     * @param[out] set protocol buffer IO histogram object to be filled
+     */
+    void getQueueDepthHistogramSet(proto::IoHistogramSet *set) const;
 
     /**
      * @brief Enables creation of LBA histogram.
