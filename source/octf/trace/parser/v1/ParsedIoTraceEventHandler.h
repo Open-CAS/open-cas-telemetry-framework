@@ -88,7 +88,6 @@ private:
     void flushEvents();
 
 private:
-    struct IoQueueDepth;
     class FileSystemViewer;
     struct FileInfo;
     std::queue<proto::trace::ParsedEvent> m_queue;
@@ -100,7 +99,7 @@ private:
     uint64_t m_limit;
     uint64_t m_subrangeStart;
     uint64_t m_subrangeEnd;
-    std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
+    std::map<uint64_t, uint64_t> m_devIoQueueDepth;
     std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
     octf::ParsedIoTraceEventHandler *m_parentHandler;
 };

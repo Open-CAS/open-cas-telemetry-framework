@@ -18,11 +18,6 @@ namespace octf {
 namespace trace {
 namespace v1 {
 
-struct ParsedIoTraceEventHandler::IoQueueDepth {
-    uint64_t Value;
-    uint64_t Adjustment;
-};
-
 /**
  * Tiny structure of file info containing parent file id, last size of file,
  * name, etc.
@@ -138,8 +133,15 @@ void ParsedIoTraceEventHandler::handleEvent(
         dst.set_writehint(src.writehint());
 
         auto &qd = m_devIoQueueDepth[deviceId];
-        qd.Value++;
-        dst.set_qd(qd.Value);
+        const auto &refid = src.id();
+        const auto &mappedEvent = getCachedEventById(refid);
+        // If an event with same refid was cached, we dropped a completion and
+        // we don't need to adjust the QD anymore
+        if (mappedEvent == nullptr) {
+            qd++;
+        }
+
+        dst.set_qd(qd);
 
         auto *devInfo = cachedEvent.mutable_device();
         devInfo->set_name(m_devices[deviceId].name());
@@ -169,6 +171,9 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Find in map which IO has been completed.
         auto id = cmpl.refid();
         auto event = getCachedEventById(id);
+
+        // If event is null, the submission event probably dropped during
+        // tracing
         if (nullptr != event) {
             delMapping(*event);
 
@@ -176,12 +181,8 @@ void ParsedIoTraceEventHandler::handleEvent(
             uint64_t submissionTime = event->header().timestamp();
             uint64_t completionTime = hdr.timestamp();
 
-            if (completionTime < submissionTime) {
-                // Submission after completion - IO probably dropped
-                if (qd.Adjustment) {
-                    qd.Adjustment--;
-                }
-            } else {
+            // If submission is after completion - IO probably dropped
+            if (completionTime >= submissionTime) {
                 auto latency = completionTime - submissionTime;
 
                 // IO found, set latency and result of IO
@@ -196,21 +197,9 @@ void ParsedIoTraceEventHandler::handleEvent(
                 }
 
                 // Update queue depth for device
-                if (qd.Value) {
-                    qd.Value--;
-
-                    if (qd.Value < qd.Adjustment) {
-                        // taking into account adjustment, we reached zero queue
-                        // depth, so reset both counters
-                        qd.Value = 0;
-                        qd.Adjustment = 0;
-                    }
+                if (qd) {
+                    qd--;
                 }
-            }
-        } else {
-            // IO not found, probably event dropped during tracing
-            if (qd.Adjustment) {
-                qd.Adjustment--;
             }
         }
 
@@ -338,16 +327,6 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     auto partId = event.device().partition();
     auto &qd = m_devIoQueueDepth[devId];
 
-    if (event.has_io()) {
-        auto ioqd = event.io().qd();
-        if (qd.Adjustment < ioqd) {
-            ioqd -= qd.Adjustment;
-        } else {
-            ioqd = 1;
-        }
-        event.mutable_io()->set_qd(ioqd);
-    }
-
     // Update timestamp
     auto timestamp = event.header().timestamp();
     if (timestamp > m_timestampOffset) {
@@ -365,9 +344,10 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     m_parentHandler->handleIO(event);
 
     if (event.has_io() && 0 == event.io().latency()) {
-        // An IO completion lost, so the queue depth of next IOs are disrupted,
-        // Set queue depth adjustment
-        qd.Adjustment++;
+        // An IO completion lost, so adjust the queue depth value
+        if (qd) {
+            qd--;
+        }
     }
 
     m_queue.pop();
