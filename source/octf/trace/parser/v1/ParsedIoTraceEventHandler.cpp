@@ -18,6 +18,11 @@ namespace octf {
 namespace trace {
 namespace v1 {
 
+struct ParsedIoTraceEventHandler::IoQueueDepth {
+    uint64_t Value;
+    uint64_t Adjustment;
+};
+
 /**
  * Tiny structure of file info containing parent file id, last size of file,
  * name, etc.
@@ -133,15 +138,8 @@ void ParsedIoTraceEventHandler::handleEvent(
         dst.set_writehint(src.writehint());
 
         auto &qd = m_devIoQueueDepth[deviceId];
-        const auto &refid = src.id();
-        const auto &mappedEvent = getCachedEventById(refid);
-        // If an event with same refid was cached, we dropped a completion and
-        // we don't need to adjust the QD anymore
-        if (mappedEvent == nullptr) {
-            qd++;
-        }
-
-        dst.set_qd(qd);
+        qd.Value++;
+        dst.set_qd(qd.Value);
 
         auto *devInfo = cachedEvent.mutable_device();
         devInfo->set_name(m_devices[deviceId].name());
@@ -197,8 +195,8 @@ void ParsedIoTraceEventHandler::handleEvent(
                 }
 
                 // Update queue depth for device
-                if (qd) {
-                    qd--;
+                if (qd.Value) {
+                    qd.Value--;
                 }
             }
         }
@@ -327,6 +325,16 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     auto partId = event.device().partition();
     auto &qd = m_devIoQueueDepth[devId];
 
+    if (event.has_io()) {
+        auto ioqd = event.io().qd();
+        if (qd.Adjustment < ioqd) {
+            ioqd -= qd.Adjustment;
+        } else {
+            ioqd = 1;
+        }
+        event.mutable_io()->set_qd(ioqd);
+    }
+
     // Update timestamp
     auto timestamp = event.header().timestamp();
     if (timestamp > m_timestampOffset) {
@@ -344,10 +352,9 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     m_parentHandler->handleIO(event);
 
     if (event.has_io() && 0 == event.io().latency()) {
-        // An IO completion lost, so adjust the queue depth value
-        if (qd) {
-            qd--;
-        }
+        // An IO completion lost, so the queue depth of next IOs are disrupted,
+        // Set queue depth adjustment
+        qd.Adjustment++;
     }
 
     m_queue.pop();
