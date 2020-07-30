@@ -327,11 +327,7 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
 
     if (event.has_io()) {
         auto ioqd = event.io().qd();
-        if (qd.Adjustment < ioqd) {
-            ioqd -= qd.Adjustment;
-        } else {
-            ioqd = 1;
-        }
+        ioqd -= qd.Adjustment;
         event.mutable_io()->set_qd(ioqd);
     }
 
