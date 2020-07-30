@@ -169,6 +169,9 @@ void ParsedIoTraceEventHandler::handleEvent(
         // Find in map which IO has been completed.
         auto id = cmpl.refid();
         auto event = getCachedEventById(id);
+
+        // If event is null, the submission event probably dropped during
+        // tracing
         if (nullptr != event) {
             delMapping(*event);
 
@@ -176,12 +179,8 @@ void ParsedIoTraceEventHandler::handleEvent(
             uint64_t submissionTime = event->header().timestamp();
             uint64_t completionTime = hdr.timestamp();
 
-            if (completionTime < submissionTime) {
-                // Submission after completion - IO probably dropped
-                if (qd.Adjustment) {
-                    qd.Adjustment--;
-                }
-            } else {
+            // If submission is after completion - IO probably dropped
+            if (completionTime >= submissionTime) {
                 auto latency = completionTime - submissionTime;
 
                 // IO found, set latency and result of IO
@@ -198,19 +197,7 @@ void ParsedIoTraceEventHandler::handleEvent(
                 // Update queue depth for device
                 if (qd.Value) {
                     qd.Value--;
-
-                    if (qd.Value < qd.Adjustment) {
-                        // taking into account adjustment, we reached zero queue
-                        // depth, so reset both counters
-                        qd.Value = 0;
-                        qd.Adjustment = 0;
-                    }
                 }
-            }
-        } else {
-            // IO not found, probably event dropped during tracing
-            if (qd.Adjustment) {
-                qd.Adjustment--;
             }
         }
 
@@ -340,11 +327,7 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
 
     if (event.has_io()) {
         auto ioqd = event.io().qd();
-        if (qd.Adjustment < ioqd) {
-            ioqd -= qd.Adjustment;
-        } else {
-            ioqd = 1;
-        }
+        ioqd -= qd.Adjustment;
         event.mutable_io()->set_qd(ioqd);
     }
 
