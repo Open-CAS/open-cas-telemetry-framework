@@ -10,6 +10,7 @@
 #include <octf/cli/internal/CLIUtils.h>
 #include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/CommandProtobuf.h>
+#include <octf/cli/internal/param/ParamDouble.h>
 #include <octf/cli/internal/param/ParamEnum.h>
 #include <octf/cli/internal/param/ParamFlag.h>
 #include <octf/cli/internal/param/ParamNumber.h>
@@ -144,6 +145,12 @@ void CommandProtobuf::createParameters() {
         case google::protobuf::FieldDescriptor::Type::TYPE_ENUM: {
             // Create enum parameter
             param = make_shared<ParamEnum>();
+            break;
+        }
+
+        case google::protobuf::FieldDescriptor::Type::TYPE_DOUBLE: {
+            // Create flag parameter
+            param = make_shared<ParamDouble>();
             break;
         }
 

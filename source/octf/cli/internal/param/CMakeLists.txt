@@ -8,6 +8,8 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/ParamYesNo.h
 	${CMAKE_CURRENT_LIST_DIR}/ParamEnum.h
 	${CMAKE_CURRENT_LIST_DIR}/ParamNumber.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamDouble.h
+	${CMAKE_CURRENT_LIST_DIR}/ParamDouble.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ParamString.h
 	${CMAKE_CURRENT_LIST_DIR}/ParamString.cpp
 	${CMAKE_CURRENT_LIST_DIR}/IParameter.h
