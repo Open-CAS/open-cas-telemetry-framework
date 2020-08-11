@@ -8,6 +8,7 @@
 #include <octf/cli/CLIProperties.h>
 #include <octf/cli/internal/OptionsValidation.h>
 #include <octf/cli/internal/cmd/CommandProtobufLocal.h>
+#include <octf/cli/internal/param/ParamDouble.h>
 #include <octf/cli/internal/param/ParamEnum.h>
 #include <octf/cli/internal/param/ParamFlag.h>
 #include <octf/cli/internal/param/ParamNumber.h>

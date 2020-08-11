@@ -84,6 +84,18 @@ message OptsParamEnum {
     int32 default_value = 1;
 }
 
+// specifies extended options for double parameter
+message OptsParamDouble {
+    // specifies minimum value of double parameter
+    double min = 1;
+
+    // specifies maximum value of double parameter
+    double max = 2;
+
+    // specifies default value of double parameter
+    double default_value = 3;
+}
+
 message OptsParam {
     // configures parameters as required and user has to set it in terminal
     bool cli_required = 1;
@@ -108,6 +120,8 @@ message OptsParam {
         OptsParamString cli_str = 101; // options for string parameter
 
         OptsParamEnum cli_enum = 102; // options for enumerator parameter
+        
+        OptsParamDouble cli_double = 103; // options for double parameter
     };
 }
 
