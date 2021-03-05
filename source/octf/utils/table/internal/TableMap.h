@@ -24,10 +24,12 @@ namespace table {
  * it keeps an association of column/row names and their indexes, and returns
  * Table iterators.
  */
-class TableMap : public NonCopyable {
+class TableMap {
 public:
     TableMap();
     virtual ~TableMap();
+    TableMap(TableMap const &other);
+    TableMap &operator=(TableMap const &other);
 
     index_t getRowCount() const;
 

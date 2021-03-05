@@ -12,14 +12,32 @@ namespace octf {
 namespace table {
 
 TableMap::TableMap()
-        : NonCopyable()
-        , m_rows()
+        : m_rows()
         , m_rowsAssociation()
         , m_columns()
         , m_columnsAssociation()
         , m_map() {}
 
 TableMap::~TableMap() {}
+
+TableMap::TableMap(const TableMap &other)
+        : m_rows(other.m_rows)
+        , m_rowsAssociation(other.m_rowsAssociation)
+        , m_columns(other.m_columns)
+        , m_columnsAssociation(other.m_columnsAssociation)
+        , m_map(other.m_map) {}
+
+TableMap &TableMap::operator=(const TableMap &other) {
+    if (this != &other) {
+        m_rows = other.m_rows;
+        m_rowsAssociation = other.m_rowsAssociation;
+        m_columns = other.m_columns;
+        m_columnsAssociation = other.m_columnsAssociation;
+        m_map = other.m_map;
+    }
+
+    return *this;
+}
 
 index_t TableMap::getRowAssociation(const std::string &name) {
     index_t index = m_rowsAssociation.size();

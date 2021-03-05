@@ -52,11 +52,12 @@ namespace table {
  * octf::log::cout << table << std::endl;
  * @endcode
  */
-class Table : public NonCopyable,
-              public IContainer<Row, RowIterator, RowIteratorConst> {
+class Table : public IContainer<Row, RowIterator, RowIteratorConst> {
 public:
     Table();
     virtual ~Table();
+    Table(Table const &table);
+    Table &operator=(Table const &table);
 
     /**
      * @brief Gets row by row index
