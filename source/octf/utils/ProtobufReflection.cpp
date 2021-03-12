@@ -16,11 +16,11 @@ inline void Reflection::scan(const google::protobuf::Descriptor *desc,
         pushPath(fDesc);
 
         switch (fDesc->type()) {
-        case FieldDescriptor::Type::TYPE_MESSAGE:
+        case FieldDescriptor::Type::TYPE_MESSAGE: {
             std::string prevPath = getPath();
             visitor.message(*this, fDesc, fDesc->message_type());
             scan(fDesc->message_type(), visitor);
-            break;
+        } break;
 
         default:
             visitor.field(*this, fDesc);
@@ -45,8 +45,15 @@ inline void Reflection::pushPath(
     if (m_path.empty()) {
         m_path.push_back(fDesc->name());
     } else {
-        std::string element = m_path.back() + ".";
-        element += fDesc->name();
+        std::string element = m_path.back() + "." + fDesc->name();
+
+        if (fDesc->is_repeated()) {
+            element += "[index]";
+        }
+        if (fDesc->is_repeated()) {
+            element += "[key]";
+        }
+
         m_path.push_back(element);
     }
 }
