@@ -29,4 +29,6 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/SizeConversion.h
     ${CMAKE_CURRENT_LIST_DIR}/CsvParser.cpp
     ${CMAKE_CURRENT_LIST_DIR}/CsvParser.h
+    ${CMAKE_CURRENT_LIST_DIR}/ProtobufReflection.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ProtobufReflection.h
 )
