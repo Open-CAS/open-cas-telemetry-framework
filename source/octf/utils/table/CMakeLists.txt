@@ -13,4 +13,6 @@ target_sources(octf
     ${CMAKE_CURRENT_LIST_DIR}/Set.h
     ${CMAKE_CURRENT_LIST_DIR}/Iterators.h
     ${CMAKE_CURRENT_LIST_DIR}/Iterators.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Properties.h
+    ${CMAKE_CURRENT_LIST_DIR}/Properties.cpp
 )

@@ -19,7 +19,9 @@ namespace table {
 
 Table::Table()
         : NonCopyable()
-        , m_map(new TableMap()) {}
+        , m_map(new TableMap())
+        , m_props()
+        , m_title() {}
 
 Table::~Table() {}
 
@@ -75,6 +77,30 @@ index_t Table::size() const {
 bool Table::empty() const {
     auto const &map = *m_map;
     return map.empty();
+}
+
+const octf::table::Properties &Table::getProperties() const {
+    if (!m_props) {
+        return Properties::builtin.csv();
+    } else {
+        return *m_props;
+    }
+}
+
+Properties &Table::getProperties() {
+    if (!m_props) {
+        m_props.reset(new Properties(Properties::builtin.csv()));
+    }
+
+    return *m_props;
+}
+
+void Table::setProperties(const Properties &props) {
+    if (!m_props) {
+        m_props.reset(new Properties());
+    }
+
+    *m_props = props;
 }
 
 std::ostream &operator<<(std::ostream &os, const Table &table) {
