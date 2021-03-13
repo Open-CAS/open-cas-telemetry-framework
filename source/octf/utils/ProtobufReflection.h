@@ -1,4 +1,5 @@
 /*
+ * Copyright(c) 2012-2018 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -54,7 +55,7 @@ public:
  */
 class Reflection : public NonCopyable {
 public:
-    Reflection() = default;
+    Reflection();
     virtual ~Reflection() = default;
 
     /**
@@ -72,12 +73,40 @@ public:
      */
     const std::string &getPath() const;
 
+    /**
+     * @brief Gets level of nested message
+     * @return
+     */
+    uint32_t getLevel() const {
+        return m_level;
+    }
+
 private:
     void pushPath(const google::protobuf::FieldDescriptor *fDesc);
     void popPath();
+    /**
+     * @return Operation status
+     * @retval true The message pushed and no recursion
+     * @retval true The message not pushed and recursion
+     */
+    bool pushMessage(const google::protobuf::Descriptor *msg);
+    void popMessage();
+    void fieldMessage(const google::protobuf::FieldDescriptor *fDesc,
+                      IVisitorMessageDescriptor &visitor);
 
 private:
+    /**
+     * Field path within the message
+     */
     std::list<std::string> m_path;
+    /**
+     * Nested message level
+     */
+    uint32_t m_level;
+    /**
+     * Nested messages list for detecting recursion
+     */
+    std::list<const google::protobuf::Descriptor *> m_msgs;
 };
 
 }  // namespace proto
