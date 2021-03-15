@@ -10,7 +10,7 @@ namespace table {
 
 Properties::Builtins builtin;
 
-inline Properties::Properties()
+Properties::Properties()
         : format(TableFormat::csv)
         , border(BorderStyle::empty)
         , header(false) {}
