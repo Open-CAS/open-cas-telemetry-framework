@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright(c) 2012-2021 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  */
 
@@ -18,17 +18,23 @@ namespace octf {
 namespace table {
 
 Table::Table()
-        : m_map(new TableMap()) {}
+        : m_map(new TableMap())
+        , m_props()
+        , m_title() {}
 
 Table::~Table() {}
 
 Table::Table(const Table &other)
         : IContainer<Row, RowIterator, RowIteratorConst>()
-        , m_map(new TableMap(*other.m_map)) {}
+        , m_map(new TableMap(*other.m_map))
+        , m_props(new Properties(*other.m_props))
+        , m_title(other.m_title) {}
 
 Table &Table::operator=(const Table &other) {
     if (this != &other) {
         m_map.reset(new TableMap(*other.m_map));
+        m_props.reset(new Properties(*other.m_props));
+        m_title = other.m_title;
     }
 
     return *this;
@@ -86,6 +92,30 @@ index_t Table::size() const {
 bool Table::empty() const {
     auto const &map = *m_map;
     return map.empty();
+}
+
+const octf::table::Properties &Table::getProperties() const {
+    if (!m_props) {
+        return Properties::builtin.csv();
+    } else {
+        return *m_props;
+    }
+}
+
+Properties &Table::getProperties() {
+    if (!m_props) {
+        m_props.reset(new Properties(Properties::builtin.csv()));
+    }
+
+    return *m_props;
+}
+
+void Table::setProperties(const Properties &props) {
+    if (!m_props) {
+        m_props.reset(new Properties());
+    }
+
+    *m_props = props;
 }
 
 std::ostream &operator<<(std::ostream &os, const Table &table) {

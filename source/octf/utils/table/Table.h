@@ -14,6 +14,7 @@
 #include <octf/utils/table/Cell.h>
 #include <octf/utils/table/Column.h>
 #include <octf/utils/table/Iterators.h>
+#include <octf/utils/table/Properties.h>
 #include <octf/utils/table/Row.h>
 #include <octf/utils/table/Types.h>
 
@@ -101,8 +102,44 @@ public:
 
     RowIteratorConst end() const override;
 
+    /**
+     * @brief Gets table title
+     * @return Table title
+     */
+    const std::string &getTitle() const {
+        return m_title;
+    }
+
+    /**
+     * @brief Set table title
+     * @param title Title of the table to be set
+     */
+    void setTitle(const std::string &title) {
+        m_title = title;
+    }
+
+    /**
+     * @brief Gets table format properties in read only access
+     * @return Table format properties
+     */
+    const Properties &getProperties() const;
+
+    /**
+     * @brief Gets table format properties and modify them
+     * @return Table format properties
+     */
+    Properties &getProperties();
+
+    /**
+     * @brief Sets table format properties
+     * @param props Table format properties to be set
+     */
+    void setProperties(const Properties &props);
+
 private:
     std::unique_ptr<TableMap> m_map;
+    std::unique_ptr<Properties> m_props;
+    std::string m_title;
 };
 
 /**
