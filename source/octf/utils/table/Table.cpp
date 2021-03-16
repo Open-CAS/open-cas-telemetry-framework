@@ -18,12 +18,27 @@ namespace octf {
 namespace table {
 
 Table::Table()
-        : NonCopyable()
-        , m_map(new TableMap())
+        : m_map(new TableMap())
         , m_props()
         , m_title() {}
 
 Table::~Table() {}
+
+Table::Table(const Table &other)
+        : IContainer<Row, RowIterator, RowIteratorConst>()
+        , m_map(new TableMap(*other.m_map))
+        , m_props(new Properties(*other.m_props))
+        , m_title(other.m_title) {}
+
+Table &Table::operator=(const Table &other) {
+    if (this != &other) {
+        m_map.reset(new TableMap(*other.m_map));
+        m_props.reset(new Properties(*other.m_props));
+        m_title = other.m_title;
+    }
+
+    return *this;
+}
 
 Row &Table::operator[](index_t row) {
     return m_map->getRow(row);

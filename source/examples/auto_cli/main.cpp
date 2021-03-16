@@ -9,21 +9,26 @@
 #include <octf/octf.h>
 
 int main(int argc, char *argv[]) {
-    // Create executor and local command set
-    octf::cli::Executor ex;
+    try {
+        // Create executor and local command set
+        octf::cli::Executor ex;
 
-    // Configure CLI program
-    auto &properties = ex.getCliProperties();
-    properties.setName("auto-cli");
-    properties.setVersion("1.0");
+        // Configure CLI program
+        auto &properties = ex.getCliProperties();
+        properties.setName("auto-cli");
+        properties.setVersion("1.0");
 
-    // Create interface
-    octf::InterfaceShRef iHelloWord =
-            std::make_shared<InterfaceHelloWorldImpl>();
+        // Create interface
+        octf::InterfaceShRef iHelloWord =
+                std::make_shared<InterfaceHelloWorldImpl>();
 
-    // Add interface to executor
-    ex.addModules(iHelloWord);
+        // Add interface to executor
+        ex.addModules(iHelloWord);
 
-    // Execute command
-    return ex.execute(argc, argv);
+        // Execute command
+        return ex.execute(argc, argv);
+    } catch (octf::Exception &ex) {
+        octf::log::critical << ex.what() << std::endl;
+        return 1;
+    }
 }
