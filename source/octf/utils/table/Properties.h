@@ -54,7 +54,7 @@ public:
         /**
          * @Gets Gets no border table style
          */
-        static const Properties &empt();
+        static const Properties &empty();
 
         /**
          * @Gets Gets border table style

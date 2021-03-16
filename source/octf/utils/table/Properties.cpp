@@ -47,7 +47,7 @@ const Properties &octf::table::Properties::Builtins::csv() {
     return style;
 };
 
-const Properties &octf::table::Properties::Builtins::empt() {
+const Properties &octf::table::Properties::Builtins::empty() {
     struct Style : Properties {
         Style() {
             format = TableFormat::text;
