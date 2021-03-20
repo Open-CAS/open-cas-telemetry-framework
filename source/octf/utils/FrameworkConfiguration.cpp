@@ -60,6 +60,10 @@ const std::string &FrameworkConfiguration::getTraceDir() const {
     return getConfig().paths().trace();
 }
 
+const std::string &FrameworkConfiguration::getRunDir() const {
+    return getConfig().paths().run();
+}
+
 std::string FrameworkConfiguration::getNodeTraceDirectoryPath(
         const NodePath &path) const {
     return getTraceDir() + "/" + getNodePathBasename(path);

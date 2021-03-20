@@ -15,6 +15,9 @@ message FrameworkPaths {
 
     // Path where collected traces are located
     string trace = 3;
+
+    // Path where running state is located
+    string run = 4;
 }
 
 message FrameworkConfiguration {

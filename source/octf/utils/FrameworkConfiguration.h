@@ -39,6 +39,13 @@ public:
     const std::string &getTraceDir() const;
 
     /**
+     * @brief Gets run dir location
+     *
+     * @return Run dir location
+     */
+    const std::string &getRunDir() const;
+
+    /**
      * @brief Gets UNIX socket file location for specified node
      *
      * @note For nodes tree, socket is opened for root node. Thus
