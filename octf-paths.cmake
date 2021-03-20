@@ -29,6 +29,7 @@ set(OCTF_CONFIG_FILE_PROJECT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${OCTF_CONFIG_FILE
 set(OCTF_MANIFEST_PREINSTALL ${CMAKE_BINARY_DIR}/install_manifest_octf-install.txt)
 set(OCTF_MANIFEST_POSTINSTALL ${OCTF_DOC_DIR}/install_manifest_octf-install.txt)
 
+set(runPath ${OCTF_RUN_DIR})
 set(socketsPath ${OCTF_RUN_DIR}/sockets)
 set(tracePath ${OCTF_WORK_DIR}/trace)
 set(settingsPath ${OCTF_WORK_DIR}/settings)
@@ -43,7 +44,8 @@ file(WRITE ${OCTF_CONFIG_FILE_PROJECT_PATH}
        "   \"paths\": {\n"
        "   \"settings\": \"${settingsPath}\",\n"
        "   \"unixsocket\": \"${socketsPath}\",\n"
-       "   \"trace\": \"${tracePath}\"\n"
+       "   \"trace\": \"${tracePath}\",\n"
+       "   \"run\": \"${runPath}\"\n"
        "   }\n"
     "}")
 
@@ -79,6 +81,6 @@ install(DIRECTORY
        )
 
 install(DIRECTORY
-        DESTINATION ${settingsPath}
+        DESTINATION ${runPath}
         COMPONENT octf-install
        )
