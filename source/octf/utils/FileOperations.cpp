@@ -6,12 +6,14 @@
 #include <octf/utils/FileOperations.h>
 
 #include <dirent.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <octf/utils/Exception.h>
 
 namespace octf {
 namespace fsutils {
@@ -283,6 +285,110 @@ bool removeFile(const std::string &path) {
         }
     }
 
+    return true;
+}
+
+bool exist(const std::string &path, FileType type) {
+    struct stat st;
+
+    // If a directory exists, no need to go deeper, return success
+    if (!stat(path.c_str(), &st)) {
+        switch (type) {
+        case FileType::Directory:
+            return S_ISDIR(st.st_mode);
+        case FileType::Pipe:
+            return S_ISFIFO(st.st_mode);
+        case FileType::Link:
+            return S_ISLNK(st.st_mode);
+        case FileType::Regular:
+            return S_ISREG(st.st_mode);
+        case FileType::Socket:
+            return S_ISSOCK(st.st_mode);
+        case FileType::Any:
+            return true;
+        default:
+            throw Exception("Unknown file type");
+        };
+    }
+
+    return false;
+}
+
+bool write(const std::string &path, const std::string &data) {
+    // File descriptor for writing
+    int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW,
+                    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+    if (fd == -1) {
+        return false;
+    }
+
+    // Truncate file first
+    if (::ftruncate(fd, 0) != 0) {
+        ::close(fd);
+        return false;
+    }
+
+    // Write to file
+    int written = ::write(fd, data.data(), data.size());
+    if (written < 0) {
+        ::close(fd);
+        return false;
+    }
+    if (static_cast<unsigned>(written) != data.size()) {
+        ::close(fd);
+        return false;
+    }
+
+    // Flush write to disk
+    if (::fsync(fd) != 0) {
+        ::close(fd);
+        return false;
+    }
+
+    ::close(fd);
+    return true;
+}
+
+bool read(const std::string &path, std::string &data) {
+    // File descriptor for reading
+    int fd = ::open(path.c_str(), O_RDONLY | O_NOFOLLOW);
+    if (fd == -1) {
+        return false;
+    }
+
+    // Check file type
+    struct stat _stat;
+    int result = ::fstat(fd, &_stat);
+    if (result || !S_ISREG(_stat.st_mode)) {
+        // We expect regular file but it's not
+        close(fd);
+        return false;
+    }
+
+    // Get file size by setting file offset to the end
+    off_t fileSize;
+    fileSize = ::lseek(fd, 0, SEEK_END);
+    if (fileSize == -1) {
+        close(fd);
+        return false;
+    }
+    // Reset file offset
+    if (::lseek(fd, 0, SEEK_SET) == -1) {
+        close(fd);
+        return false;
+    }
+
+    // Resize the data string to hold file content
+    data.resize(fileSize);
+
+    // Read the file to string
+    if (::read(fd, &data[0], fileSize) != fileSize) {
+        close(fd);
+        return false;
+    }
+
+    close(fd);
     return true;
 }
 

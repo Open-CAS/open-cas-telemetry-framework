@@ -94,6 +94,41 @@ bool checkPermissions(std::string file, PermissionType permission);
  */
 bool removeFile(const std::string &path);
 
+/**
+ * @brief Checks if file exist for specified path
+ *
+ * Checks if the file exists and optionally is of the specified type
+ *
+ * @param path Path of file/directory to check if exist
+ * @param type Type of file
+ *
+ * @retval true File exists and its type is like specified
+ * @retval false File does not exist or its type isn't like specified
+ */
+bool exist(const std::string &path, FileType type = FileType::Any);
+
+/**
+ * @brief Writes data to the file
+ *
+ * @param path Path to the file into which write data
+ * @param data data which will be written to the file
+ *
+ * @retval true Data written to the file successfully
+ * @retval false An error occurred when writing data to the file
+ */
+bool write(const std::string &path, const std::string &data);
+
+/**
+ * @brief Reads data from the file
+ *
+ * @param path Path to the file from which read data
+ * @param[out] data Read data
+ *
+ * @retval true Data read from the file successfully
+ * @retval false An error occurred when reading data from the file
+ */
+bool read(const std::string &path, std::string &data);
+
 }  // namespace fsutils
 }  // namespace octf
 
