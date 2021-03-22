@@ -83,13 +83,26 @@ public:
 };
 
 /**
+ * @brief Exception which occurred during shell execution
+ */
+class ShellExecutorException : public octf::Exception {
+public:
+    ShellExecutorException(const std::string &message, const std::string &cmd)
+            : Exception(std::string("Exception occurred during '") + cmd +
+                        "' execution: " + message) {}
+    virtual ~ShellExecutorException() = default;
+};
+
+/**
  * @brief Exception which occurred during file system path traversing
  */
 class MaxPathExceededException : public octf::Exception {
 public:
     MaxPathExceededException(const uint64_t inode)
-            : Exception(std::string("Exceeded maximum path length limit for inode ") +
-                        std::to_string(inode)) {}
+            : Exception(
+                      std::string(
+                              "Exceeded maximum path length limit for inode ") +
+                      std::to_string(inode)) {}
     virtual ~MaxPathExceededException() = default;
 };
 
