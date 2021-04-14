@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_UTILS_SIGNALHANDLER_H
 
 #include <semaphore.h>
+#include <signal.h>
 #include <atomic>
 #include <list>
 #include <octf/utils/NonCopyable.h>
