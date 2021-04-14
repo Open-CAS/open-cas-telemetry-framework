@@ -164,6 +164,9 @@ storage caching meta-library
 OCTF uses:
 - Google Protocol Buffers
 - SeCoe Safe String Library
+- Google Test
+- cmake
+- libfort
 
 [NOTICE](https://github.com/Open-CAS/open-cas-telemetry-framework/blob/master/doc/NOTICE)
 contains more information
