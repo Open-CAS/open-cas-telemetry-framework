@@ -32,6 +32,7 @@ target_include_directories(octf
 # Specify libraries to link
 target_link_libraries(octf PUBLIC pthread)
 target_link_libraries(octf PRIVATE ${PROTOBUF_LIBRARY})
+target_link_libraries(octf PRIVATE fort)
 
 # Add version definitions
 target_compile_definitions(octf
@@ -56,6 +57,7 @@ get_target_property(OCTF_DEFS octf COMPILE_DEFINITIONS)
 set_property(TARGET octf-static PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_sources(octf-static PRIVATE "${OCTF_SRCS}")
 target_link_libraries(octf-static "${OCTF_LIBS}")
+target_link_libraries(octf-static fort)
 
 set_target_properties(octf-static PROPERTIES LINKER_LANGUAGE "${OCTF_LINKER}")
 set_target_properties(octf-static PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${OCTF_INC}")

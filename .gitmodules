@@ -7,3 +7,6 @@
 [submodule "source/third_party/googletest"]
 	path = source/third_party/googletest
 	url = https://github.com/google/googletest
+[submodule "source/third_party/libfort"]
+	path = source/third_party/libfort
+	url = https://github.com/seleznevae/libfort.git
