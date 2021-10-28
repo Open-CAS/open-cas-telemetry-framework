@@ -1,6 +1,6 @@
 /*
  * Copyright(c) 2012-2018 Intel Corporation
- * SPDX-License-Identifier: BSD-3-Clause-Clear
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef DOC_CODING_STYLE_DOXYGENCOMMENTS_H
