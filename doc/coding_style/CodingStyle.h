@@ -1,6 +1,6 @@
 /*
  * Copyright(c) 2012-2018 Intel Corporation
- * SPDX-License-Identifier: BSD-3-Clause-Clear
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * [A] Include appropriate license header at the beginning of each file
  */

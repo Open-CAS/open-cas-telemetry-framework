@@ -1,20 +1,20 @@
 #!/bin/bash
 
 # Copyright(c) 2012-2018 Intel Corporation
-# SPDX-License-Identifier: BSD-3-Clause-Clear
+# SPDX-License-Identifier: BSD-3-Clause
 
 #
 # This script checks files given as arguments for proper license header.
 # If no header is found, the script prepends it
 #
 
-LICENSE_IDENTIFIER="SPDX-License-Identifier: BSD-3-Clause-Clear"
+LICENSE_IDENTIFIER="SPDX-License-Identifier: BSD-3-Clause"
 
 #
 # usage: get_header <LINE COMMENT PREFIX>
 #
 # example: get_header "// "
-# output: // SPDX-License-Identifier: BSD-3-Clause-Clear
+# output: // SPDX-License-Identifier: BSD-3-Clause
 #
 function get_header ()
 {
