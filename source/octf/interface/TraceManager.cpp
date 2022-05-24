@@ -37,7 +37,8 @@ TraceManager::TraceManager(const NodePath &ownerNodePath,
         , m_numberOfJobs(executor->getTraceQueueCount())
         , m_memoryPoolSizeMiB(0)
         , m_serializerType(SerializerType::FileSerializer)
-        , m_traceDirRelativePath("") {}
+        , m_traceDirRelativePath("")
+        , m_tags() {}
 
 TraceManager::~TraceManager() {
     m_finish = true;
@@ -158,7 +159,6 @@ void TraceManager::setupJobs() {
 void TraceManager::startJobs(uint32_t maxDuration,
                              uint64_t maxFileSizeInMiB,
                              uint32_t circBufferSizeInMiB,
-                             const std::string &label,
                              SerializerType serializerType) {
     std::lock_guard<std::mutex> lock(m_traceManagementMutex);
     auto state = getState();
@@ -185,7 +185,6 @@ void TraceManager::startJobs(uint32_t maxDuration,
         m_maxFileSize = MiBToBytes(maxFileSizeInMiB);
         m_memoryPoolSizeMiB = circBufferSizeInMiB;
         m_serializerType = serializerType;
-        m_label = label;
 
         m_thread = std::thread(&TraceManager::handleJobs, this);
     } else {
@@ -217,7 +216,6 @@ void TraceManager::fillTraceSummary(proto::TraceSummary *summary,
     summary->set_tracedevents(getTraceCount());
     summary->set_droppedevents(getDroppedTraceCount());
     summary->set_queuecount(getQueueCount());
-    summary->set_label(getLabel());
     summary->set_version(getTraceVersion());
 
     proto::TraceState tracingState = proto::TraceState::UNDEFINED;
@@ -245,6 +243,11 @@ void TraceManager::fillTraceSummary(proto::TraceSummary *summary,
         break;
     }
     summary->set_state(tracingState);
+
+    auto &tags = *summary->mutable_tags();
+    for (auto const &tag : m_tags) {
+        tags[tag.first] = tag.second;
+    }
 }
 
 std::string TraceManager::getTraceStartDateTime(TracingState state) const {
@@ -319,10 +322,6 @@ int64_t TraceManager::getDuration(TracingState state) const {
     }
 
     return duration_cast<seconds>(endTime - m_startTime).count();
-}
-
-const std::string &TraceManager::getLabel() const {
-    return m_label;
 }
 
 TracingState TraceManager::getState() {
@@ -421,6 +420,10 @@ int TraceManager::pushTrace(uint32_t jobIndex,
         return m_jobs[jobIndex]->pushTrace(trace, traceSize);
     }
     return -EINVAL;
+}
+
+void TraceManager::addTag(const std::string &name, const std::string &value) {
+    m_tags[name] = value;
 }
 
 }  // namespace octf

@@ -45,7 +45,7 @@ void InterfaceTraceManagementImpl::listTraces(
         auto itme = response->add_trace();
         itme->set_tracepath(trace->getSummary().tracepath());
         itme->set_state(trace->getSummary().state());
-        itme->set_label(trace->getSummary().label());
+        *itme->mutable_tags() = trace->getSummary().tags();
     }
 
     done->Run();
@@ -89,7 +89,7 @@ void InterfaceTraceManagementImpl::removeTraces(
             auto removedTrace = response->add_trace();
             removedTrace->set_tracepath(trace->getSummary().tracepath());
             removedTrace->set_state(trace->getSummary().state());
-            removedTrace->set_label(trace->getSummary().label());
+            *removedTrace->mutable_tags() = trace->getSummary().tags();
         } catch (Exception &e) {
             cerr << e.getMessage() << std::endl;
         }

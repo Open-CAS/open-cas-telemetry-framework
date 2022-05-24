@@ -62,8 +62,11 @@ message TraceListItem {
     // State of trace
     TraceState state = 2;
 
-    // User defined label
-    string label = 3;
+    // deprecating label, now user can define tags
+    reserved 3;
+
+    // User defined tags
+    map<string, string> tags = 4;
 }
 
 message TraceList {
@@ -96,7 +99,10 @@ message TraceSummary {
 
     int64 queueCount = 9 [ (opts_param).cli_desc = "Number of IO queues" ];
 
-    string label = 10 [ (opts_param).cli_desc = "User defined label" ];
+    // deprecating label, now user can define tags
+    reserved 10;
 
     int32 version = 11 [ (opts_param).cli_desc = "Trace version" ];
+
+    map<string, string> tags = 12 [ (opts_param).cli_desc = "User defined tags" ];
 }

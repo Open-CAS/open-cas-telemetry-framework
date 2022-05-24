@@ -62,7 +62,6 @@ public:
     void startJobs(uint32_t maxDuration,
                    uint64_t maxFileSizeInMiB,
                    uint32_t circBufferSizeInMiB,
-                   const std::string &label,
                    SerializerType serializerType);
     void stopJobs();
     /**
@@ -93,11 +92,12 @@ public:
      */
     int64_t getQueueCount() const;
     /**
-     * @brief Gets user defined label
+     * @brief Adds user defined tag
      *
-     * @return User label
+     * @param name Tag name
+     * @param value Tag value
      */
-    const std::string &getLabel() const;
+    void addTag(std::string const &name, std::string const &value);
     /**
      * @brief Gets the overall state of the last/current trace.
      */
@@ -226,9 +226,9 @@ private:
      */
     std::string m_traceDirRelativePath;
     /**
-     * @brief User defined label
+     * @brief User defined tags
      */
-    std::string m_label;
+    std::map<std::string, std::string> m_tags;
 };
 
 }  // namespace octf
