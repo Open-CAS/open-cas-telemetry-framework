@@ -17,6 +17,18 @@ enum class PermissionType { Read, Write, ReadWrite, Execute };
 enum class FileType { Regular, Directory, Link, Pipe, Socket, Any };
 
 /**
+ * @brief Gets basename of path
+ *
+ * @param path Path
+ * @param basename
+ *
+ * @return Operation status
+ * @retval true base name retrieved successfully
+ * @retval false Improper path and cannot get basename
+ */
+bool basename(const std::string &path, std::string &basename);
+
+/**
  * @brief Creates a directory at specified path recursively
  *
  * The mode applied when creating dir(s) is S_IRWXU | S_IRWXG.
