@@ -51,7 +51,6 @@ void InterfaceTraceCreatingImpl::StartTracing(
         if (validData) {
             // TODO (kozlowsk) return error code and status to user here
             m_traceManager->startJobs(maxDuration, maxFileSize, circBufferSize,
-                                      request->label(),
                                       SerializerType::FileSerializer);
         }
 
