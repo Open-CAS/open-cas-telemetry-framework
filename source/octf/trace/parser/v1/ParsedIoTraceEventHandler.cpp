@@ -95,7 +95,10 @@ void ParsedIoTraceEventHandler::handleEvent(
         // This event handler presents traces from time '0', and SID '0',
         // we remember the first event time stamp and SID and the subtract
         // by those values for each event
-        m_timestampOffset = traceEvent->header().timestamp();
+        if (Event::EventTypeCase::kDeviceDescription !=
+            traceEvent->EventType_case()) {
+            m_timestampOffset = traceEvent->header().timestamp();
+        }
     }
 
     switch (traceEvent->EventType_case()) {
