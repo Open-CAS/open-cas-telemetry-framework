@@ -84,7 +84,7 @@ void Executor::printMainHelp(std::stringstream &ss) {
 
     if (m_modules.size()) {
         ss << endl << "Available modules: " << endl;
-        for (const auto iter : m_modules) {
+        for (const auto &iter : m_modules) {
             utils::printModuleHelp(ss, &iter.first, true);
         }
     }
@@ -312,7 +312,7 @@ int Executor::execute(int argc, char *argv[]) {
 }
 
 bool Executor::lookupModule(const std::string &name) {
-    for (const auto iter : m_modules) {
+    for (const auto &iter : m_modules) {
         const auto &module = iter.first;
         if (name == module.getShortKey() || name == module.getLongKey()) {
             *m_module = module;
@@ -487,7 +487,7 @@ void Executor::checkIsKeyRepeated(const std::string &shortKey,
                         shortKey);
     }
 
-    for (const auto iter : m_modules) {
+    for (const auto &iter : m_modules) {
         if (iter.first.getLongKey() == longKey) {
             throw Exception(
                     "Cannot add command because of long key conflict: " +
