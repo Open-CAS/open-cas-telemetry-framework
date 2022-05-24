@@ -9,8 +9,9 @@
 extern "C" {
 #endif
 
-#ifdef __KERNEL__
+#if defined(__KERNEL__)
 #include <linux/types.h>
+#elif defined(__BPF__)
 #else
 #include <stdint.h>
 #include <time.h>
@@ -90,7 +91,7 @@ struct iotrace_event_device_desc {
     uint64_t device_size;
 
     /** Canonical device name */
-    char device_name[32];
+    char device_name[256];
 
     /** Device model */
     char device_model[256];
