@@ -286,5 +286,31 @@ bool removeFile(const std::string &path) {
     return true;
 }
 
+bool basename(const std::string &path, std::string &basename) {
+    if ("" == path) {
+        /* Empty string */
+        return false;
+    }
+
+    auto first = 0;
+    auto last = path.length() - 1;
+
+    while ('/' == *path.rbegin()) {
+        last--;
+        if (0 == last) {
+            // path is '/', so base name is also '/'
+            return "/";
+        }
+    }
+
+    auto pos = path.rfind('/', last);
+    if (pos != path.npos) {
+        first = pos + 1;
+    }
+
+    basename = path.substr(first, last - first + 1);
+    return true;
+}
+
 }  // namespace fsutils
 }  // namespace octf
