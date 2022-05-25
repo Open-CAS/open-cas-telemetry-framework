@@ -67,6 +67,7 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         octf::ParsedIoTraceEventHandler *parentHandler,
         const std::string &tracePath)
         : IoTraceParser(tracePath)
+        , m_trace(TraceLibrary::get().getTrace(tracePath))
         , m_queue()
         , m_refSid(0)
         , m_idMapping()
@@ -345,6 +346,11 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
     if (event.has_file()) {
         auto viewer = getFileSystemViewer(partId);
         event.mutable_file()->set_path(viewer->getFilePath(FileId(event)));
+    }
+
+    if (m_trace->getSummary().tags().size()) {
+        auto &tags = *event.mutable_extensions()->mutable_tags();
+        tags = m_trace->getSummary().tags();
     }
 
     // Call handler

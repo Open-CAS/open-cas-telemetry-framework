@@ -11,6 +11,7 @@ ParsedIoTraceEventHandlerPrinter::ParsedIoTraceEventHandlerPrinter(
         const std::string &tracePath,
         proto::OutputFormat format)
         : ParsedIoTraceEventHandler(tracePath)
+        , m_trace(TraceLibrary::get().getTrace(tracePath))
         , m_table()
         , m_format(format)
         , m_jsonOptions()
@@ -43,6 +44,11 @@ void ParsedIoTraceEventHandlerPrinter::processEvents() {
     if (m_format == proto::OutputFormat::CSV) {
         // Form CSV header and print it
         proto::trace::ParsedEvent event;
+
+        /* Populate tags */
+        auto &tags = *event.mutable_extensions()->mutable_tags();
+        tags = m_trace->getSummary().tags();
+
         table::setHeader(m_table[0], &event);
         std::cout << m_table << std::endl;
     }
