@@ -15,6 +15,7 @@
 #include <octf/interface/internal/IoTraceParser.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
+#include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/trace/parser/TraceEventHandler.h>
 
@@ -88,6 +89,7 @@ private:
     void flushEvents();
 
 private:
+    TraceShRef m_trace;
     struct IoQueueDepth;
     class FileSystemViewer;
     struct FileInfo;

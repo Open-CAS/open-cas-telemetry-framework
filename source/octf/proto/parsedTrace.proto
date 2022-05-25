@@ -7,6 +7,11 @@ import "google/protobuf/timestamp.proto";
 import "trace.proto";
 package octf.proto.trace;
 
+message EventIoExtensions {
+     /** User defined tags */
+     map<string, string> tags = 1;
+}
+
 /**
  * The parsed IO contains basic IO information (LBA, length, etc). It is
  * supplemented by related information like filesystem one. In addition it
@@ -90,4 +95,7 @@ message ParsedEvent {
 
     /** File Information */
     FileInfo file = 4;
+
+    /** Trace feature extensions which could post-trace computed */
+    EventIoExtensions extensions = 5;
 }

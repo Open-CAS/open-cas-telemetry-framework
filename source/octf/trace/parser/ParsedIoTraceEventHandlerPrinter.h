@@ -8,6 +8,7 @@
 
 #include <google/protobuf/util/json_util.h>
 #include <octf/proto/defs.pb.h>
+#include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/utils/table/Table.h>
 
@@ -28,6 +29,7 @@ public:
     void processEvents() override;
 
 private:
+    TraceShRef m_trace;
     table::Table m_table;
     proto::OutputFormat m_format;
     google::protobuf::util::JsonOptions m_jsonOptions;
