@@ -11,7 +11,7 @@
 
 namespace octf {
 
-constexpr int32_t TRACE_VERSION = 1;
+constexpr int32_t TRACE_VERSION = 2;
 
 TraceConverter::TraceConverter()
         : m_evDesc(std::make_shared<proto::trace::Event>())
