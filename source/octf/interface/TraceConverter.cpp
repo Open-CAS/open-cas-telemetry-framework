@@ -86,9 +86,10 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         }
         protoIo->set_flush(!!(event->flags & iotrace_event_flag_flush));
         protoIo->set_fua(!!(event->flags & iotrace_event_flag_fua));
+        protoIo->set_metadata(!!(event->flags & iotrace_event_flag_metadata));
+        protoIo->set_direct(!!(event->flags & iotrace_event_flag_direct));
         protoIo->set_lba(event->lba);
         protoIo->set_len(event->len);
-        protoIo->set_ioclass(event->io_class);
         protoIo->set_deviceid(event->dev_id);
         protoIo->set_writehint(event->write_hint);
         protoIo->set_id(event->id);
@@ -130,7 +131,7 @@ std::shared_ptr<const google::protobuf::Message> TraceConverter::convertTrace(
         protobufHdr->set_timestamp(hdr->timestamp);
 
         auto protoFsMeta = m_evFsMeta->mutable_filesystemmeta();
-        protoFsMeta->set_refsid(event->ref_sid);
+        protoFsMeta->set_refid(event->ref_id);
         protoFsMeta->set_fileoffset(event->file_offset);
         protoFsMeta->set_filesize(event->file_size);
 

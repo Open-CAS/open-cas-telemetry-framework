@@ -135,10 +135,11 @@ void ParsedIoTraceEventHandler::handleEvent(
 
         dst.set_lba(src.lba());
         dst.set_len(src.len());
-        dst.set_ioclass(src.ioclass());
         dst.set_operation(src.operation());
-        dst.set_flush(src.flush());
-        dst.set_fua(src.fua());
+        dst.mutable_flags()->set_flush(src.flush());
+        dst.mutable_flags()->set_fua(src.fua());
+        dst.mutable_flags()->set_direct(src.direct());
+        dst.mutable_flags()->set_metadata(src.metadata());
         dst.set_writehint(src.writehint());
 
         auto &qd = m_devIoQueueDepth[deviceId];
@@ -209,7 +210,7 @@ void ParsedIoTraceEventHandler::handleEvent(
     } break;
 
     case Event::kFilesystemMeta: {
-        auto id = traceEvent->filesystemmeta().refsid();
+        auto id = traceEvent->filesystemmeta().refid();
         auto cachedEvent = getCachedEventById(id);
 
         if (cachedEvent) {
