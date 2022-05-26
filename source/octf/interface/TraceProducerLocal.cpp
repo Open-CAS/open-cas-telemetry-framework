@@ -12,8 +12,8 @@ namespace octf {
 static constexpr size_t BUFFER_FREE_SPACE_PERCENTAGE_WAKE_UP_TRIGGER = 75;
 
 TraceProducerLocal::TraceProducerLocal(uint32_t queueId)
-        : m_traceProducerHandle(0)
-        , m_ringMemoryPool(0)
+        : m_traceProducerHandle(nullptr)
+        , m_ringMemoryPool()
         , m_stop(false)
         , m_ringTriggerSize(0)
         , m_queueId(queueId) {}
@@ -65,8 +65,10 @@ void TraceProducerLocal::stop() {
 bool TraceProducerLocal::wait(
         std::chrono::time_point<std::chrono::steady_clock> &endTime) {
     std::unique_lock<std::mutex> lock(m_mutex);
-    if (m_checkTrigger.wait_until(lock, endTime) == std::cv_status::timeout)
+    if (m_checkTrigger.wait_until(lock, endTime) == std::cv_status::timeout) {
         return false;
+    }
+
     return !m_stop;
 }
 
