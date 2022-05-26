@@ -18,6 +18,15 @@ namespace octf {
 namespace trace {
 namespace v1 {
 
+/**
+ * Metadata IO, for example filesystem one
+ */
+#define OCTF_IO_CLASS_METADATA 1
+/**
+ * Direct IO, for example IO which bypasses memory cache
+ */
+#define OCTF_IO_CLASS_DIRECT 22
+
 struct ParsedIoTraceEventHandler::IoQueueDepth {
     uint64_t Value;
     uint64_t Adjustment;
@@ -135,11 +144,16 @@ void ParsedIoTraceEventHandler::handleEvent(
 
         dst.set_lba(src.lba());
         dst.set_len(src.len());
-        dst.set_ioclass(src.ioclass());
         dst.set_operation(src.operation());
-        dst.set_flush(src.flush());
-        dst.set_fua(src.fua());
+        dst.mutable_flags()->set_flush(src.flush());
+        dst.mutable_flags()->set_fua(src.fua());
         dst.set_writehint(src.writehint());
+
+        if (src.ioclass() == OCTF_IO_CLASS_METADATA) {
+            dst.mutable_flags()->set_metadata(true);
+        } else if (src.ioclass() == OCTF_IO_CLASS_DIRECT) {
+            dst.mutable_flags()->set_direct(true);
+        }
 
         auto &qd = m_devIoQueueDepth[deviceId];
         qd.Value++;

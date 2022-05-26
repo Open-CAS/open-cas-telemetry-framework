@@ -77,7 +77,10 @@ message EventIo {
     /** Size of IO in sectors */
     uint32 len = 2;
 
-    /** IO class of IO */
+    /**
+     * IO class of IO
+     * @deprecated since version 2, replaced by: metadata and direct flags, and file size
+     */
     uint32 ioClass = 3;
 
     /** Device ID */
@@ -100,6 +103,12 @@ message EventIo {
      * Zero means not set.
      */
     uint64 id = 9;
+
+    /** Metadata IO, for example filesystem one */
+    bool metadata = 10;
+
+    /** Direct IO, for example IO which bypasses memory cache */
+    bool direct = 11;
 }
 
 /**
@@ -136,7 +145,7 @@ message EventIoCompletion {
 message EventIoFilesystemMeta {
     /**
      * Event sequence ID reference to IO trace event associated with this event
-     * TODO: For v1 of parser this is just reference IO trace event ID
+     * @deprecated since version 2, replaced by: refId
      */
     uint64 refSid = 1;
 
@@ -148,6 +157,12 @@ message EventIoFilesystemMeta {
 
     /** File size in sectors */
     uint64 fileSize = 4;
+
+     /**
+     * Event ID reference to IO trace event associated with this event
+     */
+    uint64 refId = 5;
+
 };
 
 message EventIoFilesystemFileName {

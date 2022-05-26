@@ -162,7 +162,7 @@ void IoStatistics::count(const proto::trace::ParsedEvent &event) {
     }
     Stats *stats = &m_statistics[type];
 
-    if (io.flush() && !io.len()) {
+    if (io.flags().flush() && !io.len()) {
         // This IO is sync request, count it into flush IO group
         stats = m_flush.get();
     }

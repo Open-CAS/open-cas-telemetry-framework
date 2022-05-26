@@ -20,7 +20,7 @@ extern "C" {
 
 typedef uint64_t log_sid_t;
 
-#define IOTRACE_EVENT_VERSION_MAJOR 5
+#define IOTRACE_EVENT_VERSION_MAJOR 6
 #define IOTRACE_EVENT_VERSION_MINOR 0
 
 #define IOTRACE_MAGIC 0x5a8e454ace7a51c1ULL
@@ -115,6 +115,10 @@ typedef enum {
     iotrace_event_flag_flush = 1 << 0,
     /** FUA */
     iotrace_event_flag_fua = 1 << 1,
+    /** Metadata IO */
+    iotrace_event_flag_metadata = 1 << 2,
+    /** Direct IO */
+    iotrace_event_flag_direct = 1 << 3,
 } iotrace_event_flag_t;
 
 /**
@@ -137,9 +141,6 @@ struct iotrace_event {
 
     /** Size of IO in sectors */
     uint32_t len;
-
-    /** IO class of IO */
-    uint32_t io_class;
 
     /** Device ID */
     uint32_t dev_id;
@@ -215,9 +216,9 @@ struct iotrace_event_fs_meta {
     struct iotrace_event_hdr hdr;
 
     /**
-     * Event sequence ID reference to IO trace event associated with this event
+     * Event reference ID reference to IO trace event associated with this event
      */
-    log_sid_t ref_sid;
+    log_sid_t ref_id;
 
     /** File ID */
     struct iotrace_event_file_id file_id;

@@ -18,6 +18,20 @@ message EventIoExtensions {
  * provides post parse information (latency, queue depth, etc...).
  */
 message ParsedEvent {
+    message Flags {
+        /** Flush flag */
+        bool flush = 1;
+
+        /** FUA flag */
+        bool fua = 2;
+
+        /** Filesystem metadata IO */
+        bool metadata = 3;
+
+        /** Direct IO type */
+        bool direct = 4;
+    }
+
     message IO {
         /** Address of IO in sectors */
         uint64 lba = 1;
@@ -25,17 +39,14 @@ message ParsedEvent {
         /** Size of IO in sectors */
         uint32 len = 2;
 
-        /** IO class of IO */
-        uint32 ioClass = 3;
+        /**
+         * IO class of IO
+         * @deprecated since version 2, replaced by: metadata and direct flags, and file size
+         */
+        reserved 3;
 
         /** Operation type: read, write, trim */
         IoType operation = 4;
-
-        /** Flush flag */
-        bool flush = 5;
-
-        /** FUA flag */
-        bool fua = 6;
 
         /** Flags indicates if IO ended with an error */
         bool error = 10000;
@@ -48,6 +59,9 @@ message ParsedEvent {
 
         /** Write (lifetime) hint */
         uint32 writeHint = 10003;
+
+        /** IO flags */
+        Flags flags = 10004;
     }
 
     message DeviceInfo {
