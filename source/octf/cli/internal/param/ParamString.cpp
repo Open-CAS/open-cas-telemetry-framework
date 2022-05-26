@@ -21,7 +21,7 @@ namespace cli {
 ParamString::ParamString()
         : Parameter()
         , m_values()
-        , m_defaultValues(1, "")
+        , m_defaultValues()
         , m_hasDefaultValue(false)
         , m_maxLength(MAX_STRING_LENGTH)
         , m_multipleValue(false)
@@ -45,11 +45,16 @@ void ParamString::setValue(CLIElement element) {
 
 const std::string &ParamString::getValue() const {
     if (!isMultipleValue()) {
-        if (isValueSet()) {
+        if (m_values.size()) {
             return m_values[0];
-        } else {
+        }
+
+        if (m_defaultValues.size()) {
             return m_defaultValues[0];
         }
+
+        static std::string empty;
+        return empty;
     } else {
         throw InvalidParameterException("Option '" + getLongKey() +
                                         "' access error, use multiple getter");
@@ -121,8 +126,10 @@ void ParamString::parseToProtobuf(
                                                 value);
         }
     } else {
-        message->GetReflection()->SetString(message, fieldDescriptor,
-                                            getValue());
+        if (isValueSet()) {
+            message->GetReflection()->SetString(message, fieldDescriptor,
+                                                getValue());
+        }
     }
 }
 
@@ -142,7 +149,10 @@ void ParamString::setOptions(
 
     // If string-specific options are present, set them
     if (paramOps.has_cli_str()) {
-        setDefault(paramOps.cli_str().default_value());
+        auto const &defaultValue = paramOps.cli_str().default_value();
+        if (defaultValue.length()) {
+            setDefault(paramOps.cli_str().default_value());
+        }
         m_multipleValueLimit = paramOps.cli_str().repeated_limit();
     }
 }
