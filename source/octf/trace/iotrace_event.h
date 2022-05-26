@@ -144,6 +144,9 @@ struct iotrace_event {
     /** Size of IO in sectors */
     uint32_t len;
 
+    /** reserved, can be used in future for a new field */
+    uint32_t reserved;
+
     /** Device ID */
     uint32_t dev_id;
 
@@ -220,7 +223,7 @@ struct iotrace_event_fs_meta {
     /**
      * Event reference ID reference to IO trace event associated with this event
      */
-    log_sid_t ref_id;
+    uint64_t ref_id;
 
     /** File ID */
     struct iotrace_event_file_id file_id;
