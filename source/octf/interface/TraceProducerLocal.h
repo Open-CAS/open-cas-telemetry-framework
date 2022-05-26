@@ -44,6 +44,7 @@ public:
 
     int32_t getQueueId() override;
 
+protected:
     octf_trace_t getTraceProducerHandle() const {
         return m_traceProducerHandle;
     }
