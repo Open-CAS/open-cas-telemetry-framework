@@ -91,19 +91,19 @@ private:
 private:
     TraceShRef m_trace;
     struct IoQueueDepth;
-    class FileSystemViewer;
     struct FileInfo;
+    class FileSystemViewer;
+    class TraceEventHandlerFilesystemTree;
     std::queue<proto::trace::ParsedEvent> m_queue;
     uint64_t m_refSid;
     std::map<uint64_t, proto::trace::ParsedEvent *> m_idMapping;
     std::map<uint64_t, proto::trace::EventDeviceDescription> m_devices;
-    std::map<FileId, FileInfo> m_fileInfo;
+    std::unique_ptr<TraceEventHandlerFilesystemTree> m_fsTree;
     uint64_t m_timestampOffset;
     uint64_t m_limit;
     uint64_t m_subrangeStart;
     uint64_t m_subrangeEnd;
     std::map<uint64_t, IoQueueDepth> m_devIoQueueDepth;
-    std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
     octf::ParsedIoTraceEventHandler *m_parentHandler;
 };
 
