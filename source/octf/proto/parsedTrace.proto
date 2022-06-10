@@ -30,6 +30,9 @@ message ParsedEvent {
 
         /** Direct IO type */
         bool direct = 4;
+
+        /** Read ahead IO */
+        bool readahead = 5;
     }
 
     message IO {

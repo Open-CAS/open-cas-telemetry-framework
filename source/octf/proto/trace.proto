@@ -109,6 +109,9 @@ message EventIo {
 
     /** Direct IO, for example IO which bypasses memory cache */
     bool direct = 11;
+
+    /** Read ahead IO, for example triggered by page cache */
+    bool readahead = 12;
 }
 
 /**

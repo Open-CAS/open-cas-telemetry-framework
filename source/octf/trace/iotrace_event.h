@@ -119,6 +119,8 @@ typedef enum {
     iotrace_event_flag_metadata = 1 << 2,
     /** Direct IO */
     iotrace_event_flag_direct = 1 << 3,
+    /** Read ahead IO */
+    iotrace_event_flag_readahead = 1 << 4
 } iotrace_event_flag_t;
 
 /**

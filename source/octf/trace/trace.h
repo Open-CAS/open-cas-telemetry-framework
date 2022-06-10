@@ -125,6 +125,17 @@ void octf_trace_close(octf_trace_t *trace);
 int64_t octf_trace_get_lost_count(octf_trace_t trace);
 
 /**
+ * Increases number of lost event in the trace
+ *
+ * Sometimes events might be lost event without saving them in the trace. The
+ * producer can increase the number of lost event by add it to the counter.
+ *
+ * @param trace Trace
+ * @param lost Number of lost to increase the trace lost event counter
+ */
+void octf_trace_add_lost(octf_trace_t trace, uint64_t lost);
+
+/**
  * @brief Pushes event to the trace
  *
  * @note Only producer may push events to the trace.
