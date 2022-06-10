@@ -744,6 +744,18 @@ int64_t octf_trace_get_lost_count(const octf_trace_t trace) {
     }
 }
 
+void octf_trace_add_lost(octf_trace_t trace, uint64_t lost) {
+    if (!_is_trace_valid(trace)) {
+        return;
+    }
+
+    if (trace->mode != octf_trace_open_mode_producer) {
+        return;
+    }
+
+    env_atomic64_add(lost, &trace->phdr->lost);
+}
+
 int64_t octf_trace_get_free_space(const octf_trace_t trace) {
     if (_is_trace_valid(trace)) {
         uint64_t ptr_wr = env_atomic64_read(&trace->phdr->wr_ptr);
