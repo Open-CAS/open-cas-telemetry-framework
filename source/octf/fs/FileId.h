@@ -6,10 +6,31 @@
 #ifndef SOURCE_OCTF_FS_FILEID_H
 #define SOURCE_OCTF_FS_FILEID_H
 
+#include <chrono>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
 
 namespace octf {
+
+static inline bool operator==(const timespec &a, const timespec &b) {
+    std::chrono::nanoseconds aTimespec(a.tv_nsec);
+    aTimespec += std::chrono::seconds(a.tv_sec);
+
+    std::chrono::nanoseconds bTimespec(b.tv_nsec);
+    bTimespec += std::chrono::seconds(b.tv_sec);
+
+    return aTimespec == bTimespec;
+}
+
+static inline bool operator<(const timespec &a, const timespec &b) {
+    std::chrono::nanoseconds aTimespec(a.tv_nsec);
+    aTimespec += std::chrono::seconds(a.tv_sec);
+
+    std::chrono::nanoseconds bTimespec(b.tv_nsec);
+    bTimespec += std::chrono::seconds(b.tv_sec);
+
+    return aTimespec < bTimespec;
+}
 
 struct FileId {
     uint64_t partitionId;
@@ -65,8 +86,7 @@ struct FileId {
 
     bool operator==(const FileId &other) const {
         return id == other.id && partitionId == other.partitionId &&
-               creationDate.tv_sec == other.creationDate.tv_sec &&
-               creationDate.tv_nsec == other.creationDate.tv_nsec;
+               creationDate == other.creationDate;
     }
 
     bool operator!=(const FileId &other) const {
@@ -78,10 +98,8 @@ struct FileId {
             return partitionId < other.partitionId;
         } else if (id != other.id) {
             return id < other.id;
-        } else if (creationDate.tv_sec != other.creationDate.tv_sec) {
-            return creationDate.tv_sec < other.creationDate.tv_sec;
         } else {
-            return creationDate.tv_nsec < other.creationDate.tv_nsec;
+            return creationDate < other.creationDate;
         }
     }
 };
