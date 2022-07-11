@@ -72,14 +72,14 @@ public:
     }
 
     bool hasFile(const FileId &id) {
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         return iter != m_fileInfo.end();
     }
 
     virtual std::string getFileNamePrefix(const FileId &id) const override {
         std::string basename = "";
 
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
@@ -101,7 +101,7 @@ public:
     }
 
     virtual std::string getFileName(const FileId &id) const override {
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             return iter->second.name;
         }
@@ -112,7 +112,7 @@ public:
     virtual std::string getFileExtension(const FileId &id) const override {
         std::string extension = "";
 
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             auto i = iter->second.name.rfind('.');
             if (i != std::string::npos) {
@@ -127,7 +127,7 @@ public:
         std::string dir = "";
         uint64_t len = 0;
 
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             try {
                 getPath(iter->second.parent, dir, len);
@@ -142,7 +142,7 @@ public:
     virtual std::string getFilePath(const FileId &id) const override {
         std::string path = "";
 
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             path = getDirPath(id);
 
@@ -163,7 +163,7 @@ public:
     virtual FileId getParentId(const FileId &id) const override {
         FileId parentId = FileId();
 
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
             return info.parent;
@@ -174,14 +174,14 @@ public:
 
 private:
     bool getPath(const FileId &id, std::string &path, uint64_t &len) const {
-        auto iter = m_fileInfo.find(id);
+        auto iter = find(id);
         if (iter != m_fileInfo.end()) {
             const auto &info = iter->second;
             len += info.name.length();
             if (len > PATH_MAX) {
                 throw MaxPathExceededException(id.id);
             }
-            if (id != info.parent) {
+            if (id != info.parent && info.name != "/") {
                 if (!getPath(info.parent, path, len)) {
                     path = "";
                     return false;
@@ -199,6 +199,25 @@ private:
             path = "";
             return false;
         }
+    }
+
+    std::map<FileId, FileInfo>::const_iterator find(const FileId &id) const {
+        auto iter = m_fileInfo.find(id);
+        if (iter != m_fileInfo.end()) {
+            return iter;
+        }
+
+        iter = m_fileInfo.lower_bound(id);
+        if (m_fileInfo.size() && iter != m_fileInfo.begin()) {
+            iter = std::prev(iter);
+
+            if (iter->first.id == id.id &&
+                iter->first.partitionId == id.partitionId) {
+                return iter;
+            }
+        }
+
+        return m_fileInfo.end();
     }
 
 private:
