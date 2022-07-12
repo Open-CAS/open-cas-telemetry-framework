@@ -8,7 +8,8 @@ OCTF_DIR="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 . ${OCTF_DIR}/tools/scripts/octf-common.sh
 
 function get_distribution_pkg_dependencies () {
-    local pkgs_common="autoconf automake libtool curl make gcc unzip git wget cmake"
+    local pkgs_common="autoconf automake libtool curl make gcc unzip git wget \
+                        doxygen make cmake"
     local pkgs_required=""
 
     case "${DISTRO}" in
