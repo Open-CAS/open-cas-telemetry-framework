@@ -353,4 +353,15 @@ void octf::InterfaceTraceParsingImpl::GetDeviceList(
     done->Run();
 }
 
+void InterfaceTraceParsingImpl::BuildExtensions(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::BuildExtensionsRequest *request,
+        ::octf::proto::Void *response,
+        ::google::protobuf::Closure *done) {
+		
+		RpcOutputStream cout(log::Severity::Information, controller);
+		cout << "Hello from extension" << std::endl; 
+
+		done->Run();
+	}
 }  // namespace octf
