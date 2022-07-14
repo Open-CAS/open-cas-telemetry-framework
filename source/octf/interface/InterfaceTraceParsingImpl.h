@@ -67,6 +67,12 @@ public:
             ::octf::proto::ListDevicesResponse *response,
             ::google::protobuf::Closure *done) override;
 
+	virtual void BuildExtensions(
+        	::google::protobuf::RpcController *controller,
+        	const ::octf::proto::BuildExtensionsRequest *request,
+        	::octf::proto::Void *response,
+        	::google::protobuf::Closure *done) override; 
+
 private:
     void printHistogramCsv(::octf::RpcOutputStream &cout,
                            const ::octf::proto::IoHistogramSet *histogramSet);
