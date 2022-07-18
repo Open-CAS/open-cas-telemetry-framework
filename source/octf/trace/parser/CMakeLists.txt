@@ -1,6 +1,7 @@
 add_subdirectory(v0)
 add_subdirectory(v1)
 add_subdirectory(v2)
+add_subdirectory(extensions)
 
 target_sources(octf
 PRIVATE
@@ -19,6 +20,8 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerWorkset.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerDevicesList.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceEventHandlerDevicesList.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerExtensionBuilder.h
+	${CMAKE_CURRENT_LIST_DIR}/ParsedIoTraceEventHandlerExtensionBuilder.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.cpp
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileParser.h
     ${CMAKE_CURRENT_LIST_DIR}/TraceFileReader.cpp
