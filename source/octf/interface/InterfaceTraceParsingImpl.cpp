@@ -7,13 +7,17 @@
 
 #include <google/protobuf/util/json_util.h>
 #include <iostream>
+#include <memory>
+#include <ostream>
 #include <octf/communication/RpcOutputStream.h>
 #include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
+#include <octf/trace/parser/ParsedIoTraceEventHandlerExtensionBuilder.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
 #include <octf/trace/parser/TraceEventHandlerDevicesList.h>
 #include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
+#include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/table/Table.h>
@@ -358,10 +362,14 @@ void InterfaceTraceParsingImpl::BuildExtensions(
         const ::octf::proto::BuildExtensionsRequest *request,
         ::octf::proto::Void *response,
         ::google::protobuf::Closure *done) {
-		
-		RpcOutputStream cout(log::Severity::Information, controller);
-		cout << "Hello from extension" << std::endl; 
+    RpcOutputStream cout(log::Severity::Information, controller);
+    cout << "Hello from extension" << std::endl;
 
-		done->Run();
-	}
+    LRUExtensionBuilder builder(1000000000);
+    ParsedIoTraceEventHandlerExtensionBuilder handler(request->tracepath(),
+                                                      &builder);
+    handler.processEvents();
+
+    done->Run();
+}
 }  // namespace octf

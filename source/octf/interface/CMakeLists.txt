@@ -27,4 +27,6 @@ PRIVATE
    ${CMAKE_CURRENT_LIST_DIR}/TraceManager.cpp
    ${CMAKE_CURRENT_LIST_DIR}/TraceConverter.h
    ${CMAKE_CURRENT_LIST_DIR}/TraceConverter.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/ITraceExtensionBuilder.h
+   
 )
