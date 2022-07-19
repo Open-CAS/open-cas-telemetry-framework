@@ -112,4 +112,36 @@ void InterfaceTraceManagementImpl::getTraceSummary(
     done->Run();
 }
 
+void InterfaceTraceManagementImpl::clearTraceCache(
+        ::google::protobuf::RpcController *controller,
+        const ::octf::proto::TracePathPrefix *request,
+        ::octf::proto::TraceList *response,
+        ::google::protobuf::Closure *done) {
+    try {
+        const auto &prefix = request->prefix();
+
+        // If trace directory name does not match this node's name
+        if (prefix.compare(0, m_tracePrefix.size(), m_tracePrefix) != 0) {
+            done->Run();
+            return;
+        }
+
+        std::list<TraceShRef> traceList;
+        TraceLibrary::get().getTraceList(prefix, traceList);
+
+        for (auto const &trace : traceList) {
+            auto &cache = trace->getCache();
+            cache.clear();
+            auto item = response->add_trace();
+            item->set_tracepath(trace->getSummary().tracepath());
+            item->set_state(trace->getSummary().state());
+            *item->mutable_tags() = trace->getSummary().tags();
+        }
+    } catch (const Exception &ex) {
+        controller->SetFailed(ex.what());
+    }
+
+    done->Run();
+}
+
 }  // namespace octf

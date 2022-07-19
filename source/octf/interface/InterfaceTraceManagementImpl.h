@@ -37,6 +37,11 @@ public:
                                  ::octf::proto::TraceSummary *response,
                                  ::google::protobuf::Closure *done) override;
 
+    virtual void clearTraceCache(::google::protobuf::RpcController *controller,
+                                 const ::octf::proto::TracePathPrefix *request,
+                                 ::octf::proto::TraceList *response,
+                                 ::google::protobuf::Closure *done) override;
+
 private:
     std::string m_tracePrefix;
 };

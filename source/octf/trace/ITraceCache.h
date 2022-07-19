@@ -24,6 +24,11 @@ public:
     ~ITraceCache() = default;
 
     /**
+     * @brief Clears entire content of the cache
+     */
+    virtual void clear() = 0;
+
+    /**
      * @brief Reads the value from the trace cache for teh specific key
      *
      * @param[in] key Trace cache key
