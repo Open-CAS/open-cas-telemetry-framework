@@ -10,6 +10,7 @@
 #include <memory>
 #include <ostream>
 #include <octf/communication/RpcOutputStream.h>
+#include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerExtensionBuilder.h>
@@ -60,9 +61,18 @@ void InterfaceTraceParsingImpl::GetTraceStatistics(
         ::octf::proto::IoStatisticsSet *response,
         ::google::protobuf::Closure *done) {
     try {
-        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
-        handler.processEvents();
-        handler.getStatisticsSet().getIoStatisticsSet(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read("Statistics", *response)) {
+            /* No cached result, perform required processing */
+            ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+            handler.processEvents();
+            handler.getStatisticsSet().getIoStatisticsSet(response);
+            cache.write("Statistics", *response);
+        }
 
         if (request->format() == proto::OutputFormat::CSV) {
             RpcOutputStream cout(log::Severity::Information, controller);
@@ -95,9 +105,17 @@ void octf::InterfaceTraceParsingImpl::GetLatencyHistogram(
         ::octf::proto::IoHistogramSet *response,
         ::google::protobuf::Closure *done) {
     try {
-        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
-        handler.processEvents();
-        handler.getStatisticsSet().getIoLatencyHistogramSet(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read("LatencyHistogram", *response)) {
+            ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+            handler.processEvents();
+            handler.getStatisticsSet().getIoLatencyHistogramSet(response);
+            cache.write("LatencyHistogram", *response);
+        }
 
         if (request->format() == proto::OutputFormat::CSV) {
             RpcOutputStream cout(log::Severity::Information, controller);
@@ -141,16 +159,25 @@ void InterfaceTraceParsingImpl::GetLbaHistogram(
             }
         }
 
-        handler.enableLbaHistogram();
-        handler.processEvents();
-        handler.getStatisticsSet().getIoLbaHistogramSet(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read(*request, *response)) {
+            /* No cached result, perform required processing */
+            handler.enableLbaHistogram();
+            handler.processEvents();
+            handler.getStatisticsSet().getIoLbaHistogramSet(response);
+            cache.write(*request, *response);
+        }
 
         if (request->format() == proto::OutputFormat::CSV) {
             RpcOutputStream cout(log::Severity::Information, controller);
             printHistogramCsv(cout, response);
 
-            // The CSV output was requested, to prevent printing histogramSet in
-            // JSON format disable caller output
+            // The CSV output was requested, to prevent printing
+            // histogramSet in JSON format disable caller output
             cout << log::disable;
         }
 
@@ -167,9 +194,18 @@ void InterfaceTraceParsingImpl::GetSizeHistogram(
         ::octf::proto::IoHistogramSet *response,
         ::google::protobuf::Closure *done) {
     try {
-        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
-        handler.processEvents();
-        handler.getStatisticsSet().getIoSizeHistogramSet(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read("SizeHistogram", *response)) {
+            /* No cached result, perform required processing */
+            ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+            handler.processEvents();
+            handler.getStatisticsSet().getIoSizeHistogramSet(response);
+            cache.write("SizeHistogram", *response);
+        }
 
         if (request->format() == proto::OutputFormat::CSV) {
             RpcOutputStream cout(log::Severity::Information, controller);
@@ -192,9 +228,18 @@ void InterfaceTraceParsingImpl::GetQueueDepthHistogram(
         ::octf::proto::IoHistogramSet *response,
         ::google::protobuf::Closure *done) {
     try {
-        ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
-        handler.processEvents();
-        handler.getStatisticsSet().getQueueDepthHistogramSet(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read("QueueDepthHistogram", *response)) {
+            /* No cached result, perform required processing */
+            ParsedIoTraceEventHandlerStatistics handler(request->tracepath());
+            handler.processEvents();
+            handler.getStatisticsSet().getQueueDepthHistogramSet(response);
+            cache.write("QueueDepthHistogram", *response);
+        }
 
         if (request->format() == proto::OutputFormat::CSV) {
             RpcOutputStream cout(log::Severity::Information, controller);
@@ -280,9 +325,18 @@ void InterfaceTraceParsingImpl::GetFileSystemStatistics(
         ::octf::proto::FilesystemStatistics *response,
         ::google::protobuf::Closure *done) {
     try {
-        TraceEventHandlerFilesystemStatistics handler(request->tracepath());
-        handler.processEvents();
-        handler.getFilesystemStatistics(response);
+        // Cache response in trace cache
+        auto trace = TraceLibrary::get().getTrace(request->tracepath());
+        auto &cache = trace->getCache();
+
+        // Try read result from cache
+        if (!cache.read("FileSystemStatistics", *response)) {
+            /* No cached result, perform required processing */
+            TraceEventHandlerFilesystemStatistics handler(request->tracepath());
+            handler.processEvents();
+            handler.getFilesystemStatistics(response);
+            cache.write("FileSystemStatistics", *response);
+        }
 
         RpcOutputStream cout(log::Severity::Information, controller);
         cout << log::reset;
