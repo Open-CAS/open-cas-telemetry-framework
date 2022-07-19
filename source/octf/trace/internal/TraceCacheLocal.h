@@ -16,6 +16,8 @@ public:
     TraceCacheLocal(const std::string &tracePath);
     virtual ~TraceCacheLocal() = default;
 
+    virtual void clear() override;
+
     bool read(const google::protobuf::Message &key,
               google::protobuf::Message &value) override;
 
@@ -26,9 +28,10 @@ private:
     proto::TraceCache::Entry *find(proto::TraceCache &cache,
                                    const google::protobuf::Any &key);
 
+    std::string traceCachePath(const std::string &tracePath) const;
+
 private:
-    const std::string m_path;
-    const std::string m_dir;
+    const std::string m_traceCachePath;
 };
 
 }  // namespace octf

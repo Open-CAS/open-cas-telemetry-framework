@@ -84,4 +84,16 @@ service InterfaceTraceManagement {
 
         option (opts_command).cli_desc = "Returns summary of specified trace";
     };
+
+    // Clears trace cache for specified trace prefix.
+    // Clear all traces cache when given no prefix
+    rpc clearTraceCache(TracePathPrefix) returns (TraceList) {
+        option (opts_command).cli = true;
+
+        option (opts_command).cli_short_key = "C";
+
+        option (opts_command).cli_long_key = "clear-trace-cache";
+
+        option (opts_command).cli_desc = "Clears trace cache for specified trace prefix";
+    };
 }

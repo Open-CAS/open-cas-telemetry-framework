@@ -7,6 +7,7 @@
 
 #include <google/protobuf/util/message_differencer.h>
 #include <octf/proto/traceDefinitions.pb.h>
+#include <octf/utils/Exception.h>
 #include <octf/utils/FrameworkConfiguration.h>
 #include <octf/utils/ProtobufReaderWriter.h>
 
@@ -16,8 +17,7 @@ static constexpr char CACHE_FILE_NAME[] = "octf.cache";
 
 TraceCacheLocal::TraceCacheLocal(const std::string &tracePath)
         : TraceCacheBase()
-        , m_path(tracePath)
-        , m_dir(getFrameworkConfiguration().getTraceDir()) {}
+        , m_traceCachePath(traceCachePath(tracePath)) {}
 
 bool TraceCacheLocal::read(const google::protobuf::Message &key,
                            google::protobuf::Message &value) {
@@ -29,9 +29,7 @@ bool TraceCacheLocal::read(const google::protobuf::Message &key,
         return false;
     }
 
-    // Get path to the cache
-    std::string cachePath = m_dir + "/" + m_path + "/" + CACHE_FILE_NAME;
-    ProtobufReaderWriter rw(cachePath);
+    ProtobufReaderWriter rw(m_traceCachePath);
 
     // Try to read the cache
     if (rw.isFileAvailable() && !rw.read(cache)) {
@@ -58,9 +56,7 @@ bool TraceCacheLocal::write(const google::protobuf::Message &key,
         return false;
     }
 
-    // Get path to the cache
-    std::string cachePath = m_dir + "/" + m_path + "/" + CACHE_FILE_NAME;
-    ProtobufReaderWriter rw(cachePath);
+    ProtobufReaderWriter rw(m_traceCachePath);
 
     // Try to read the cache
     if (rw.isFileAvailable() && !rw.read(cache)) {
@@ -96,6 +92,23 @@ proto::TraceCache::Entry *TraceCacheLocal::find(
     }
 
     return nullptr;
+}
+
+std::string TraceCacheLocal::traceCachePath(
+        const std::string &tracePath) const {
+    return getFrameworkConfiguration().getTraceDir() + "/" + tracePath + "/" +
+           CACHE_FILE_NAME;
+}
+
+void TraceCacheLocal::clear() {
+    ProtobufReaderWriter rw(m_traceCachePath);
+
+    // Try to read the cache
+    if (rw.isFileAvailable()) {
+        if (!rw.remove()) {
+            throw Exception("Cannot remove trace cache: " + m_traceCachePath);
+        }
+    }
 }
 
 }  // namespace octf
