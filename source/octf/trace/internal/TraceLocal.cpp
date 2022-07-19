@@ -18,7 +18,8 @@ TraceLocal::TraceLocal(const std::string &tracePath)
         : TraceBase()
         , m_dir(getFrameworkConfiguration().getTraceDir())
         , m_path(tracePath)
-        , m_summary(readSummary(tracePath)) {
+        , m_summary(readSummary(tracePath))
+        , m_cache(nullptr) {
     if (!isValidSummary(m_summary)) {
         throw Exception("Invalid trace summary for trace path: " + tracePath);
     }
@@ -73,6 +74,14 @@ bool TraceLocal::isValidSummary(const proto::TraceSummary &summary) const {
     }
 
     return true;
+}
+
+ITraceCache &TraceLocal::getCache() {
+    if (!m_cache) {
+        m_cache.reset(new TraceCacheLocal(m_path));
+    }
+
+    return *m_cache;
 }
 
 }  // namespace octf

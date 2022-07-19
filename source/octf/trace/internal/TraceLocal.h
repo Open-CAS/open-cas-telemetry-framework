@@ -6,7 +6,9 @@
 #ifndef SOURCE_OCTF_TRACE_INTERNAL_TRACELOCAL_H
 #define SOURCE_OCTF_TRACE_INTERNAL_TRACELOCAL_H
 
+#include <memory>
 #include <octf/trace/internal/TraceBase.h>
+#include <octf/trace/internal/TraceCacheLocal.h>
 
 namespace octf {
 
@@ -25,6 +27,8 @@ public:
 
     void remove(bool force) override;
 
+    ITraceCache &getCache() override;
+
 private:
     proto::TraceSummary readSummary(const std::string &tracePath) const;
     bool isValidSummary(const proto::TraceSummary &summary) const;
@@ -33,6 +37,7 @@ private:
     const std::string m_dir;
     const std::string m_path;
     const proto::TraceSummary m_summary;
+    std::unique_ptr<TraceCacheLocal> m_cache;
 };
 
 }  // namespace octf

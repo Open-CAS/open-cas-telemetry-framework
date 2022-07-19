@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <octf/proto/traceDefinitions.pb.h>
+#include <octf/trace/ITraceCache.h>
 #include <octf/utils/NonCopyable.h>
 
 namespace octf {
@@ -25,6 +26,15 @@ public:
     virtual void remove(bool force = true) = 0;
 
     virtual bool isTracingEnd() const = 0;
+
+    /**
+     * @brief Gets the trace cache
+     *
+     * To avoid long trace processing some results can be persisted to the cache
+     *
+     * @return The trace cache
+     */
+    virtual ITraceCache &getCache() = 0;
 };
 
 /**

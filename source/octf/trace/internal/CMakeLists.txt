@@ -7,4 +7,8 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/TraceBase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TraceRepositoryLocal.h
 	${CMAKE_CURRENT_LIST_DIR}/TraceRepositoryLocal.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceCacheBase.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceCacheBase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceCacheLocal.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceCacheLocal.cpp
 )
