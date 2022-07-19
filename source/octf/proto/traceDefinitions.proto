@@ -5,6 +5,7 @@
 
 syntax = "proto3";
 option cc_generic_services = true;
+import "google/protobuf/any.proto";
 import "defs.proto";
 import "opts.proto";
 package octf.proto;
@@ -105,4 +106,22 @@ message TraceSummary {
     int32 version = 11 [ (opts_param).cli_desc = "Trace version" ];
 
     map<string, string> tags = 12 [ (opts_param).cli_desc = "User defined tags" ];
+}
+
+message TraceCache {
+    message SimpleKey {
+        string name = 1;
+    }
+
+    message SimpleValue {
+        uint64 value = 1;
+    }
+
+    message Entry {
+        google.protobuf.Any key = 1;
+
+        google.protobuf.Any value = 2;
+    }
+
+    repeated Entry entires = 1;
 }
