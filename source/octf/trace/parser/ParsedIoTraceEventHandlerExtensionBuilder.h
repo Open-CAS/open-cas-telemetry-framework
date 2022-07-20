@@ -30,6 +30,7 @@ public:
     virtual ~ParsedIoTraceEventHandlerExtensionBuilder() = default;
 
     void handleIO(const proto::trace::ParsedEvent &io) override;
+    // void processEvents() override;
 
 private:
     ITraceExtensionBuilder *builder;

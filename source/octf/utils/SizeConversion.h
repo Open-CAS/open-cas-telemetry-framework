@@ -19,6 +19,11 @@ inline uint64_t getSectorSize() {
     return sectorSize;
 }
 
+inline uint64_t sectorToCacheLine(uint64_t sectors,
+                                  uint64_t cacheLineSize = 4096) {
+    return (sectors * getSectorSize()) / cacheLineSize;
+}
+
 /**
  * @brief Converts given number of bytes into MiB, rounding down
  */
