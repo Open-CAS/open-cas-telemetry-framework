@@ -33,7 +33,6 @@ public:
      * @retval True - on successful operation.
      * @retval False - if any error occurred.
      */
-    virtual void serializeExtension(const proto::trace::ParsedEvent &io) = 0;
 };
 
 }  //  namespace octf

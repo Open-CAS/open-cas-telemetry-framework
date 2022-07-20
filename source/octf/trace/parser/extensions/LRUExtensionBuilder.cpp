@@ -1,33 +1,43 @@
 #include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
+#include <octf/utils/SizeConversion.h>
 
 namespace octf {
 
-LRUExtensionBuilder::LRUExtensionBuilder(uint64_t workset_size) {
+LRUExtensionBuilder::LRUExtensionBuilder(uint64_t workset_size,
+                                         uint64_t cache_percentage) {
     this->workset_size = workset_size;
-    this->cache_size = workset_size*0.1;
+    this->cache_size = workset_size * cache_percentage;
     this->cache = LRUList();
     this->lookup = {};
 }
 
-LRUExtensionBuilder::~LRUExtensionBuilder() {
-
-}
+LRUExtensionBuilder::~LRUExtensionBuilder() {}
 
 void LRUExtensionBuilder::buildExtension(const proto::trace::ParsedEvent &io) {
-    //TODO: map adresses to 4KB blocks
-    //TODO: go through adress blocks
-    get(io.io().lba());
-    push(io.io().lba());
+    uint64_t len = io.io().len();
+    uint64_t lba = io.io().lba();
+
+    uint64_t firstCacheLine = sectorToCacheLine(lba);
+    uint64_t lastCacheLine = sectorToCacheLine(lba + len - 1);
+    bool hit = true;
+    for (uint64_t i = firstCacheLine; i <= lastCacheLine; i++) {
+        hit &= get(i);
+        push(i);
+    }
+
+    if (hit == true) {
+        std::cout << "True" << std::endl;
+    } else {
+        std::cout << "False" << std::endl;
+    }
 }
 
-void LRUExtensionBuilder::serializeExtension(
-        const proto::trace::ParsedEvent &io) {}
-
+// Use std::move to move node ownership from free-list to lookup
 void LRUExtensionBuilder::push(uint64_t lba) {
     auto iter = lookup.find(lba);
     if (iter != lookup.end()) {
         // If LBA was found in cache, move it to the most recently used position
-        LRUList::Node *n = iter->second;
+        LRUList::Node *n = &iter->second;
         cache.pop(n);
         cache.push(n);
     } else {
@@ -35,27 +45,20 @@ void LRUExtensionBuilder::push(uint64_t lba) {
         // capacity was exceeded
         if (lookup.size() >= cache_size)
             evict();
-        LRUList::Node *node = cache.push(lba);
-        lookup.insert({lba, node});
+        // Get free node from the list
+        auto result = lookup.emplace(std::make_pair(lba, LRUList::Node()));
+        cache.push(&(*result.first).second);
     }
 }
 
-void LRUExtensionBuilder::get(uint64_t lba) {
-    if(lookup.count(lba) == 1)
-    {
-        std::cout << "True" << std::endl;
-    }
-    else
-    {
-        std::cout << "False" << std::endl;
-    }
+bool LRUExtensionBuilder::get(uint64_t lba) {
+    return lookup.count(lba) == 1;
 }
 
 void LRUExtensionBuilder::evict() {
     LRUList::Node *lru_node = cache.head;
     lookup.erase(lru_node->lba);
     cache.pop(lru_node);
-    delete lru_node;
 }
 
 void LRUExtensionBuilder::LRUList::pop(Node *node) {
@@ -92,14 +95,6 @@ void LRUExtensionBuilder::LRUList::push(Node *nnode) {
     tail->next = nnode;
     nnode->prev = tail;
     tail = tail->next;
-}
-
-LRUExtensionBuilder::LRUList::Node *LRUExtensionBuilder::LRUList::push(
-        uint64_t lba) {
-    Node *nnode = new Node();
-    nnode->lba = lba;
-    push(nnode);
-    return nnode;
 }
 
 LRUExtensionBuilder::LRUList::~LRUList() {

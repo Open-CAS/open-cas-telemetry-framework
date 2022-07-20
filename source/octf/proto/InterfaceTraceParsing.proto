@@ -38,6 +38,18 @@ message BuildExtensionsRequest {
         (opts_param).cli_short_key = "p",
         (opts_param).cli_desc = "Path to trace"
     ];
+
+    uint32 cachePercentage = 2 [
+        (opts_param).cli_num.min = 1,
+        (opts_param).cli_num.max = 100,
+        (opts_param).cli_required = false,
+        (opts_param).cli_long_key = "cache-percentage",
+        (opts_param).cli_short_key = "c",
+        (opts_param).cli_desc =
+            "Percentage of workset size to set the cache size to" 
+    ];
+
+    CacheType cacheType = 3;
 }
 
 message GetLbaHistogramRequest {

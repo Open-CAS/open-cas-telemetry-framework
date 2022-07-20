@@ -12,7 +12,7 @@ ParsedIoTraceEventHandlerExtensionBuilder::
 
 void ParsedIoTraceEventHandlerExtensionBuilder::handleIO(
         const proto::trace::ParsedEvent &io) {
-                builder->buildExtension(io);
-        }
+    builder->buildExtension(io);
+}
 
 }  // namespace octf

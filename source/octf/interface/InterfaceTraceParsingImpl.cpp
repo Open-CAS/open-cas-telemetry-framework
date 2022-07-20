@@ -18,6 +18,7 @@
 #include <octf/trace/parser/ParsedIoTraceEventHandlerStatistics.h>
 #include <octf/trace/parser/TraceEventHandlerDevicesList.h>
 #include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
+#include <octf/trace/parser/TraceEventHandlerWorkset.h>
 #include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
@@ -419,7 +420,19 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     RpcOutputStream cout(log::Severity::Information, controller);
     cout << "Hello from extension" << std::endl;
 
-    LRUExtensionBuilder builder(1000000000);
+    auto trace = TraceLibrary::get().getTrace(request->tracepath());
+    auto &cache = trace->getCache();
+    uint64_t workset_size = 0;
+
+    if (!cache.read("BuildExtensionsWorkset", workset_size)) {
+        /* No cached result, perform required processing */
+        CasTraceEventHandlerWorkset handler(request->tracepath());
+        handler.processEvents();
+        workset_size = handler.getWorkset();
+        cache.write("BuildExtensionsWorkset", workset_size);
+    }
+
+    LRUExtensionBuilder builder(workset_size, request->cachepercentage());
     ParsedIoTraceEventHandlerExtensionBuilder handler(request->tracepath(),
                                                       &builder);
     handler.processEvents();

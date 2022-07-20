@@ -25,14 +25,15 @@ class LRUExtensionBuilder : public ITraceExtensionBuilder {
 public:
     /**
      * @see TraceEventHandler
+     * @param workset_size - size of workset
+     * @param cache_percentage - sets cache size to the given percentage of
+     * workset size
      */
-    LRUExtensionBuilder(uint64_t workset_size);
+    LRUExtensionBuilder(uint64_t workset_size, uint64_t cache_percentage);
 
     virtual ~LRUExtensionBuilder();
 
     virtual void buildExtension(const proto::trace::ParsedEvent &io) override;
-    virtual void serializeExtension(
-            const proto::trace::ParsedEvent &io) override;
 
 private:
     class LRUList {
@@ -59,11 +60,11 @@ private:
     uint64_t sector_size = 4096;
     uint64_t workset_size = 0;
     uint64_t cache_size = 0;
-    std::unordered_map<uint64_t, LRUList::Node *> lookup;
+    std::unordered_map<uint64_t, LRUList::Node> lookup;
     LRUList cache;
 
     // LRU functions
-    void get(uint64_t lba);
+    bool get(uint64_t lba);
     void push(uint64_t lba);
     // Removes least used element from the cache and lookup table
     void evict();
