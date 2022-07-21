@@ -14,6 +14,7 @@ set(protoList
 	parsedTrace.proto
 	traceDefinitions.proto
 	statistics.proto
+	extensions.proto
 )
 protobuf_generate_cpp(PROTO_SRC PROTO_HEADER ${protoList})
 add_library(protooctf OBJECT ${PROTO_HEADER} ${PROTO_SRC})

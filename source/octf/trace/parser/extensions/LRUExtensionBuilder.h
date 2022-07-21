@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef SOURCE_OCTF_TRACE_PARSER_LRUBUILDER_H
-#define SOURCE_OCTF_TRACE_PARSER_LRUBUILDER_H
+#ifndef SOURCE_OCTF_TRACE_PARSER_LRUEXTENSIONBUILDER_H
+#define SOURCE_OCTF_TRACE_PARSER_LRUEXTENSIONBUILDER_H
 
 #include <list>
 #include <map>
 #include <octf/interface/ITraceExtensionBuilder.h>
 #include <octf/proto/InterfaceTraceParsing.pb.h>
+#include <octf/proto/extensions.pb.h>
 #include <octf/proto/trace.pb.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 
@@ -33,7 +34,11 @@ public:
 
     virtual ~LRUExtensionBuilder();
 
-    virtual void buildExtension(const proto::trace::ParsedEvent &io) override;
+    virtual octf::table::Table buildExtension() override;
+    virtual const google::protobuf::Message &handleIO(
+            const proto::trace::ParsedEvent &io) override;
+
+    virtual const google::protobuf::Message &GetMessage() override;
 
 private:
     class LRUList {
@@ -62,6 +67,9 @@ private:
     uint64_t cache_size = 0;
     std::unordered_map<uint64_t, LRUList::Node> lookup;
     LRUList cache;
+    proto::LRUBuilderResult result_message;
+
+    octf::table::Table result_table;
 
     // LRU functions
     bool get(uint64_t lba);
@@ -72,4 +80,4 @@ private:
 
 }  // namespace octf
 
-#endif  // SOURCE_OCTF_TRACE_PARSER_LRUBUILDER_H
+#endif  // SOURCE_OCTF_TRACE_PARSER_LRUEXTENSIONBUILDER_H

@@ -4,16 +4,27 @@
 namespace octf {
 
 LRUExtensionBuilder::LRUExtensionBuilder(uint64_t workset_size,
-                                         uint64_t cache_percentage) {
+                                         uint64_t cache_percentage)
+        : result_table()
+        , result_message()
+        , lookup()
+        , cache() {
     this->workset_size = workset_size;
     this->cache_size = workset_size * cache_percentage;
-    this->cache = LRUList();
-    this->lookup = {};
 }
 
 LRUExtensionBuilder::~LRUExtensionBuilder() {}
 
-void LRUExtensionBuilder::buildExtension(const proto::trace::ParsedEvent &io) {
+const google::protobuf::Message &LRUExtensionBuilder::GetMessage() {
+    return result_message;
+}
+
+octf::table::Table LRUExtensionBuilder::buildExtension() {
+    return this->result_table;
+}
+
+const google::protobuf::Message &LRUExtensionBuilder::handleIO(
+        const proto::trace::ParsedEvent &io) {
     uint64_t len = io.io().len();
     uint64_t lba = io.io().lba();
 
@@ -25,11 +36,9 @@ void LRUExtensionBuilder::buildExtension(const proto::trace::ParsedEvent &io) {
         push(i);
     }
 
-    if (hit == true) {
-        std::cout << "True" << std::endl;
-    } else {
-        std::cout << "False" << std::endl;
-    }
+    // Construct result message
+    result_message.set_hit(hit);
+    return result_message;
 }
 
 // Use std::move to move node ownership from free-list to lookup
@@ -45,7 +54,7 @@ void LRUExtensionBuilder::push(uint64_t lba) {
         // capacity was exceeded
         if (lookup.size() >= cache_size)
             evict();
-        // Get free node from the list
+        // Create node in lookup map
         auto result = lookup.emplace(std::make_pair(lba, LRUList::Node()));
         cache.push(&(*result.first).second);
     }

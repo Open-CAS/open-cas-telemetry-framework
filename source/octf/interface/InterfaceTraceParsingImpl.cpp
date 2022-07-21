@@ -417,9 +417,6 @@ void InterfaceTraceParsingImpl::BuildExtensions(
         const ::octf::proto::BuildExtensionsRequest *request,
         ::octf::proto::Void *response,
         ::google::protobuf::Closure *done) {
-    RpcOutputStream cout(log::Severity::Information, controller);
-    cout << "Hello from extension" << std::endl;
-
     auto trace = TraceLibrary::get().getTrace(request->tracepath());
     auto &cache = trace->getCache();
     uint64_t workset_size = 0;
@@ -433,8 +430,8 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     }
 
     LRUExtensionBuilder builder(workset_size, request->cachepercentage());
-    ParsedIoTraceEventHandlerExtensionBuilder handler(request->tracepath(),
-                                                      &builder);
+    ParsedIoTraceEventHandlerExtensionBuilder handler(
+            request->tracepath(), &builder, request->format());
     handler.processEvents();
 
     done->Run();
