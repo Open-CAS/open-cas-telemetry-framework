@@ -6,9 +6,11 @@
 #ifndef SOURCE_OCTF_INTERFACE_ITRACEXTENSIONBUILDER_H
 #define SOURCE_OCTF_INTERFACE_ITRACEXTENSIONBUILDER_H
 
+#include <google/protobuf/message.h>
 #include <cstdint>
 #include <octf/interface/ITraceConverter.h>
 #include <octf/proto/parsedTrace.pb.h>
+#include <octf/utils/table/Table.h>
 
 namespace octf {
 
@@ -21,18 +23,15 @@ public:
     virtual ~ITraceExtensionBuilder() = default;
     /**
      * @brief A specific implementation of the builder will build
-     * extension and store it in the local private field
-     * @retval True - on successful operation.
-     * @retval False - if any error occurred.
+     * extension and return it in the table
      */
-    virtual void buildExtension(const proto::trace::ParsedEvent &io) = 0;
-    /**
-     * @brief A specific implementation of the executor will
-     * serialize extension saved in local private field of implementing
-     * class to binary OCTF format
-     * @retval True - on successful operation.
-     * @retval False - if any error occurred.
-     */
+    virtual octf::table::Table buildExtension() = 0;
+
+    virtual const google::protobuf::Message &handleIO(
+            const proto::trace::ParsedEvent &io) = 0;
+
+    // Builds empty message of the same type as message in handleIO
+    virtual const google::protobuf::Message &GetMessage() = 0;
 };
 
 }  //  namespace octf
