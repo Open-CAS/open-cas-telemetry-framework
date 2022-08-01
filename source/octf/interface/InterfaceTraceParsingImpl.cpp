@@ -417,6 +417,7 @@ void InterfaceTraceParsingImpl::BuildExtensions(
         const ::octf::proto::BuildExtensionsRequest *request,
         ::octf::proto::Void *response,
         ::google::protobuf::Closure *done) {
+    (void) (response);
     auto trace = TraceLibrary::get().getTrace(request->tracepath());
     auto &cache = trace->getCache();
     uint64_t workset_size = 0;
