@@ -12,4 +12,5 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/TraceLibrary.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TraceLibrary.h
 	${CMAKE_CURRENT_LIST_DIR}/ITraceCache.h
+	${CMAKE_CURRENT_LIST_DIR}/ITraceExtension.h
 )
