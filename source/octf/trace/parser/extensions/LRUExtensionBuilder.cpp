@@ -10,7 +10,7 @@ LRUExtensionBuilder::LRUExtensionBuilder(uint64_t workset_size,
         , lookup()
         , cache() {
     this->workset_size = workset_size;
-    this->cache_size = workset_size * cache_percentage;
+    this->cache_size = workset_size * (float) (cache_percentage / 100.0);
 }
 
 LRUExtensionBuilder::~LRUExtensionBuilder() {}
@@ -30,7 +30,7 @@ const google::protobuf::Message &LRUExtensionBuilder::handleIO(
 
     uint64_t firstCacheLine = sectorToCacheLine(lba);
     uint64_t lastCacheLine = sectorToCacheLine(lba + len - 1);
-    bool hit = true;
+    bool hit = true;  // cache will be hit if all cachelines in request were hit
     for (uint64_t i = firstCacheLine; i <= lastCacheLine; i++) {
         hit &= get(i);
         push(i);
