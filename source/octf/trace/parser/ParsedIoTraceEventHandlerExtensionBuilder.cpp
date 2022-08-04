@@ -1,3 +1,6 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <octf/trace/parser/ParsedIoTraceEventHandlerExtensionBuilder.h>
 
 namespace octf {
@@ -5,48 +8,51 @@ namespace octf {
 ParsedIoTraceEventHandlerExtensionBuilder::
         ParsedIoTraceEventHandlerExtensionBuilder(
                 const std::string &tracePath,
-                ITraceExtensionBuilder *builder,
-                proto::OutputFormat format)
+                std::shared_ptr<ParsedIoExtensionBuilder> builder)
         : ParsedIoTraceEventHandler(tracePath)
+        , m_builder(builder)
+        , m_handler()
         , m_trace(TraceLibrary::get().getTrace(tracePath))
-        , m_table()
-        , m_format(format)
-        , m_jsonOptions()
-        , m_jsonTrace() {
-    this->builder = builder;
-    m_jsonOptions.always_print_primitive_fields = true;
-    m_jsonOptions.add_whitespace = false;
-}
+        , m_traceExt() {}
 
 void ParsedIoTraceEventHandlerExtensionBuilder::handleIO(
         const proto::trace::ParsedEvent &io) {
-    const google::protobuf::Message &message = builder->handleIO(io);
+    bool result = m_handler(io);
 
-    switch (m_format) {
-    case proto::OutputFormat::CSV: {
-        m_table[0].clear();
-        m_table[0] << message;
-        std::cout << m_table << std::endl;
-    } break;
-    case proto::OutputFormat::JSON: {
-        m_jsonTrace.clear();
-        google::protobuf::util::MessageToJsonString(message, &m_jsonTrace,
-                                                    m_jsonOptions);
-        std::cout << m_jsonTrace << std::endl;
-    } break;
-    default: {
-        throw Exception("Invalid output format");
-    } break;
+    if (m_builder->isTraceExtensionReady()) {
+        auto &writer = m_traceExt->getWriter();
+        writer.write(io.header().sid(), m_builder->getTraceExtension());
+    }
+
+    if (!result) {
+        // Handler requested to stop processing
+        cancel();
     }
 }
 
 void ParsedIoTraceEventHandlerExtensionBuilder::processEvents() {
-    if (m_format == proto::OutputFormat::CSV) {
-        const auto &message = builder->GetMessage();
-        table::setHeader(m_table[0], &message);
-        std::cout << m_table << std::endl;
-    }
+    // Initialize trace extension
+    m_traceExt = m_trace->getExtension(m_builder->getName());
+    if (m_traceExt->isWritable()) {
+        const auto &steps = m_builder->getBuildProcess();
+        if (steps.empty()) {
+            throw Exception("Builder does not define building steps");
+        }
 
-    ParsedIoTraceEventHandler::processEvents();
+        for (const auto &step : steps) {
+            m_handler = step;
+
+            // Reinitialize parser
+            deinitParser();
+            initParser();
+
+            // Start parsing
+            ParsedIoTraceEventHandler::processEvents();
+        }
+
+        // Processing finished, commit trace extension
+        m_traceExt->getWriter().commit();
+    }
 }
+
 }  // namespace octf

@@ -16,7 +16,7 @@
 #include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandler.h>
 #include <octf/utils/table/Table.h>
-#include "octf/interface/ITraceExtensionBuilder.h"
+#include "octf/trace/parser/extensions/ParsedIoExtensionBuilder.h"
 
 namespace octf {
 
@@ -26,22 +26,28 @@ namespace octf {
 class ParsedIoTraceEventHandlerExtensionBuilder
         : public octf::ParsedIoTraceEventHandler {
 public:
-    ParsedIoTraceEventHandlerExtensionBuilder(const std::string &tracePath,
-                                              ITraceExtensionBuilder *builder,
-                                              proto::OutputFormat format);
+    ParsedIoTraceEventHandlerExtensionBuilder(
+            const std::string &tracePath,
+            std::shared_ptr<ParsedIoExtensionBuilder> builder);
 
     virtual ~ParsedIoTraceEventHandlerExtensionBuilder() = default;
 
     void handleIO(const proto::trace::ParsedEvent &io) override;
     void processEvents() override;
 
+    TraceExtensionShRef getTraceExtensions() {
+        return m_traceExt;
+    }
+
+    std::shared_ptr<ParsedIoExtensionBuilder> getExtensionBuilder() {
+        return m_builder;
+    }
+
 private:
-    ITraceExtensionBuilder *builder;
+    std::shared_ptr<ParsedIoExtensionBuilder> m_builder;
+    ParsedIoExtensionBuilder::BuildStepEventHandler m_handler;
     TraceShRef m_trace;
-    table::Table m_table;
-    proto::OutputFormat m_format;
-    google::protobuf::util::JsonOptions m_jsonOptions;
-    std::string m_jsonTrace;
+    TraceExtensionShRef m_traceExt;
 };
 
 }  // namespace octf
