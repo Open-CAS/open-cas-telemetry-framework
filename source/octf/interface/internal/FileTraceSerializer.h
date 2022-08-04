@@ -18,35 +18,21 @@ class FileTraceSerializer : public ITraceSerializer {
 public:
     FileTraceSerializer(const std::string &outputFileName);
     ~FileTraceSerializer();
-    /**
-     * @brief Opens and creates the output file
-     */
-    bool open();
-    /**
-     * @brief Truncates the output file to the size reported
-     * by data pointer, then unmap and close it
-     */
-    bool close();
-    /**
-     * @brief Returns the data write pointer
-     */
-    int64_t getDataSize() {
+
+    bool open() override;
+
+    bool close() override;
+
+    int64_t getDataSize() override {
         return m_dataOffset;
     }
-    /**
-     * @brief Serializes a given buffer to mapped output file
-     * @retval True - on successful operation.
-     * @retval False - if any error occurred.
-     */
-    bool serialize(const void *blob, uint32_t size);
-    /**
-     * @brief Serializes a given Google Protocol Buffer to mapped
-     * output file
-     * @retval True - on successful operation.
-     * @retval False - if any error occurred.
-     */
-    bool serialize(
-            const std::shared_ptr<const google::protobuf::Message> &message);
+
+    bool serialize(const void *blob, uint32_t size) override;
+
+    bool serialize(const std::shared_ptr<const google::protobuf::Message>
+                           &message) override;
+
+    bool serialize(const google::protobuf::Message &message) override;
 
 private:
     bool isRemapNeeded(uint64_t offset, uint32_t size);

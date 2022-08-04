@@ -51,6 +51,15 @@ public:
             const std::shared_ptr<const google::protobuf::Message>
                     &message) = 0;
     /**
+     * @brief Serializes a given Google Protocol Buffer to output location
+     *
+     * @param message Google Protocol Buffer to be serialized.
+     *
+     * @retval True - on successful operation.
+     * @retval False - if any error occurred.
+     */
+    virtual bool serialize(const google::protobuf::Message &message) = 0;
+    /**
      * @brief Initializes any serialization resources
      * @retval True - on successful operation.
      * @retval False - if any error occurred.
