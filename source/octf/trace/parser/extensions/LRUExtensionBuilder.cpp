@@ -1,73 +1,114 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
 #include <octf/utils/SizeConversion.h>
 
 namespace octf {
 
-LRUExtensionBuilder::LRUExtensionBuilder(uint64_t workset_size,
-                                         uint64_t cache_percentage)
-        : result_table()
-        , result_message()
-        , lookup()
-        , cache() {
-    this->workset_size = workset_size;
-    this->cache_size = workset_size * (float) (cache_percentage / 100.0);
+LRUExtensionBuilder::LRUExtensionBuilder(uint64_t worksetSize,
+                                         uint64_t cachePercentage)
+        : ParsedIoExtensionBuilder()
+        , m_name()
+        , m_cacheLines()
+        , m_lookup()
+        , m_lru()
+        , m_result() {
+    m_name = "LRU " + std::to_string(cachePercentage) + "%";
+    m_cacheLines = sectorToCacheLine(worksetSize) * 100 / cachePercentage;
+    m_result.set_hit(false);
+
+    BuildStepEventHandler hndlr = [this](const proto::trace::ParsedEvent &e) {
+        if (!isEventValid(e)) {
+            m_result.Clear();
+            return true;
+        }
+
+        uint64_t len = e.io().len();
+        uint64_t lba = e.io().lba();
+
+        uint64_t firstCacheLine = sectorToCacheLine(lba);
+        uint64_t lastCacheLine = sectorToCacheLine(lba + len - 1);
+
+        // cache will be hit if all cache lines in request were hit
+        bool hit = true;
+
+        for (uint64_t i = firstCacheLine; i <= lastCacheLine; i++) {
+            hit &= get(i);
+            push(i);
+        }
+
+        // Construct result message
+        m_result.set_hit(hit);
+        return true;
+    };
+    addBuildStepEventHandler(hndlr);
 }
 
 LRUExtensionBuilder::~LRUExtensionBuilder() {}
 
-const google::protobuf::Message &LRUExtensionBuilder::GetMessage() {
-    return result_message;
-}
-
-octf::table::Table LRUExtensionBuilder::buildExtension() {
-    return this->result_table;
-}
-
-const google::protobuf::Message &LRUExtensionBuilder::handleIO(
-        const proto::trace::ParsedEvent &io) {
-    uint64_t len = io.io().len();
-    uint64_t lba = io.io().lba();
-
-    uint64_t firstCacheLine = sectorToCacheLine(lba);
-    uint64_t lastCacheLine = sectorToCacheLine(lba + len - 1);
-    bool hit = true;  // cache will be hit if all cachelines in request were hit
-    for (uint64_t i = firstCacheLine; i <= lastCacheLine; i++) {
-        hit &= get(i);
-        push(i);
+bool LRUExtensionBuilder::isEventValid(const proto::trace::ParsedEvent &event) {
+    if (!event.has_io()) {
+        return false;
     }
 
-    // Construct result message
-    result_message.set_hit(hit);
-    return result_message;
+    auto op = event.io().operation();
+    if (proto::trace::Read != op && proto::trace::Write != op) {
+        return false;
+    }
+
+    if (0 == event.io().len()) {
+        return false;
+    }
+
+    return true;
+}
+
+const std::string &LRUExtensionBuilder::getName() const {
+    return m_name;
+}
+
+MessageShRef LRUExtensionBuilder::getExtensionMessagePrototype() {
+    auto prototype = std::make_shared<proto::trace::TraceExtensionResult>();
+    prototype->set_hit(false);
+    return prototype;
+}
+
+bool LRUExtensionBuilder::isTraceExtensionReady() {
+    return true;
+}
+
+const google::protobuf::Message &LRUExtensionBuilder::getTraceExtension() {
+    return m_result;
 }
 
 // Use std::move to move node ownership from free-list to lookup
 void LRUExtensionBuilder::push(uint64_t lba) {
-    auto iter = lookup.find(lba);
-    if (iter != lookup.end()) {
+    auto iter = m_lookup.find(lba);
+    if (iter != m_lookup.end()) {
         // If LBA was found in cache, move it to the most recently used position
         LRUList::Node *n = &iter->second;
-        cache.pop(n);
-        cache.push(n);
+        m_lru.pop(n);
+        m_lru.push(n);
     } else {
-        // If LBA wasnt found in cache, create new entry and evict if
+        // If LBA was not found in teh cache, create new entry and evict if
         // capacity was exceeded
-        if (lookup.size() >= cache_size)
+        if (m_lookup.size() >= m_cacheLines)
             evict();
         // Create node in lookup map
-        auto result = lookup.emplace(std::make_pair(lba, LRUList::Node()));
-        cache.push(&(*result.first).second);
+        auto result = m_lookup.emplace(std::make_pair(lba, LRUList::Node()));
+        m_lru.push(&(*result.first).second);
     }
 }
 
 bool LRUExtensionBuilder::get(uint64_t lba) {
-    return lookup.count(lba) == 1;
+    return m_lookup.count(lba) == 1;
 }
 
 void LRUExtensionBuilder::evict() {
-    LRUList::Node *lru_node = cache.head;
-    lookup.erase(lru_node->lba);
-    cache.pop(lru_node);
+    LRUList::Node *lru_node = m_lru.head;
+    m_lookup.erase(lru_node->lba);
+    m_lru.pop(lru_node);
 }
 
 void LRUExtensionBuilder::LRUList::pop(Node *node) {
