@@ -6,8 +6,42 @@
 syntax = "proto3";
 package octf.proto;
 import "opts.proto";
+import "google/protobuf/any.proto";
 
-message LRUBuilderResult 
-{   
-    bool hit = 1;
+message TraceExtensionHeader {
+    // Tracing extension state definition
+    enum TraceExtensionState {
+        option (opts_enum_param).cli_desc = "Status of the trace extension";
+
+        UNDEFINED = 0 [
+            (opts_enumval).cli_desc = "Not valid state",
+            (opts_enumval).cli_switch = "UNDEFINED"
+        ];
+
+        INITIALIZING = 1 [
+            (opts_enumval).cli_desc = "Initializing the trace extension",
+            (opts_enumval).cli_switch = "INITIALIZING"
+        ];
+
+        READY = 4 [
+            (opts_enumval).cli_desc =
+                "The trace extension successfully generated and ready",
+            (opts_enumval).cli_switch = "READY"
+        ];
+
+        ERROR = 5 [
+            (opts_enumval).cli_desc = "Couldn't generate the trace extension",
+            (opts_enumval).cli_switch = "ERROR"
+        ];
+    }
+
+    string name = 1;
+
+    uint64 id = 2;
+
+    TraceExtensionState state = 3;
+}
+
+message TraceExtensionList {
+    repeated TraceExtensionHeader extension = 1;
 }

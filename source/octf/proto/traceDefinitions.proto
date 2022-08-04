@@ -105,7 +105,8 @@ message TraceSummary {
 
     int32 version = 11 [ (opts_param).cli_desc = "Trace version" ];
 
-    map<string, string> tags = 12 [ (opts_param).cli_desc = "User defined tags" ];
+    map<string, string> tags = 12
+        [ (opts_param).cli_desc = "User defined tags" ];
 }
 
 message TraceCache {
