@@ -88,13 +88,13 @@ bool FileTraceSerializer::serialize(const void *blob, uint32_t size) {
 
 bool FileTraceSerializer::serialize(
         const std::shared_ptr<const google::protobuf::Message> &message) {
+    this->serialize(*message);
+}
+
+bool FileTraceSerializer::serialize(const google::protobuf::Message &message) {
     using namespace google::protobuf::io;
 
-    if (!message) {
-        return false;
-    }
-
-    auto messageLength = message->ByteSizeLong();
+    auto messageLength = message.ByteSizeLong();
 
     uint8_t *buffer = getBuffer(protoconverter::MAX_VARINT32_BYTES);
     if (!buffer) {
@@ -114,7 +114,7 @@ bool FileTraceSerializer::serialize(
         return false;
     }
 
-    if (message->SerializeToArray(buffer, messageLength)) {
+    if (message.SerializeToArray(buffer, messageLength)) {
         moveDataPointer(messageLength);
         return true;
     }
