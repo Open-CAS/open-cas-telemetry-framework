@@ -78,6 +78,10 @@ void TraceFileReader::deinit() {
 
 void TraceFileReader::readTraceEvent(
         std::shared_ptr<google::protobuf::Message> traceEvent) {
+    readTraceEvent(*traceEvent);
+}
+
+void TraceFileReader::readTraceEvent(google::protobuf::Message &traceEvent) {
     if (m_error) {
         throw Exception("Attempted to read from parser which had failed");
     }
@@ -99,7 +103,7 @@ void TraceFileReader::readTraceEvent(
 
     // Parse trace event
     if (messageLength > m_size || messageLength < 0 ||
-            false == traceEvent->ParseFromArray(m_addr, messageLength)) {
+        false == traceEvent.ParseFromArray(m_addr, messageLength)) {
         m_error = true;
         throw Exception("Couldn't parse valid trace event");
     }
