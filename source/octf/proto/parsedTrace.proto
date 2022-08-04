@@ -8,8 +8,8 @@ import "trace.proto";
 package octf.proto.trace;
 
 message EventIoExtensions {
-     /** User defined tags */
-     map<string, string> tags = 1;
+    /** User defined tags */
+    map<string, string> tags = 1;
 }
 
 /**
@@ -44,7 +44,8 @@ message ParsedEvent {
 
         /**
          * IO class of IO
-         * @deprecated since version 2, replaced by: metadata and direct flags, and file size
+         * @deprecated since version 2, replaced by: metadata and direct flags,
+         * and file size
          */
         reserved 3;
 
@@ -115,4 +116,17 @@ message ParsedEvent {
 
     /** Trace feature extensions which could post-trace computed */
     EventIoExtensions extensions = 5;
+}
+
+message TraceExtensionResult {
+    oneof ResultType {
+        bool hit = 1;
+        ParsedEvent io = 2;
+    }
+}
+
+message TraceExtension {
+    uint64 sid = 1;
+
+    map<string, TraceExtensionResult> feature = 2;
 }
