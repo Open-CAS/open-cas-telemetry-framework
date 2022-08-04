@@ -378,24 +378,6 @@ static void streamMessageToRow(Row &row,
 
         std::string name = prefix + field->name();
 
-        auto oneofDesc = field->containing_oneof();
-        if (oneofDesc) {
-            // Given field is a part of oneof, let's get oneof selected field
-            auto oneofField =
-                    reflection->GetOneofFieldDescriptor(msg, oneofDesc);
-
-            if (oneofField == nullptr) {
-                throw Exception("Invalid field descriptor");
-            }
-
-            if (oneofField == field) {
-                // This field is selected by oneof, set name of used case
-                std::string oneofName = prefix + oneofDesc->name();
-                std::string oneofFieldName = prefix + oneofField->name();
-                row[oneofName] = oneofFieldName;
-            }
-        }
-
         if (field->is_map()) {
             auto repeated =
                     reflection->GetRepeatedFieldRef<Message>(msg, field);
