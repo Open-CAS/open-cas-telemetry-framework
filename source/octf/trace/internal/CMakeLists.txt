@@ -11,4 +11,6 @@ PRIVATE
 	${CMAKE_CURRENT_LIST_DIR}/TraceCacheBase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TraceCacheLocal.h
 	${CMAKE_CURRENT_LIST_DIR}/TraceCacheLocal.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TraceExtensionLocal.h
+	${CMAKE_CURRENT_LIST_DIR}/TraceExtensionLocal.cpp
 )

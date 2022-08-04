@@ -29,6 +29,10 @@ public:
 
     ITraceCache &getCache() override;
 
+    void getExtensionList(std::list<std::string> &extList) override;
+
+    TraceExtensionShRef getExtension(const std::string &name) override;
+
 private:
     proto::TraceSummary readSummary(const std::string &tracePath) const;
     bool isValidSummary(const proto::TraceSummary &summary) const;
