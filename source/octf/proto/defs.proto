@@ -95,16 +95,3 @@ enum OutputFormat {
         (opts_enumval).cli_switch = "csv"
     ];
 }
-
-enum CacheType {
-    option (opts_enum_param).cli_enum.default_value = 0;
-    option (opts_enum_param).cli_required = false;
-    option (opts_enum_param).cli_short_key = "t";
-    option (opts_enum_param).cli_long_key = "cache-type";
-    option (opts_enum_param).cli_desc = "Cache type to use";
-
-    LRU = 0 [
-        (opts_enumval).cli_desc = "Least-recently-used cache",
-        (opts_enumval).cli_switch = "lru"
-    ];
-}
