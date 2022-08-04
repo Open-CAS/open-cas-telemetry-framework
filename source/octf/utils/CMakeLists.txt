@@ -31,4 +31,5 @@ PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/CsvParser.h
     ${CMAKE_CURRENT_LIST_DIR}/ProtobufReflection.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ProtobufReflection.h
+    ${CMAKE_CURRENT_LIST_DIR}/Types.h
 )
