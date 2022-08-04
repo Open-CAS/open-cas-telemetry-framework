@@ -242,6 +242,7 @@ void ParamEnum::setOptions(const google::protobuf::FieldDescriptor *fieldDesc) {
 void ParamEnum::setEnumOptions(const proto::OptsParam &paramOps) {
     if (!paramOps.cli_desc().empty()) {
         Parameter::setDesc(paramOps.cli_desc());
+        details();
     }
     if (!paramOps.cli_long_key().empty()) {
         Parameter::setLongKey(paramOps.cli_long_key());
