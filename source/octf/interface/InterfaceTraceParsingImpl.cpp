@@ -9,8 +9,10 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <octf/communication/RpcOutputStream.h>
 #include <octf/trace/TraceLibrary.h>
+#include <octf/trace/parser/HandlerRunner.h>
 #include <octf/trace/parser/IoTraceEventHandlerCsvPrinter.h>
 #include <octf/trace/parser/IoTraceEventHandlerJsonPrinter.h>
 #include <octf/trace/parser/ParsedIoTraceEventHandlerExtensionBuilder.h>
@@ -20,6 +22,7 @@
 #include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
 #include <octf/trace/parser/TraceEventHandlerWorkset.h>
 #include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
+#include <octf/trace/parser/extensions/TraceExtensionSet.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/table/Table.h>
@@ -415,26 +418,124 @@ void octf::InterfaceTraceParsingImpl::GetDeviceList(
 void InterfaceTraceParsingImpl::BuildExtensions(
         ::google::protobuf::RpcController *controller,
         const ::octf::proto::BuildExtensionsRequest *request,
-        ::octf::proto::Void *response,
+        ::octf::proto::Void *,
         ::google::protobuf::Closure *done) {
-    (void) (response);
+    RpcOutputStream cout(log::Severity::Information, controller);
+    cout << log::reset;
+
+    const auto &tracePath = request->tracepath();
     auto trace = TraceLibrary::get().getTrace(request->tracepath());
     auto &cache = trace->getCache();
-    uint64_t workset_size = 0;
+    uint64_t workset = 0;
 
-    if (!cache.read("BuildExtensionsWorkset", workset_size)) {
+    if (!cache.read("BuildExtensionsWorkset", workset)) {
         /* No cached result, perform required processing */
         CasTraceEventHandlerWorkset handler(request->tracepath());
         handler.processEvents();
-        workset_size = handler.getWorkset();
-        cache.write("BuildExtensionsWorkset", workset_size);
+        workset = handler.getWorkset();
+        cache.write("BuildExtensionsWorkset", workset);
     }
 
-    LRUExtensionBuilder builder(workset_size, request->cachepercentage());
-    ParsedIoTraceEventHandlerExtensionBuilder handler(
-            request->tracepath(), &builder, request->format());
-    handler.processEvents();
+    using Handler = ParsedIoTraceEventHandlerExtensionBuilder;
+    HandlerRunner<Handler> runner;
+    std::string result;
+    std::list<std::shared_ptr<Handler>> handlers;
+
+    const std::vector<uint64_t> percentages{5, 10, 15, 20, 50, 100};
+    for (auto prcnt : percentages) {
+        auto factory = [&handlers, tracePath, workset, prcnt]() {
+            auto builder =
+                    std::make_shared<LRUExtensionBuilder>(workset, prcnt);
+
+            auto handler = std::make_shared<Handler>(tracePath, builder);
+            handlers.push_back(handler);
+
+            return handler;
+        };
+        auto cmpl = [](std::shared_ptr<Handler>) {};
+        auto error = [&result](const std::string &error) { result = error; };
+
+        runner.addHandler(factory, cmpl, error);
+    }
+
+    runner.run();
+    if (!result.empty()) {
+        // An error occurred while running handlers by runner
+        throw Exception(result);
+    }
+
+    TraceExtensionSet eSet;
+    for (const auto &hndlr : handlers) {
+        eSet.addTraceExtension(hndlr->getTraceExtensions());
+    }
+
+    // Define variables for
+    std::string jsonTrace;
+    google::protobuf::util::JsonOptions jsonOptions;
+    jsonOptions.always_print_primitive_fields = true;
+    jsonOptions.add_whitespace = false;
+    table::Table tab;
+
+    proto::trace::TraceExtension msg;
+    proto::trace::TraceExtensionResult feature;
+    uint64_t sid = 0;
+
+    // Print header if needed
+    if (proto::OutputFormat::CSV == request->format()) {
+        auto &hdr = tab[0];
+
+        // Reserver first column for sid
+        hdr["sid"] = "sid";
+
+        for (const auto &hndlr : handlers) {
+            auto builder = hndlr->getExtensionBuilder();
+
+            const auto &name = builder->getName();
+            auto &feature = (*msg.mutable_feature())[name];
+            feature.CopyFrom(*builder->getExtensionMessagePrototype());
+        }
+
+        table::setHeader(hdr, &msg);
+        cout << tab << std::endl;
+    }
+
+    while (eSet.getReader().hasNext()) {
+        const auto &name = eSet.getName();
+
+        eSet.read(sid, feature);
+        msg.set_sid(sid);
+        if (feature.ResultType_case()) {
+            (*msg.mutable_feature())[name] = feature;
+        }
+
+        if (!eSet.hasNext() || eSet.getNextSid() != sid) {
+            // time to print
+            switch (request->format()) {
+            case proto::OutputFormat::CSV: {
+                tab[0].clear();
+                tab[0] << msg;
+                cout << tab << std::endl;
+            } break;
+            case proto::OutputFormat::JSON: {
+                jsonTrace.clear();
+                google::protobuf::util::MessageToJsonString(msg, &jsonTrace,
+                                                            jsonOptions);
+                cout << jsonTrace << std::endl;
+            } break;
+            default: {
+                throw Exception("Invalid output format");
+            } break;
+            }
+
+            msg.Clear();
+        }
+    }
+
+    if (proto::OutputFormat::CSV == request->format()) {
+        cout << log::disable;
+    }
 
     done->Run();
 }
+
 }  // namespace octf

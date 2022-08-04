@@ -30,6 +30,25 @@ message ParseTraceRequest {
     ];
 }
 
+enum ExtensionType {
+    option (opts_enum_param).cli_enum.default_value = 0;
+    option (opts_enum_param).cli_required = true;
+    option (opts_enum_param).cli_short_key = "t";
+    option (opts_enum_param).cli_long_key = "extension-type";
+    option (opts_enum_param).cli_desc = "Extension type";
+
+    LRU = 0 [
+        (opts_enumval).cli_desc = "It simulates LRU cache and "
+                                  "checks if an IO is a hit",
+        (opts_enumval).cli_switch = "lru"
+    ];
+
+    LFU = 1 [
+        (opts_enumval).cli_desc = "It simulates LFU cache and "
+                                  "checks if an IO is a hit",
+        (opts_enumval).cli_switch = "lfu"
+    ];
+}
 
 message BuildExtensionsRequest {
     string tracePath = 1 [
@@ -40,18 +59,8 @@ message BuildExtensionsRequest {
     ];
 
     OutputFormat format = 2;
-    
-    uint32 cachePercentage = 3 [
-        (opts_param).cli_num.min = 1,
-        (opts_param).cli_num.max = 100,
-        (opts_param).cli_required = false,
-        (opts_param).cli_long_key = "cache-percentage",
-        (opts_param).cli_short_key = "c",
-        (opts_param).cli_desc =
-            "Percentage of workset size to set the cache size to" 
-    ];
 
-    CacheType cacheType = 4;
+    ExtensionType extensionType = 3;
 }
 
 message GetLbaHistogramRequest {
@@ -154,7 +163,7 @@ service InterfaceTraceParsing {
         option (opts_command).cli_short_key = "B";
         option (opts_command).cli_desc = "Returns a histogram of LBA hits";
     }
-    
+
     rpc GetSizeHistogram(GetTraceStatisticsRequest) returns (IoHistogramSet) {
         option (opts_command).cli = true;
         option (opts_command).cli_long_key = "io-size-histogram";
@@ -162,13 +171,14 @@ service InterfaceTraceParsing {
         option (opts_command).cli_desc = "Returns a histogram of request sizes";
     }
 
-    rpc GetQueueDepthHistogram(GetTraceStatisticsRequest) returns (IoHistogramSet) {
+    rpc GetQueueDepthHistogram(GetTraceStatisticsRequest)
+        returns (IoHistogramSet) {
         option (opts_command).cli = true;
         option (opts_command).cli_long_key = "queue-depth-histogram";
         option (opts_command).cli_short_key = "Q";
-        option (opts_command).cli_desc = "Returns a hisgogram of request queue depth";
+        option (opts_command).cli_desc =
+            "Returns a hisgogram of request queue depth";
     }
-
 
     rpc GetFileSystemStatistics(GetTraceStatisticsRequest)
         returns (FilesystemStatistics) {
@@ -184,9 +194,9 @@ service InterfaceTraceParsing {
         option (opts_command).cli_short_key = "D";
         option (opts_command).cli_desc =
             "Returns a list of devices which had been traced";
-	}
+    }
 
-	rpc BuildExtensions(BuildExtensionsRequest) returns (Void) {
+    rpc BuildExtensions(BuildExtensionsRequest) returns (Void) {
         option (opts_command).cli = true;
         option (opts_command).cli_long_key = "extensions";
         option (opts_command).cli_short_key = "X";
