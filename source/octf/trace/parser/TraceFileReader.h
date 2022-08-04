@@ -42,6 +42,12 @@ public:
     void readTraceEvent(std::shared_ptr<google::protobuf::Message> traceEvent);
 
     /**
+     * @param[out] traceEvent Event filled with trace data. Memory management
+     * is fully handled by caller.
+     */
+    void readTraceEvent(google::protobuf::Message &traceEvent);
+
+    /**
      * @return Is file fully read.
      */
     bool isFinished() const;
