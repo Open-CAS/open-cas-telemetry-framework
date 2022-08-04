@@ -19,6 +19,14 @@ message Bool {
     bool value = 1;
 }
 
+message Uint64 {
+    uint64 value = 1;
+}
+
+message Int64 {
+    int64 value = 1;
+}
+
 message NodeId {
     string id = 1 [
         (opts_param).cli_required = true,
