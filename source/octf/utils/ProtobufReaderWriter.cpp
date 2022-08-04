@@ -25,6 +25,8 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         , m_directoryPath("")
         , m_readFd(-1)
         , m_writeFd(-1)
+        , m_lockFd(-1)
+        , m_lock()
         , m_verbose(false) {
     std::size_t dirEndPos = filePath.rfind('/');
 
@@ -245,6 +247,14 @@ void ProtobufReaderWriter::closeFile() {
         }
         m_writeFd = -1;
     }
+
+    if (m_lockFd != -1) {
+        if (::close(m_lockFd) != 0) {
+            throw Exception("Error when closing file: " +
+                            std::string(strerror(errno)));
+        }
+        m_lockFd = -1;
+    }
 }
 
 bool ProtobufReaderWriter::makeReadOnly() {
@@ -268,6 +278,75 @@ bool ProtobufReaderWriter::makeReadOnly() {
     }
 
     return true;
+}
+
+void ProtobufReaderWriter::lock() {
+    // File descriptor for locking
+    m_lockFd = ::open(m_filePath.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW,
+                      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+    if (m_lockFd == -1) {
+        throw Exception("Error when locking file: " + m_filePath);
+    }
+
+    if (::lockf(m_lockFd, F_LOCK, 0)) {
+        throw Exception("Error when locking file: " +
+                        std::string(strerror(errno)));
+    }
+
+    static std::mutex FileMutexLock;
+    static std::map<std::string, std::mutex> FileMutexMap;
+
+    std::lock_guard<std::mutex> guard(FileMutexLock);
+    auto &mutex = FileMutexMap[m_filePath];
+    // TODO (mbarczak) Provide mechanism to clean map to remove not used locks
+
+    // File locking mechanism works between processes, now we need
+    // to synchronize this process' threads
+    m_lock.reset(new std::lock_guard<std::mutex>(mutex));
+}
+
+void ProtobufReaderWriter::unlock() {
+    if (m_lockFd != -1) {
+        if (::lockf(m_lockFd, F_ULOCK, 0)) {
+            throw Exception("Error when unlocking file: " +
+                            std::string(strerror(errno)));
+        }
+
+        if (::close(m_lockFd) != 0) {
+            throw Exception("Error when closing file: " +
+                            std::string(strerror(errno)));
+        }
+        m_lockFd = -1;
+    }
+
+    m_lock.release();
+}
+
+bool ProtobufReaderWriter::isEmpty() {
+    if (!isFileAvailable()) {
+        return false;
+    }
+
+    openFileToRead();
+
+    if (m_readFd == -1) {
+        if (m_verbose) {
+            log::cerr << "Could not open file " << m_filePath
+                      << " for checking if empty: "
+                      << std::string(strerror(errno)) << std::endl;
+        }
+        return false;
+    }
+
+    // Get file size by setting file offset to the end
+    off_t fileSize;
+    fileSize = ::lseek(m_readFd, 0, SEEK_END);
+    if (fileSize == -1) {
+        throw Exception("Could not seek the end of file: " + m_filePath);
+    }
+
+    return 0 == fileSize;
 }
 
 }  // namespace octf

@@ -96,6 +96,29 @@ public:
         m_verbose = verbose;
     }
 
+    /**
+     * @brief Locks the file associated with this ReaderWriter
+     *
+     * @note The lock mechanism is based on advisory kind of file lock. If a
+     * caller calls read/write without locking, it will be allowed. To make
+     * sure access synchronization works, each invocation of read and write
+     * needs to be preceded by calling lock.
+     */
+    void lock();
+
+    /**
+     * @brief Unlocks the file associated with this ReaderWriter
+     */
+    void unlock();
+
+    /**
+     * @brief Checks if the file associated is empty
+     *
+     * @retval true File is empoty and no writes in the past
+     * @retval false File is empty and there had beed writes in the past
+     */
+    bool isEmpty();
+
 private:
     /**
      * @brief This opens the file and gets a file descriptor for reading.
@@ -138,6 +161,16 @@ private:
      * File descriptor for writing
      */
     int m_writeFd;
+
+    /**
+     * @brief File descriptor for locking between processes
+     */
+    int m_lockFd;
+
+    /**
+     * @brief Lock for locking between threads
+     */
+    std::unique_ptr<std::lock_guard<std::mutex>> m_lock;
 
     /**
      * Flags to control if print error
