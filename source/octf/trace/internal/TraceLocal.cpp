@@ -6,6 +6,7 @@
 #include <octf/trace/internal/TraceLocal.h>
 
 #include <octf/interface/TraceManager.h>
+#include <octf/trace/internal/TraceExtensionLocal.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/FileOperations.h>
 #include <octf/utils/FrameworkConfiguration.h>
@@ -82,6 +83,14 @@ ITraceCache &TraceLocal::getCache() {
     }
 
     return *m_cache;
+}
+
+void TraceLocal::getExtensionList(std::list<std::string> &) {
+    throw Exception("Getting extension list not implemented");
+}
+
+TraceExtensionShRef TraceLocal::getExtension(const std::string &name) {
+    return std::make_shared<TraceExtensionLocal>(m_path, name);
 }
 
 }  // namespace octf
