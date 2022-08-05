@@ -41,6 +41,24 @@ public:
     virtual bool isWritable() const = 0;
 
     /**
+     * @brief Checks if the trace extension is ready
+     *
+     * Checks if the trace extension had been processed and it is ready for
+     * reading.
+     *
+     * When accessing a new trace extension, in case of access by many callers,
+     * only the fist acquires the trace extention to be written (isWritable()
+     * returns true). The rest will get trace extensions which is non-writable
+     * and not ready (isReady() returns false). The first one is responsible for
+     * using the writer and committing the trace extension when it's ready.
+     * Other callers have to handle the extension unavailability respectively.
+     *
+     * @retval true The trace extension is ready
+     * @retval false The trace extension is not ready
+     */
+    virtual bool isReady() const = 0;
+
+    /**
      * @brief The interface of the trace extension writer
      */
     class ITraceExtensionWriter : public NonCopyable {

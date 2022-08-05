@@ -25,6 +25,8 @@ public:
 
     bool isWritable() const override;
 
+    bool isReady() const override;
+
     void remove() override;
 
     ITraceExtension::ITraceExtensionWriter &getWriter() override;

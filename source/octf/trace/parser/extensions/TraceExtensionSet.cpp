@@ -45,6 +45,16 @@ bool TraceExtensionSet::isWritable() const {
     return false;
 };
 
+bool TraceExtensionSet::isReady() const {
+    for (const auto &entry : m_set) {
+        if (!entry.ext->isReady()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void TraceExtensionSet::remove() {
     throw Exception("ERROR, Extension trace doesn't support removing");
 }
