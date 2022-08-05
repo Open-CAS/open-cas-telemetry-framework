@@ -39,7 +39,7 @@ public:
     virtual ~Writer() {}
 
     void write(uint64_t sid, const google::protobuf::Message &msg) override {
-        if (sid <= m_lastSid) {
+        if (sid < m_lastSid) {
             throw Exception("Extension ERROR, SID value invalid.");
         }
 
@@ -147,11 +147,14 @@ TraceExtensionLocal::TraceExtensionLocal(const std::string &tracePath,
 }
 
 TraceExtensionLocal::~TraceExtensionLocal() {
-    if (isWritable() &&
-        m_info->hdr.state() == proto::TraceExtensionHeader::INITIALIZING) {
-        // The trace extension not closed, an error ocurred, remove this
-        // extension from the list
-        this->remove();
+    if (isWritable()) {
+        auto state = m_info->hdr.state();
+        if (state == proto::TraceExtensionHeader::INITIALIZING ||
+            state == proto::TraceExtensionHeader::ERROR) {
+            // The trace extension not closed, an error ocurred, remove this
+            // extension from the list
+            this->remove();
+        }
     }
 }
 
@@ -161,6 +164,10 @@ const std::string &TraceExtensionLocal::getName() const {
 
 bool TraceExtensionLocal::isWritable() const {
     return nullptr != m_writer.get();
+}
+
+bool TraceExtensionLocal::isReady() const {
+    return proto::TraceExtensionHeader::READY == m_info->hdr.state();
 }
 
 ITraceExtension::ITraceExtensionWriter &TraceExtensionLocal::getWriter() {
@@ -176,7 +183,7 @@ ITraceExtension::ITraceExtensionReader &TraceExtensionLocal::getReader() {
         return *m_reader;
     } else {
         if (m_info->hdr.state() == proto::TraceExtensionHeader::READY) {
-            // the extenions in god state, create Reader
+            // the extensions in god state, create Reader
             m_reader.reset(new Reader(*m_info));
             return *m_reader;
         }

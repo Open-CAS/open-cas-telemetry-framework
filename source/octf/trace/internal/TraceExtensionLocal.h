@@ -2,7 +2,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-
 #ifndef SOURCE_OCTF_TRACE_INTERNAL_TRACEEXTENSIONLOCAL_H
 #define SOURCE_OCTF_TRACE_INTERNAL_TRACEEXTENSIONLOCAL_H
 #include <memory>
@@ -21,6 +20,8 @@ public:
     const std::string &getName() const override;
 
     bool isWritable() const override;
+
+    bool isReady() const override;
 
     ITraceExtensionWriter &getWriter() override;
 
