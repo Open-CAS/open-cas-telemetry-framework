@@ -421,6 +421,7 @@ void InterfaceTraceParsingImpl::BuildExtensions(
         ::octf::proto::Void *,
         ::google::protobuf::Closure *done) {
     RpcOutputStream cout(log::Severity::Information, controller);
+    RpcOutputStream verbose(log::Severity::Verbose, controller);
     cout << log::reset;
 
     const auto &tracePath = request->tracepath();
@@ -429,6 +430,9 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     uint64_t workset = 0;
 
     if (!cache.read("BuildExtensionsWorkset", workset)) {
+        verbose << "Get workset for trace " << request->tracepath()
+                << std::endl;
+
         /* No cached result, perform required processing */
         CasTraceEventHandlerWorkset handler(request->tracepath());
         handler.processEvents();

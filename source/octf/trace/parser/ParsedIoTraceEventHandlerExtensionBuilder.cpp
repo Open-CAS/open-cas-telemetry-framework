@@ -34,6 +34,9 @@ void ParsedIoTraceEventHandlerExtensionBuilder::processEvents() {
     // Initialize trace extension
     m_traceExt = m_trace->getExtension(m_builder->getName());
     if (m_traceExt->isWritable()) {
+        log::verbose << "Building extension for: " << m_builder->getName()
+                     << std::endl;
+
         const auto &steps = m_builder->getBuildProcess();
         if (steps.empty()) {
             throw Exception("Builder does not define building steps");
@@ -52,6 +55,9 @@ void ParsedIoTraceEventHandlerExtensionBuilder::processEvents() {
 
         // Processing finished, commit trace extension
         m_traceExt->getWriter().commit();
+    } else {
+        log::verbose << "Read extension from the cache: "
+                     << m_builder->getName() << std::endl;
     }
 }
 

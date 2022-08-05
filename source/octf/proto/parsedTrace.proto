@@ -118,9 +118,14 @@ message ParsedEvent {
     EventIoExtensions extensions = 5;
 }
 
+message TraceExtensionCacheResult {
+    bool hit = 1;
+    uint32 hitRatio = 2;
+}
+
 message TraceExtensionResult {
     oneof ResultType {
-        bool hit = 1;
+        TraceExtensionCacheResult cache = 1;
         ParsedEvent io = 2;
     }
 }

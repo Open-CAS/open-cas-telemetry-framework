@@ -13,10 +13,16 @@ LRUExtensionBuilder::LRUExtensionBuilder(uint64_t worksetSize,
         , m_cacheLines()
         , m_lookup()
         , m_lru()
-        , m_result() {
+        , m_result()
+        , m_noRq()
+        , m_noHit() {
     m_name = "LRU " + std::to_string(cachePercentage) + "%";
-    m_cacheLines = sectorToCacheLine(worksetSize) * 100 / cachePercentage;
-    m_result.set_hit(false);
+
+    m_cacheLines = sectorToCacheLine(worksetSize) * cachePercentage / 100ULL;
+    log::verbose << "LRU builder configuration, cache percentage "
+                 << cachePercentage << ", cache lines " << m_cacheLines
+                 << ", working set " << sectorToCacheLine(worksetSize)
+                 << std::endl;
 
     BuildStepEventHandler hndlr = [this](const proto::trace::ParsedEvent &e) {
         if (!isEventValid(e)) {
@@ -38,8 +44,14 @@ LRUExtensionBuilder::LRUExtensionBuilder(uint64_t worksetSize,
             push(i);
         }
 
+        m_noRq++;
+        if (hit) {
+            m_noHit++;
+        }
+
         // Construct result message
-        m_result.set_hit(hit);
+        m_result.mutable_cache()->set_hit(hit);
+        m_result.mutable_cache()->set_hitratio(m_noHit * 100ULL / m_noRq);
         return true;
     };
     addBuildStepEventHandler(hndlr);
@@ -70,7 +82,7 @@ const std::string &LRUExtensionBuilder::getName() const {
 
 MessageShRef LRUExtensionBuilder::getExtensionMessagePrototype() {
     auto prototype = std::make_shared<proto::trace::TraceExtensionResult>();
-    prototype->set_hit(false);
+    prototype->mutable_cache()->set_hit(false);
     return prototype;
 }
 
@@ -96,7 +108,7 @@ void LRUExtensionBuilder::push(uint64_t lba) {
         if (m_lookup.size() >= m_cacheLines)
             evict();
         // Create node in lookup map
-        auto result = m_lookup.emplace(std::make_pair(lba, LRUList::Node()));
+        auto result = m_lookup.emplace(std::make_pair(lba, LRUList::Node(lba)));
         m_lru.push(&(*result.first).second);
     }
 }
