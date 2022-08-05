@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef TRACECACHELOCAL_H
-#define TRACECACHELOCAL_H
+#ifndef SOURCE_OCTF_TRACE_INTERNAL_TRACECACHELOCAL_H
+#define SOURCE_OCTF_TRACE_INTERNAL_TRACECACHELOCAL_H
 
 #include <octf/proto/traceDefinitions.pb.h>
 #include <octf/trace/internal/TraceCacheBase.h>
+#include <octf/utils/ProtobufReaderWriter.h>
 
 namespace octf {
 
@@ -30,10 +31,16 @@ private:
 
     std::string traceCachePath(const std::string &tracePath) const;
 
+    bool isCacheEntryValid(const proto::TraceCache::Entry &entry);
+
+    void eraseCacheEntry(proto::TraceCache &cache,
+                         proto::TraceCache::Entry *entry,
+                         ProtobufReaderWriter &rw);
+
 private:
     const std::string m_traceCachePath;
 };
 
 }  // namespace octf
 
-#endif  // TRACECACHELOCAL_H
+#endif  // SOURCE_OCTF_TRACE_INTERNAL_TRACECACHELOCAL_H

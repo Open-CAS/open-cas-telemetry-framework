@@ -30,6 +30,7 @@ bool TraceCacheLocal::read(const google::protobuf::Message &key,
     }
 
     ProtobufReaderWriter rw(m_traceCachePath);
+    rw.lock();
 
     // Try to read the cache
     if (rw.isFileAvailable() && !rw.read(cache)) {
@@ -37,13 +38,24 @@ bool TraceCacheLocal::read(const google::protobuf::Message &key,
         return false;
     }
 
+    bool result = false;
     auto entry = find(cache, pKey);
+
     if (entry) {
-        // Entry found for given key, unpack value
-        return entry->value().UnpackTo(&value);
+        // Entry found for given key
+
+        if (isCacheEntryValid(*entry)) {
+            // Entry valid, unpack value
+            result = entry->value().UnpackTo(&value);
+        }
+
+        if (!result) {
+            // Cannot parse the value, just erase it
+            eraseCacheEntry(cache, entry, rw);
+        }
     }
 
-    return false;
+    return result;
 }
 
 bool TraceCacheLocal::write(const google::protobuf::Message &key,
@@ -57,6 +69,7 @@ bool TraceCacheLocal::write(const google::protobuf::Message &key,
     }
 
     ProtobufReaderWriter rw(m_traceCachePath);
+    rw.lock();
 
     // Try to read the cache
     if (rw.isFileAvailable() && !rw.read(cache)) {
@@ -75,6 +88,9 @@ bool TraceCacheLocal::write(const google::protobuf::Message &key,
     if (!entry->mutable_value()->PackFrom(value)) {
         return false;
     }
+
+    // Set version
+    entry->set_version(getFrameworkConfiguration().getVersion());
 
     return rw.write(cache);
 }
@@ -102,6 +118,7 @@ std::string TraceCacheLocal::traceCachePath(
 
 void TraceCacheLocal::clear() {
     ProtobufReaderWriter rw(m_traceCachePath);
+    rw.lock();
 
     // Try to read the cache
     if (rw.isFileAvailable()) {
@@ -109,6 +126,26 @@ void TraceCacheLocal::clear() {
             throw Exception("Cannot remove trace cache: " + m_traceCachePath);
         }
     }
+}
+
+bool TraceCacheLocal::isCacheEntryValid(const proto::TraceCache::Entry &entry) {
+    return entry.version() == getFrameworkConfiguration().getVersion();
+}
+
+void TraceCacheLocal::eraseCacheEntry(proto::TraceCache &cache,
+                                      proto::TraceCache::Entry *entry,
+                                      ProtobufReaderWriter &rw) {
+    proto::TraceCache newCache;
+
+    for (int i = 0; i < cache.entires_size(); i++) {
+        auto iter = cache.mutable_entires(i);
+
+        if (iter != entry) {
+            newCache.add_entires()->CopyFrom(*entry);
+        }
+    }
+
+    rw.write(newCache);
 }
 
 }  // namespace octf
