@@ -47,6 +47,13 @@ private:
     public:
         class Node {
         public:
+            Node() = delete;
+            Node(uint64_t l)
+                    : lba(l)
+                    , prev(nullptr)
+                    , next(nullptr) {}
+
+        public:
             uint64_t lba = 0;
             Node *prev = nullptr;
             Node *next = nullptr;
@@ -76,6 +83,8 @@ private:
     std::unordered_map<uint64_t, LRUList::Node> m_lookup;
     LRUList m_lru;
     proto::trace::TraceExtensionResult m_result;
+    uint64_t m_noRq;
+    uint64_t m_noHit;
 };
 
 }  // namespace octf
