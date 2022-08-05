@@ -72,7 +72,7 @@ public:
     }
 
     bool hasFile(const FileId &id) {
-        auto iter = find(id);
+        auto iter = find(id, false);
         return iter != m_fileInfo.end();
     }
 
@@ -201,10 +201,13 @@ private:
         }
     }
 
-    std::map<FileId, FileInfo>::const_iterator find(const FileId &id) const {
+    std::map<FileId, FileInfo>::const_iterator find(const FileId &id,
+                                                    bool week = true) const {
         auto iter = m_fileInfo.find(id);
         if (iter != m_fileInfo.end()) {
             return iter;
+        } else if (false == week) {
+            return m_fileInfo.end();
         }
 
         iter = m_fileInfo.lower_bound(id);
@@ -235,14 +238,31 @@ class ParsedIoTraceEventHandler::TraceEventHandlerFilesystemTree
         : public TraceEventHandler<Event> {
 public:
     TraceEventHandlerFilesystemTree(const std::string &tracePath)
-            : TraceEventHandler<Event>(tracePath) {}
+            : TraceEventHandler<Event>(tracePath)
+            , m_traceEvent(std::make_shared<Event>())
+            , m_trace(TraceLibrary::get().getTrace(tracePath))
+            , m_fsViewTraceExt() {}
     virtual ~TraceEventHandlerFilesystemTree() = default;
 
     void init() {
-        processEvents();
+        m_fsViewTraceExt = m_trace->getExtension(".FilesystemTree");
+        if (m_fsViewTraceExt->isReady()) {
+            /* Filesystem tree already cached in extension */
+            uint64_t sid;
+            auto &reader = m_fsViewTraceExt->getReader();
+            while (reader.hasNext()) {
+                reader.read(sid, *m_traceEvent);
+                handleEvent(m_traceEvent);
+            }
+        } else {
+            processEvents();
+            // deinitialize parser to release resources
+            getParser()->deinit();
 
-        // deinitialize parser to release resources
-        getParser()->deinit();
+            if (m_fsViewTraceExt->isWritable()) {
+                m_fsViewTraceExt->getWriter().commit();
+            }
+        }
     }
 
     /**
@@ -289,6 +309,11 @@ private:
             FileInfo info(fsNameEvent);
 
             FileSystemViewer *viewer = getFileSystemViewer(id.partitionId);
+
+            if (m_fsViewTraceExt->isWritable() && !viewer->hasFile(id)) {
+                m_fsViewTraceExt->getWriter().write(0, *traceEvent);
+            }
+
             viewer->addFile(id, info);
         }
     }
@@ -299,6 +324,9 @@ private:
 
 private:
     std::map<uint64_t, FileSystemViewer> m_partitionFsViewers;
+    EventShRef m_traceEvent;
+    TraceShRef m_trace;
+    TraceExtensionShRef m_fsViewTraceExt;
 };
 
 constexpr uint64_t ParsedIoTraceEventHandler_QueueLimit = 10000;
