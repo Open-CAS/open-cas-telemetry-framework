@@ -122,6 +122,8 @@ message TraceCache {
         google.protobuf.Any key = 1;
 
         google.protobuf.Any value = 2;
+
+        string version = 3;
     }
 
     repeated Entry entires = 1;
