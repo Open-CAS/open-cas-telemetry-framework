@@ -336,6 +336,7 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         const std::string &tracePath)
         : IoTraceParser(tracePath)
         , m_trace(TraceLibrary::get().getTrace(tracePath))
+        , m_extTrace(nullptr)
         , m_queue()
         , m_refSid(0)
         , m_idMapping()
@@ -353,8 +354,33 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
 ParsedIoTraceEventHandler::~ParsedIoTraceEventHandler() {}
 
 void ParsedIoTraceEventHandler::processEvents() {
+    proto::trace::ParsedEvent io;
+    uint64_t sid;
+
+    // Try get trace extension for parsed IO
+    m_extTrace = m_trace->getExtension(".ParsedIO");
+    if (m_extTrace->isReady()) {
+        // Parsed traces is ready, use it
+        auto &reader = m_extTrace->getReader();
+
+        while (reader.hasNext()) {
+            reader.read(sid, io);
+            m_parentHandler->handleIO(io);
+        }
+
+        return;
+    }
+
     TraceEventHandler<proto::trace::Event>::processEvents();
     flushEvents();
+
+    if (m_extTrace->isWritable()) {
+        if (isCancelRequested()) {
+            m_extTrace->remove();
+        } else {
+            m_extTrace->getWriter().commit();
+        }
+    }
 }
 
 void ParsedIoTraceEventHandler::handleEvent(
@@ -614,6 +640,10 @@ void ParsedIoTraceEventHandler::pushOutEvent() {
         // An IO completion lost, so the queue depth of next IOs are disrupted,
         // Set queue depth adjustment
         qd.Adjustment++;
+    }
+
+    if (m_extTrace->isWritable()) {
+        m_extTrace->getWriter().write(event.header().sid(), event);
     }
 
     m_queue.pop();
