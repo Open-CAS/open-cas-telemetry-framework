@@ -301,58 +301,77 @@ bool ProtobufReaderWriter::makeReadOnly() {
 }
 
 bool ProtobufReaderWriter::makeWritable() {
-    int fd;
-
     openFileToWrite();
-    fd = m_writeFd;
-
-    if (fd == -1) {
-        openFileToRead();
-        fd = m_readFd;
+    if (0 == ::fchmod(m_writeFd, S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP)) {
+        return true;
     }
 
-    if (::fchmod(fd, S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP) != 0) {
+    openFileToRead();
+    if (0 == ::fchmod(m_readFd, S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP)) {
+        return true;
+    }
+
+    return false;
+}
+
+static std::mutex FileMutexMapLock;
+static std::map<std::string, std::mutex> FileMutexMap;
+
+// TODO (mbarczak) Provide mechanism to clean map to remove not used
+std::mutex &getFileMutex(const std::string &filePath) {
+    std::lock_guard<std::mutex> guard(FileMutexMapLock);
+    return FileMutexMap[filePath];
+}
+
+void ProtobufReaderWriter::lock() {
+    // First do this process inter-thread synchronization, get mutex associated
+    // with the file which will be locked
+    auto &fMutex = getFileMutex(m_filePath);
+
+    // Lock on the acquired mutex
+    m_lock.reset(new std::lock_guard<std::mutex>(fMutex));
+    // Now we have mutex locked
+
+    openFileToLock();
+
+    // Set inter-process lock
+    if (::lockf(m_lockFd, F_LOCK, 0)) {
+        m_lock.release();
+        throw Exception("Error when locking file: " +
+                        std::string(strerror(errno)));
+    }
+}
+
+bool ProtobufReaderWriter::tryLock() {
+    auto &fMutex = getFileMutex(m_filePath);
+
+    bool locked = fMutex.try_lock();
+    if (!locked) {
+        // Cannot acquire lock on mutex, it already has been taken
+        return false;
+    }
+
+    // Lock on the acquired mutex
+    m_lock.reset(new std::lock_guard<std::mutex>(fMutex, std::adopt_lock));
+    // Now we have mutex locked
+
+    openFileToLock();
+
+    // Try lock the file
+    int result = ::lockf(m_lockFd, F_TLOCK, 0);
+    if (result) {
+        // ERROR, Lock already taken, cleanup
+        m_lock.release();
         return false;
     }
 
     return true;
 }
 
-void ProtobufReaderWriter::lock() {
-    // File descriptor for locking
-    m_lockFd = ::open(m_filePath.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW,
-                      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-
-    if (m_lockFd == -1) {
-        throw Exception("Error when locking file: " + m_filePath);
-    }
-
-    if (::lockf(m_lockFd, F_LOCK, 0)) {
-        throw Exception("Error when locking file: " +
-                        std::string(strerror(errno)));
-    }
-
-    static std::mutex FileMutexLock;
-    static std::map<std::string, std::mutex> FileMutexMap;
-
-    std::lock_guard<std::mutex> guard(FileMutexLock);
-    auto &mutex = FileMutexMap[m_filePath];
-    // TODO (mbarczak) Provide mechanism to clean map to remove not used locks
-
-    // File locking mechanism works between processes, now we need
-    // to synchronize this process' threads
-    m_lock.reset(new std::lock_guard<std::mutex>(mutex));
-}
-
 void ProtobufReaderWriter::unlock() {
     if (m_lockFd != -1) {
-        if (::lockf(m_lockFd, F_ULOCK, 0)) {
+        if (::close(m_lockFd)) {
             throw Exception("Error when unlocking file: " +
-                            std::string(strerror(errno)));
-        }
-
-        if (::close(m_lockFd) != 0) {
-            throw Exception("Error when closing file: " +
                             std::string(strerror(errno)));
         }
         m_lockFd = -1;
@@ -385,6 +404,22 @@ bool ProtobufReaderWriter::isEmpty() {
     }
 
     return 0 == fileSize;
+}
+
+void ProtobufReaderWriter::openFileToLock() {
+    if (m_lockFd != -1) {
+        return;
+    }
+
+    std::string path = m_filePath + ".lock";
+
+    m_lockFd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_NOFOLLOW,
+                      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+    if (m_lockFd == -1) {
+        throw Exception("ERROR when locking, file " + path + ", error " +
+                        std::string(strerror(errno)));
+    }
 }
 
 }  // namespace octf

@@ -120,6 +120,14 @@ public:
     void unlock();
 
     /**
+     * @brief Tries locking the file associated with this ReaderWriter
+     *
+     * @retval true The lock acquired successfully
+     * @retval false Lock acquiring failed
+     */
+    bool tryLock();
+
+    /**
      * @brief Checks if the file associated is empty
      *
      * @retval true File is empty and no writes in the past
@@ -150,6 +158,11 @@ private:
      * upon doing so.
      */
     void openFileToWrite();
+
+    /**
+     * @brief This opens the file to be locked
+     */
+    void openFileToLock();
 
     /**
      * @brief This closes the opened file. It is called upon destruction.
