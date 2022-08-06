@@ -382,7 +382,7 @@ void ProtobufReaderWriter::unlock() {
 
 bool ProtobufReaderWriter::isEmpty() {
     if (!isFileAvailable()) {
-        return false;
+        return true;
     }
 
     openFileToRead();
