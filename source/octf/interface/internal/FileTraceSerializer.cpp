@@ -88,7 +88,7 @@ bool FileTraceSerializer::serialize(const void *blob, uint32_t size) {
 
 bool FileTraceSerializer::serialize(
         const std::shared_ptr<const google::protobuf::Message> &message) {
-    this->serialize(*message);
+    return this->serialize(*message);
 }
 
 bool FileTraceSerializer::serialize(const google::protobuf::Message &message) {
