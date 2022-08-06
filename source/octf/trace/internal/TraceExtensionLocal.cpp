@@ -142,8 +142,9 @@ TraceExtensionLocal::TraceExtensionLocal(const std::string &tracePath,
         : ITraceExtension()
         , m_info(new TraceExtensionLocal::Info())
         , m_writer(nullptr)
-        , m_reader(nullptr) {
-    initTraceExtensionInfo(tracePath, extName);
+        , m_reader(nullptr)
+        , m_extrw(nullptr) {
+    initTraceExtension(tracePath, extName);
 }
 
 TraceExtensionLocal::~TraceExtensionLocal() {
@@ -226,8 +227,8 @@ void TraceExtensionLocal::remove() {
 
 static constexpr char TRACE_EXT_FILE_PREFIX[] = "octf.extension.";
 
-void TraceExtensionLocal::initTraceExtensionInfo(const std::string &tracePath,
-                                                 const std::string &extName) {
+void TraceExtensionLocal::initTraceExtension(const std::string &tracePath,
+                                             const std::string &extName) {
     m_info->extName = extName;
     m_info->tracePath = tracePath;
 
@@ -261,7 +262,6 @@ void TraceExtensionLocal::initTraceExtensionInfo(const std::string &tracePath,
             m_info->hdr = *extHdr;
             found = extHdr;
         }
-
         maxId = std::max(maxId, extHdr->id());
     }
 
@@ -270,30 +270,35 @@ void TraceExtensionLocal::initTraceExtensionInfo(const std::string &tracePath,
         m_info->hdr.set_name(extName);
         m_info->hdr.set_id(++maxId);
         isWritable = true;
+
+        // Set the extension path
+        m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
     } else {
-        // Check version
-        if (isReady() &&
-            m_info->hdr.version() != getFrameworkConfiguration().getVersion()) {
-            // Version is different, regenerate the traces extension
+        // Set the extension path
+        m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
+
+        if (isStale()) {
             isWritable = true;
         }
     }
-
-    // Set the extension path
-    m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
 
     if (isWritable) {
         // Update the extension header
         m_info->hdr.set_state(proto::TraceExtensionHeader::INITIALIZING);
         m_info->hdr.set_version(getFrameworkConfiguration().getVersion());
 
+        if (!m_extrw) {
+            m_extrw.reset(new ProtobufReaderWriter(m_info->extPath));
+            m_extrw->lock();
+        }
+
+        if (!m_extrw->makeWritable() || !m_extrw->clear()) {
+            throw Exception(
+                    "ERROR, Cannot clear the trace extention for "
+                    "refreshing");
+        }
+
         if (found) {
-            ProtobufReaderWriter rwext(m_info->extPath);
-            if (!rwext.makeWritable() || !rwext.clear()) {
-                throw Exception(
-                        "ERROR, Cannot clear the trace extention for "
-                        "recreating asasd");
-            }
             *found = m_info->hdr;
         } else {
             // Add new entry to extension list
@@ -309,6 +314,28 @@ void TraceExtensionLocal::initTraceExtensionInfo(const std::string &tracePath,
         // Create writer
         m_writer.reset(new Writer(*m_info));
     }
+}
+
+bool TraceExtensionLocal::isStale() {
+    bool stale = false;
+
+    if (isReady()) {
+        if (m_info->hdr.version() != getFrameworkConfiguration().getVersion()) {
+            // Version is different, regenerate the traces extension
+            stale = true;
+        }
+    } else {
+        // Let's try lock the extension, maybe it hadn't been finished.
+        m_extrw.reset(new ProtobufReaderWriter(m_info->extPath));
+        bool locked = m_extrw->tryLock();
+        if (locked) {
+            // The lock acquired, this indicates an error, previous writer
+            // hadn't finished the job.
+            stale = true;
+        }
+    }
+
+    return stale;
 }
 
 }  // namespace octf

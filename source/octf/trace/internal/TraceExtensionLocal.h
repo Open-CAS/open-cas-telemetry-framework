@@ -4,10 +4,12 @@
 
 #ifndef SOURCE_OCTF_TRACE_INTERNAL_TRACEEXTENSIONLOCAL_H
 #define SOURCE_OCTF_TRACE_INTERNAL_TRACEEXTENSIONLOCAL_H
+
 #include <memory>
 #include <string>
 #include <octf/proto/extensions.pb.h>
 #include <octf/trace/ITraceExtension.h>
+#include <octf/utils/ProtobufReaderWriter.h>
 
 namespace octf {
 
@@ -30,8 +32,10 @@ public:
     void remove() override;
 
 private:
-    void initTraceExtensionInfo(const std::string &tracePath,
-                                const std::string &extName);
+    void initTraceExtension(const std::string &tracePath,
+                            const std::string &extName);
+
+    bool isStale();
 
 private:
     class Writer;
@@ -40,6 +44,7 @@ private:
     std::unique_ptr<Info> m_info;
     std::unique_ptr<ITraceExtensionWriter> m_writer;
     std::unique_ptr<ITraceExtensionReader> m_reader;
+    std::unique_ptr<ProtobufReaderWriter> m_extrw;
 };
 
 }  // namespace octf
