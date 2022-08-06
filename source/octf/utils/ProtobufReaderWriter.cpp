@@ -140,6 +140,26 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     return true;
 }
 
+bool ProtobufReaderWriter::clear() {
+    openFileToWrite();
+
+    if (m_writeFd == -1) {
+        if (m_verbose) {
+            log::cerr << "Could not open file " << m_filePath
+                      << " for clearing: " << std::string(strerror(errno))
+                      << std::endl;
+        }
+        return false;
+    }
+
+    // Truncate file to be empty
+    if (::ftruncate(m_writeFd, 0) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
 bool ProtobufReaderWriter::isFileAvailable() {
     // First we check if parent directory is available
     // If not - we throw an Exception as this is not expected
@@ -260,7 +280,7 @@ void ProtobufReaderWriter::closeFile() {
 bool ProtobufReaderWriter::makeReadOnly() {
     int fd;
 
-    if (m_writeFd) {
+    if (m_writeFd != -1) {
         fd = m_writeFd;
     } else {
         openFileToRead();
@@ -275,6 +295,24 @@ bool ProtobufReaderWriter::makeReadOnly() {
     if (m_writeFd != -1) {
         ::close(m_writeFd);
         m_writeFd = -1;
+    }
+
+    return true;
+}
+
+bool ProtobufReaderWriter::makeWritable() {
+    int fd;
+
+    openFileToWrite();
+    fd = m_writeFd;
+
+    if (fd == -1) {
+        openFileToRead();
+        fd = m_readFd;
+    }
+
+    if (::fchmod(fd, S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP) != 0) {
+        return false;
     }
 
     return true;

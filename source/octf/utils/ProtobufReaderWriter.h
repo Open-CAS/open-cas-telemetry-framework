@@ -78,6 +78,14 @@ public:
     bool makeReadOnly();
 
     /**
+     * @brief Sets permission flags on opened file to make it writable for
+     * user and group.
+     *
+     * @return Result of operation
+     */
+    bool makeWritable();
+
+    /**
      * @brief Checks if printing errors is enabled
      * @retval true Errors messages will be printed
      * @retval false Errors message will be suppressed
@@ -114,10 +122,17 @@ public:
     /**
      * @brief Checks if the file associated is empty
      *
-     * @retval true File is empoty and no writes in the past
+     * @retval true File is empty and no writes in the past
      * @retval false File is empty and there had beed writes in the past
      */
     bool isEmpty();
+
+    /**
+     * @brief Clears the content of the file
+     *
+     * @return Operation result
+     */
+    bool clear();
 
 private:
     /**
