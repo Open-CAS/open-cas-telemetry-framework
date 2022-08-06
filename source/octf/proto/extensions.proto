@@ -6,7 +6,6 @@
 syntax = "proto3";
 package octf.proto;
 import "opts.proto";
-import "google/protobuf/any.proto";
 
 message TraceExtensionHeader {
     // Tracing extension state definition
@@ -40,6 +39,8 @@ message TraceExtensionHeader {
     uint64 id = 2;
 
     TraceExtensionState state = 3;
+
+    string version = 4;
 }
 
 message TraceExtensionList {

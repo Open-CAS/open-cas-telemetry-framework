@@ -194,12 +194,12 @@ ITraceExtension::ITraceExtensionReader &TraceExtensionLocal::getReader() {
 }
 
 void TraceExtensionLocal::remove() {
-    // First, remove trace extension file
-    fsutils::removeFile(m_info->extPath);
-
-    // Second, remove trace extension from the list
+    // First, remove trace extension from the list
     ProtobufReaderWriter rw(m_info->lstPath);
     rw.lock();
+
+    // Second, remove trace extension file
+    fsutils::removeFile(m_info->extPath);
 
     proto::TraceExtensionList oldLst, newLst;
     if (!rw.isEmpty()) {
@@ -208,6 +208,7 @@ void TraceExtensionLocal::remove() {
         }
     }
 
+    // Third, build new extension list
     for (const auto &oldExtHdr : oldLst.extension()) {
         if (oldExtHdr.name() == m_info->extName) {
             continue;
@@ -217,6 +218,7 @@ void TraceExtensionLocal::remove() {
         *newExtHdr = oldExtHdr;
     }
 
+    // Finally, write the new list
     if (!rw.write(newLst)) {
         throw Exception("Extension ERROR, Cannot remove the trace extension");
     }
@@ -247,39 +249,65 @@ void TraceExtensionLocal::initTraceExtensionInfo(const std::string &tracePath,
 
     // Iterate over available extensions and check if the extension exists.
     // In addition find out the next ID for the extension.
-    bool found = false;
-    for (const auto &extHdr : lst.extension()) {
-        if (extHdr.name() == m_info->extName) {
+    proto::TraceExtensionHeader *extHdr, *found = NULL;
+    for (int i = 0; i < lst.extension_size(); i++) {
+        extHdr = lst.mutable_extension(i);
+
+        if (extHdr->name() == m_info->extName) {
             if (found) {
                 throw Exception("Extension ERROR, name duplication");
             }
 
-            m_info->hdr = extHdr;
-            found = true;
+            m_info->hdr = *extHdr;
+            found = extHdr;
         }
 
-        maxId = std::max(maxId, extHdr.id());
+        maxId = std::max(maxId, extHdr->id());
     }
 
+    bool isWritable = false;
     if (m_info->hdr.name().empty()) {
-        // Extension not initialized yet, initialize header
-        m_info->hdr.set_id(++maxId);
         m_info->hdr.set_name(extName);
+        m_info->hdr.set_id(++maxId);
+        isWritable = true;
+    } else {
+        // Check version
+        if (isReady() &&
+            m_info->hdr.version() != getFrameworkConfiguration().getVersion()) {
+            // Version is different, regenerate the traces extension
+            isWritable = true;
+        }
+    }
+
+    // Set the extension path
+    m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
+
+    if (isWritable) {
+        // Update the extension header
         m_info->hdr.set_state(proto::TraceExtensionHeader::INITIALIZING);
-        m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
+        m_info->hdr.set_version(getFrameworkConfiguration().getVersion());
 
-        // Add new entry to extension list and update the extension info
-        auto newExt = lst.add_extension();
-        newExt->CopyFrom(m_info->hdr);
+        if (found) {
+            ProtobufReaderWriter rwext(m_info->extPath);
+            if (!rwext.makeWritable() || !rwext.clear()) {
+                throw Exception(
+                        "ERROR, Cannot clear the trace extention for "
+                        "recreating asasd");
+            }
+            *found = m_info->hdr;
+        } else {
+            // Add new entry to extension list
+            auto newExt = lst.add_extension();
+            newExt->CopyFrom(m_info->hdr);
+        }
 
+        // Update the extension info
         if (!rw.write(lst)) {
             throw Exception("ERROR, Cannot update extention list");
         }
 
         // Create writer
         m_writer.reset(new Writer(*m_info));
-    } else {
-        m_info->extPath = pathPrefix + std::to_string(m_info->hdr.id());
     }
 }
 
