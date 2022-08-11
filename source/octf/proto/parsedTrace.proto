@@ -118,20 +118,30 @@ message ParsedEvent {
     EventIoExtensions extensions = 5;
 }
 
+/* Message that characterizes results of caching algorithm */
 message TraceExtensionCacheResult {
     bool hit = 1;
     uint32 hitRatio = 2;
 }
 
+/* Message that characterizes results of caching algorithm based on Fitness
+ * Streams */
+message TraceExtensionStreamResult {
+    bool hit = 1;
+    uint32 hitRatio = 2;
+    string clasifier = 3;
+}
+
+/* Generic message that encompasses all other concrete extension result messages
+ */
 message TraceExtensionResult {
     oneof ResultType {
         TraceExtensionCacheResult cache = 1;
-        ParsedEvent io = 2;
+        TraceExtensionStreamResult stream = 2;
     }
 }
 
 message TraceExtension {
     uint64 sid = 1;
-
     map<string, TraceExtensionResult> feature = 2;
 }

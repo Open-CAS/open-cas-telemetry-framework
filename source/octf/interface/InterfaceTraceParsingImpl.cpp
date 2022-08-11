@@ -424,33 +424,27 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     RpcOutputStream verbose(log::Severity::Verbose, controller);
     cout << log::reset;
 
-    const auto &tracePath = request->tracepath();
-    auto trace = TraceLibrary::get().getTrace(request->tracepath());
-    auto &cache = trace->getCache();
-    uint64_t workset = 0;
-
-    if (!cache.read("BuildExtensionsWorkset", workset)) {
-        verbose << "Get workset for trace " << request->tracepath()
-                << std::endl;
-
-        /* No cached result, perform required processing */
-        CasTraceEventHandlerWorkset handler(request->tracepath());
-        handler.processEvents();
-        workset = handler.getWorkset();
-        cache.write("BuildExtensionsWorkset", workset);
-    }
+    std::string tracePath = request->tracepath();
 
     using Handler = ParsedIoTraceEventHandlerExtensionBuilder;
     HandlerRunner<Handler> runner;
     std::string result;
     std::list<std::shared_ptr<Handler>> handlers;
 
-    const std::vector<uint64_t> percentages{5, 10, 15, 20, 50, 100};
-    for (auto prcnt : percentages) {
-        auto factory = [&handlers, tracePath, workset, prcnt]() {
-            auto builder =
-                    std::make_shared<LRUExtensionBuilder>(workset, prcnt);
+    // Replace this with factory method
+    std::string factory_type = request->extensiontype();
+    auto iter = m_traceExtFactoryMap.find(factory_type);
+    if (iter == m_traceExtFactoryMap.end()) {
+        throw Exception("Extension type was not supplied.");
+    }
 
+    // Create builder list out of factory
+    auto factory = iter->second;
+    auto builder_list = factory->createBuilders(tracePath);
+
+    // Add handler for each builder
+    for (auto builder : builder_list) {
+        auto factory = [&handlers, tracePath, builder]() {
             auto handler = std::make_shared<Handler>(tracePath, builder);
             handlers.push_back(handler);
 
@@ -540,6 +534,12 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     }
 
     done->Run();
+}
+
+void InterfaceTraceParsingImpl::RegisterExtensionBuilder(
+        std::string key,
+        std::shared_ptr<IParsedIoExtensionBuilderFactory> factory) {
+    m_traceExtFactoryMap.insert({key, factory});
 }
 
 }  // namespace octf

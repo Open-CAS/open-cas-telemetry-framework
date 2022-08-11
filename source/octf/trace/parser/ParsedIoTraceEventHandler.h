@@ -54,6 +54,13 @@ public:
     uint64_t getDevicesSize() const;
 
     /**
+     * @brief Gets the working set size of the trace
+     *
+     * @return uint64_t Working set size
+     */
+    uint64_t getWorkingSetSize() const;
+
+    /**
      * @brief Handles device description trace event
      *
      * @param devDesc Device description trace event
@@ -87,9 +94,10 @@ protected:
      */
     void setExclusiveSubrange(uint64_t start, uint64_t end);
 
-    virtual void initParser();
-
-    virtual void deinitParser();
+    /**
+     * @brief Reinitializes the trace event handler
+     */
+    virtual void reinit();
 
 private:
     std::unique_ptr<IoTraceParser> m_childParser;

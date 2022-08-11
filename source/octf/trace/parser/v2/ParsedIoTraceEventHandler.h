@@ -89,7 +89,6 @@ private:
     void flushEvents();
 
 private:
-    TraceShRef m_trace;
     TraceExtensionShRef m_extTrace;
     struct IoQueueDepth;
     struct FileInfo;

@@ -91,6 +91,15 @@ public:
         m_cancelRequested = true;
     }
 
+    /**
+     * @brief Reinitializes parser
+     */
+    virtual void reinit() {
+        getParser()->deinit();
+        getParser()->init();
+        m_cancelRequested = false;
+    }
+
     virtual bool compareEvents(const EventType __attribute__((__unused__)) * a,
                                const EventType __attribute__((__unused__)) *
                                        b) {
