@@ -10,13 +10,17 @@
 #include <octf/fs/IFileSystemViewer.h>
 #include <octf/proto/parsedTrace.pb.h>
 #include <octf/proto/trace.pb.h>
+#include <octf/trace/ITrace.h>
+#include <octf/trace/TraceLibrary.h>
 #include <octf/trace/parser/TraceEventHandler.h>
+#include <octf/trace/parser/TraceEventHandlerWorkset.h>
 
 namespace octf {
 class IoTraceParser : public TraceEventHandler<proto::trace::Event> {
 public:
     IoTraceParser(const std::string &tracePath)
-            : TraceEventHandler<proto::trace::Event>(tracePath) {}
+            : TraceEventHandler<proto::trace::Event>(tracePath)
+            , m_trace(TraceLibrary::get().getTrace(tracePath)) {}
 
     virtual ~IoTraceParser() {}
 
@@ -48,16 +52,47 @@ public:
      */
     virtual uint64_t getDevicesSize() const = 0;
 
+    /**
+     * @brief Gets the trace path of parsed trace
+     *
+     * @return Trace path of parsed trace
+     */
+    virtual std::string const &getTracePath() const {
+        return m_trace->getPath();
+    };
+
+    /**
+     * @brief Gets the trace reference of parsed trace
+     *
+     * @return Trace reference of parsed trace
+     */
+    virtual TraceShRef getTrace() const {
+        return m_trace;
+    };
+
+    /**
+     * @brief Gets the working set size of the trace
+     *
+     * @return uint64_t Working set size
+     */
+    virtual uint64_t getWorkingSetSize() const {
+        auto trace = getTrace();
+        auto &cache = trace->getCache();
+        uint64_t workset = 0;
+
+        if (!cache.read("WorkingSetSize", workset)) {
+            CasTraceEventHandlerWorkset handler(trace->getPath());
+
+            handler.processEvents();
+            workset = handler.getWorkset();
+            cache.write("WorkingSetSize", workset);
+        }
+
+        return workset;
+    }
+
     virtual std::shared_ptr<proto::trace::Event> getEventMessagePrototype() {
         return std::make_shared<proto::trace::Event>();
-    }
-
-    virtual void initParser() {
-        getParser()->init();
-    }
-
-    virtual void deinitParser() {
-        getParser()->deinit();
     }
 
 protected:
@@ -65,6 +100,9 @@ protected:
                                const proto::trace::Event *b) override {
         return a->header().sid() < b->header().sid();
     }
+
+protected:
+    TraceShRef m_trace;
 };
 }  // namespace octf
 

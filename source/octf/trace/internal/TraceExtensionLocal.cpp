@@ -195,7 +195,8 @@ ITraceExtension::ITraceExtensionReader &TraceExtensionLocal::getReader() {
 }
 
 void TraceExtensionLocal::remove() {
-    // First, remove trace extension from the list
+    // TODO: the lock is not being removed?
+    //  First, remove trace extension from the list
     ProtobufReaderWriter rw(m_info->lstPath);
     rw.lock();
 
@@ -318,7 +319,6 @@ void TraceExtensionLocal::initTraceExtension(const std::string &tracePath,
 
 bool TraceExtensionLocal::isStale() {
     bool stale = false;
-
     if (isReady()) {
         if (m_info->hdr.version() != getFrameworkConfiguration().getVersion()) {
             // Version is different, regenerate the traces extension

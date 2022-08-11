@@ -76,7 +76,6 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         octf::ParsedIoTraceEventHandler *parentHandler,
         const std::string &tracePath)
         : IoTraceParser(tracePath)
-        , m_trace(TraceLibrary::get().getTrace(tracePath))
         , m_queue()
         , m_refSid(0)
         , m_idMapping()

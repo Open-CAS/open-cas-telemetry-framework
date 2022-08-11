@@ -12,12 +12,14 @@
 #include <octf/node/INode.h>
 #include <octf/proto/InterfaceTraceParsing.pb.h>
 #include <octf/proto/trace.pb.h>
+#include "octf/trace/parser/extensions/ParsedIoExtensionBuilderFactory.h"
 
 namespace octf {
 
 class InterfaceTraceParsingImpl : public proto::InterfaceTraceParsing {
 public:
-    InterfaceTraceParsingImpl() = default;
+    InterfaceTraceParsingImpl()
+            : m_traceExtFactoryMap(){};
     virtual ~InterfaceTraceParsingImpl() = default;
 
     virtual void ParseTrace(::google::protobuf::RpcController *controller,
@@ -67,15 +69,22 @@ public:
             ::octf::proto::ListDevicesResponse *response,
             ::google::protobuf::Closure *done) override;
 
-	virtual void BuildExtensions(
-        	::google::protobuf::RpcController *controller,
-        	const ::octf::proto::BuildExtensionsRequest *request,
-        	::octf::proto::Void *response,
-        	::google::protobuf::Closure *done) override; 
+    virtual void BuildExtensions(
+            ::google::protobuf::RpcController *controller,
+            const ::octf::proto::BuildExtensionsRequest *request,
+            ::octf::proto::Void *response,
+            ::google::protobuf::Closure *done) override;
+
+    void RegisterExtensionBuilder(
+            std::string key,
+            std::shared_ptr<IParsedIoExtensionBuilderFactory> factory);
 
 private:
     void printHistogramCsv(::octf::RpcOutputStream &cout,
                            const ::octf::proto::IoHistogramSet *histogramSet);
+
+    std::map<std::string, std::shared_ptr<IParsedIoExtensionBuilderFactory>>
+            m_traceExtFactoryMap;
 };
 
 }  // namespace octf

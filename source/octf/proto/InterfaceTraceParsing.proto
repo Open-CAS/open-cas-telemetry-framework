@@ -30,26 +30,6 @@ message ParseTraceRequest {
     ];
 }
 
-enum ExtensionType {
-    option (opts_enum_param).cli_enum.default_value = 0;
-    option (opts_enum_param).cli_required = true;
-    option (opts_enum_param).cli_short_key = "t";
-    option (opts_enum_param).cli_long_key = "extension-type";
-    option (opts_enum_param).cli_desc = "Extension type";
-
-    LRU = 0 [
-        (opts_enumval).cli_desc = "It simulates LRU cache and "
-                                  "checks if an IO is a hit",
-        (opts_enumval).cli_switch = "lru"
-    ];
-
-    LFU = 1 [
-        (opts_enumval).cli_desc = "It simulates LFU cache and "
-                                  "checks if an IO is a hit",
-        (opts_enumval).cli_switch = "lfu"
-    ];
-}
-
 message BuildExtensionsRequest {
     string tracePath = 1 [
         (opts_param).cli_required = true,
@@ -60,7 +40,12 @@ message BuildExtensionsRequest {
 
     OutputFormat format = 2;
 
-    ExtensionType extensionType = 3;
+    string extensionType = 3 [
+        (opts_param).cli_required = true,
+        (opts_param).cli_long_key = "extension-type",
+        (opts_param).cli_short_key = "t",
+        (opts_param).cli_desc = "Extension type that will be chosen"
+    ];
 }
 
 message GetLbaHistogramRequest {

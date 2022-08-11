@@ -19,6 +19,14 @@
 #include <octf/utils/ProtobufReaderWriter.h>
 
 namespace octf {
+static std::mutex FileMutexMapLock;
+static std::map<std::string, std::mutex> FileMutexMap;
+
+// TODO (mbarczak) Provide mechanism to clean map to remove not used
+std::mutex &getFileMutex(const std::string &filePath) {
+    std::lock_guard<std::mutex> guard(FileMutexMapLock);
+    return FileMutexMap[filePath];
+}
 
 ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
         : m_filePath(filePath)
@@ -40,6 +48,7 @@ ProtobufReaderWriter::ProtobufReaderWriter(const std::string &filePath)
 }
 
 ProtobufReaderWriter::~ProtobufReaderWriter() {
+    unlock();
     closeFile();
 }
 
@@ -314,15 +323,6 @@ bool ProtobufReaderWriter::makeWritable() {
     return false;
 }
 
-static std::mutex FileMutexMapLock;
-static std::map<std::string, std::mutex> FileMutexMap;
-
-// TODO (mbarczak) Provide mechanism to clean map to remove not used
-std::mutex &getFileMutex(const std::string &filePath) {
-    std::lock_guard<std::mutex> guard(FileMutexMapLock);
-    return FileMutexMap[filePath];
-}
-
 void ProtobufReaderWriter::lock() {
     // First do this process inter-thread synchronization, get mutex associated
     // with the file which will be locked
@@ -331,12 +331,11 @@ void ProtobufReaderWriter::lock() {
     // Lock on the acquired mutex
     m_lock.reset(new std::lock_guard<std::mutex>(fMutex));
     // Now we have mutex locked
-
     openFileToLock();
 
     // Set inter-process lock
     if (::lockf(m_lockFd, F_LOCK, 0)) {
-        m_lock.release();
+        m_lock.reset();
         throw Exception("Error when locking file: " +
                         std::string(strerror(errno)));
     }
@@ -361,7 +360,7 @@ bool ProtobufReaderWriter::tryLock() {
     int result = ::lockf(m_lockFd, F_TLOCK, 0);
     if (result) {
         // ERROR, Lock already taken, cleanup
-        m_lock.release();
+        m_lock.reset();
         return false;
     }
 
@@ -376,8 +375,7 @@ void ProtobufReaderWriter::unlock() {
         }
         m_lockFd = -1;
     }
-
-    m_lock.release();
+    m_lock.reset();
 }
 
 bool ProtobufReaderWriter::isEmpty() {

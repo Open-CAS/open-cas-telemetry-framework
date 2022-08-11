@@ -1,6 +1,8 @@
 /*
+ * Copyright(c) 2012-2022 Intel Corporation
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
 #include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
 #include <octf/utils/SizeConversion.h>
 

@@ -44,10 +44,7 @@ void ParsedIoTraceEventHandlerExtensionBuilder::processEvents() {
 
         for (const auto &step : steps) {
             m_handler = step;
-
-            // Reinitialize parser
-            deinitParser();
-            initParser();
+            reinit();
 
             // Start parsing
             ParsedIoTraceEventHandler::processEvents();

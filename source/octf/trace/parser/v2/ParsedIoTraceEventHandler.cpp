@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <octf/fs/FileId.h>
+#include <octf/trace/parser/TraceEventHandlerDevicesList.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/NonCopyable.h>
@@ -335,7 +336,6 @@ ParsedIoTraceEventHandler::ParsedIoTraceEventHandler(
         octf::ParsedIoTraceEventHandler *parentHandler,
         const std::string &tracePath)
         : IoTraceParser(tracePath)
-        , m_trace(TraceLibrary::get().getTrace(tracePath))
         , m_extTrace(nullptr)
         , m_queue()
         , m_refSid(0)
@@ -359,11 +359,12 @@ void ParsedIoTraceEventHandler::processEvents() {
 
     // Try get trace extension for parsed IO
     m_extTrace = m_trace->getExtension(".ParsedIO");
+
     if (m_extTrace->isReady()) {
         // Parsed traces is ready, use it
         auto &reader = m_extTrace->getReader();
 
-        while (reader.hasNext()) {
+        while (reader.hasNext() && !isCancelRequested()) {
             reader.read(sid, io);
             m_parentHandler->handleIO(io);
         }
@@ -377,6 +378,7 @@ void ParsedIoTraceEventHandler::processEvents() {
     if (m_extTrace->isWritable()) {
         if (isCancelRequested()) {
             m_extTrace->remove();
+            m_extTrace.reset();
         } else {
             m_extTrace->getWriter().commit();
         }
@@ -697,14 +699,21 @@ proto::trace::ParsedEvent *ParsedIoTraceEventHandler::getCachedEventById(
 }
 
 uint64_t ParsedIoTraceEventHandler::getDevicesSize() const {
+    auto &cache = m_trace->getCache();
     uint64_t size = 0;
 
-    for (const auto &dev : m_devices) {
-        // In device map we code partition sizes as well, so peek only entire
-        // drives, takes place when key of map equals to id in map value.
-        if (dev.first == dev.second.id()) {
-            size += dev.second.size();
+    if (!cache.read("DevicesSize", size)) {
+        TraceEventHandlerDevicesList devListHndlr(m_trace->getPath());
+        devListHndlr.processEvents();
+
+        proto::ListDevicesResponse devs;
+        devListHndlr.getDevicesList(&devs);
+
+        for (const auto &dev : devs.devices()) {
+            size += dev.size();
         }
+
+        cache.write("DevicesSize", size);
     }
 
     return size;
