@@ -18,8 +18,7 @@ namespace octf {
 
 class InterfaceTraceParsingImpl : public proto::InterfaceTraceParsing {
 public:
-    InterfaceTraceParsingImpl()
-            : m_traceExtFactoryMap(){};
+    InterfaceTraceParsingImpl();
     virtual ~InterfaceTraceParsingImpl() = default;
 
     virtual void ParseTrace(::google::protobuf::RpcController *controller,
@@ -75,8 +74,9 @@ public:
             ::octf::proto::Void *response,
             ::google::protobuf::Closure *done) override;
 
-    void RegisterExtensionBuilder(
-            std::string key,
+protected:
+    void registerExtensionBuilder(
+            const std::string &key,
             std::shared_ptr<IParsedIoExtensionBuilderFactory> factory);
 
 private:

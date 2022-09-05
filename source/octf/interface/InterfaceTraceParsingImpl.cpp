@@ -21,13 +21,20 @@
 #include <octf/trace/parser/TraceEventHandlerDevicesList.h>
 #include <octf/trace/parser/TraceEventHandlerFilesystemStatistics.h>
 #include <octf/trace/parser/TraceEventHandlerWorkset.h>
-#include <octf/trace/parser/extensions/LRUExtensionBuilder.h>
+#include <octf/trace/parser/extensions/LRUExtensionBuilderFactory.h>
 #include <octf/trace/parser/extensions/TraceExtensionSet.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
 #include <octf/utils/table/Table.h>
 
 namespace octf {
+
+InterfaceTraceParsingImpl::InterfaceTraceParsingImpl()
+        : proto::InterfaceTraceParsing()
+        , m_traceExtFactoryMap() {
+    registerExtensionBuilder(
+            "lru", std::make_shared<octf::LRUExtensionBuilderFactory>());
+}
 
 void InterfaceTraceParsingImpl::ParseTrace(
         ::google::protobuf::RpcController *controller,
@@ -536,9 +543,13 @@ void InterfaceTraceParsingImpl::BuildExtensions(
     done->Run();
 }
 
-void InterfaceTraceParsingImpl::RegisterExtensionBuilder(
-        std::string key,
+void InterfaceTraceParsingImpl::registerExtensionBuilder(
+        const std::string &key,
         std::shared_ptr<IParsedIoExtensionBuilderFactory> factory) {
+    if (m_traceExtFactoryMap.find(key) != m_traceExtFactoryMap.end()) {
+        throw Exception("Cannot register trace extension builder, DUPLICATION");
+    }
+
     m_traceExtFactoryMap.insert({key, factory});
 }
 
