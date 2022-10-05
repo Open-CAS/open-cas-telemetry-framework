@@ -130,6 +130,7 @@ message TraceExtensionStreamResult {
     bool hit = 1;
     uint32 hitRatio = 2;
     string clasifier = 3;
+    double workloadReductionFactor = 4;
 }
 
 /* Generic message that encompasses all other concrete extension result messages
