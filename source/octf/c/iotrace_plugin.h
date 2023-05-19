@@ -1,5 +1,6 @@
 /*
  * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright 2023 Solidigm All Rights Reserved
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -118,6 +119,22 @@ void octf_iotrace_plugin_push_trace(
         uint32_t ioQueue,
         const void *trace,
         size_t size);
+
+/**
+ * @brief Main function wrapper for C CLI programs
+ *
+ * @param app_name Application name
+ * @param app_version Application version
+ * @param id Unique IO trace plug-in ID
+ *
+ * @return Main function return result
+ */
+int octf_iotrace_plugin_main(
+        const char *app_name,
+        const char *app_version,
+        const char* id,
+        int argc,
+        char *argv[]);
 
 #ifdef __cplusplus
 }

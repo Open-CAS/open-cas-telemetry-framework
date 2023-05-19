@@ -1,5 +1,6 @@
 /*
  * Copyright(c) 2012-2018 Intel Corporation
+ * Copyright 2023 Solidigm All Rights Reserved
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -12,6 +13,11 @@
 #include <octf/trace/IOTracePlugin.h>
 #include <octf/utils/Exception.h>
 #include <octf/utils/Log.h>
+#include <octf/cli/Executor.h>
+#include <octf/interface/InterfaceConfigurationImpl.h>
+#include <octf/interface/InterfaceTraceManagementImpl.h>
+#include <octf/interface/InterfaceTraceParsingImpl.h>
+#include <octf/utils/Exception.h>
 
 using namespace octf;
 
@@ -208,5 +214,51 @@ extern "C" void octf_iotrace_plugin_push_trace(
         if (plugin) {
             plugin->push(ioQueue, trace, size);
         }
+    }
+}
+
+extern "C" int octf_iotrace_plugin_main(const char *app_name,
+                                        const char *app_version,
+                                        const char *id,
+                                        int argc,
+                                        char *argv[]) {
+
+    try {
+        // Create executor and local command set
+        cli::Executor ex;
+
+        auto &properties = ex.getCliProperties();
+
+        properties.setName(app_name);
+        properties.setVersion(app_version);
+
+        // Create interfaces
+        ex.addModules(NodeId(id));
+
+        // Trace Management Interface
+        InterfaceShRef iTraceManagement =
+                std::make_shared<InterfaceTraceManagementImpl>("");
+
+        // Trace Parsing Interface
+        InterfaceShRef iTraceParsing =
+                std::make_shared<InterfaceTraceParsingImpl>();
+
+        // Configuration Interface for setting trace repository path
+        InterfaceShRef iConfiguration =
+                std::make_shared<InterfaceConfigurationImpl>();
+
+        // Add interfaces to executor
+        ex.addModules(iTraceManagement, iTraceParsing, iConfiguration);
+
+        // Execute command
+        return ex.execute(argc, argv);
+
+    } catch (Exception &e) {
+        log::cerr << e.what() << std::endl;
+        return 1;
+    } catch (std::exception &e) {
+        log::critical << app_name << " execution interrupted: " << e.what()
+                      << std::endl;
+        return 1;
     }
 }
