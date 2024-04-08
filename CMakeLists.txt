@@ -4,7 +4,7 @@ include(octf-version.cmake)
 project(octf VERSION ${OCTF_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/third_party;${CMAKE_PREFIX_PATH}")
 
 include(octf-paths.cmake)

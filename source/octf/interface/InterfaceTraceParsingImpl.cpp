@@ -476,7 +476,7 @@ void InterfaceTraceParsingImpl::BuildExtensions(
 
     // Define variables for
     std::string jsonTrace;
-    google::protobuf::util::JsonOptions jsonOptions;
+    google::protobuf::util::JsonPrintOptions jsonOptions;
     jsonOptions.always_print_primitive_fields = true;
     jsonOptions.add_whitespace = false;
     table::Table tab;
@@ -523,8 +523,11 @@ void InterfaceTraceParsingImpl::BuildExtensions(
             } break;
             case proto::OutputFormat::JSON: {
                 jsonTrace.clear();
-                google::protobuf::util::MessageToJsonString(msg, &jsonTrace,
-                                                            jsonOptions);
+                auto status = google::protobuf::util::MessageToJsonString(
+                        msg, &jsonTrace, jsonOptions);
+                if (!status.ok()) {
+                    throw Exception("Failed to convert message to JSON");
+                }
                 cout << jsonTrace << std::endl;
             } break;
             default: {

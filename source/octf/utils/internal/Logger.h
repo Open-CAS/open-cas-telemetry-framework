@@ -211,14 +211,13 @@ private:
             break;
         }
 
-        google::protobuf::util::Status status;
         google::protobuf::util::JsonPrintOptions opts;
         std::string result;
 
         opts.add_whitespace = true;
         opts.always_print_primitive_fields = false;
 
-        status = google::protobuf::util::MessageToJsonString(trace, &result,
+        auto status = google::protobuf::util::MessageToJsonString(trace, &result,
                                                              opts);
         if (!status.ok()) {
             return "Cannot generate trace in JSON format";

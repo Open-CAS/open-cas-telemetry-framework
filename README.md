@@ -47,7 +47,7 @@ To build OCTF, the following tools are needed:
 * CMake 3.9 or above
 
 > **NOTE:**  You can use setup dependencies script to install above tools.
-> 
+>
 ~~~{.sh}
 sudo ./setup_dependencies.sh
 ~~~
@@ -165,6 +165,7 @@ OCTF uses:
 - Google Protocol Buffers
 - SeCoe Safe String Library
 - Google Test
+- gRPC
 - cmake
 - libfort
 

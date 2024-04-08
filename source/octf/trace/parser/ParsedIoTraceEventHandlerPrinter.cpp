@@ -30,8 +30,11 @@ void ParsedIoTraceEventHandlerPrinter::handleIO(
     } break;
     case proto::OutputFormat::JSON: {
         m_jsonTrace.clear();
-        google::protobuf::util::MessageToJsonString(io, &m_jsonTrace,
-                                                    m_jsonOptions);
+        auto status = google::protobuf::util::MessageToJsonString(io, &m_jsonTrace,
+                                                             m_jsonOptions);
+        if (!status.ok()) {
+            throw Exception("Failed to convert event to JSON");
+        }
         std::cout << m_jsonTrace << std::endl;
     } break;
     default: {

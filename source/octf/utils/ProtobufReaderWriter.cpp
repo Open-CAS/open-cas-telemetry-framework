@@ -84,14 +84,13 @@ bool ProtobufReaderWriter::read(google::protobuf::Message &message) {
     }
 
     // Parse JSON string into protocol buffer message
-    google::protobuf::util::Status status;
     google::protobuf::util::JsonParseOptions opts;
 
-    // Allow unknown fields - to allow forward compability (e.g. when summary
+    // Allow unknown fields - to allow forward compatibility (e.g. when summary
     // contains a new field created by a newer version of library)
     opts.ignore_unknown_fields = true;
 
-    status = google::protobuf::util::JsonStringToMessage(fileContent, &message,
+    auto status = google::protobuf::util::JsonStringToMessage(fileContent, &message,
                                                          opts);
 
     return status.ok();
@@ -110,7 +109,6 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     }
 
     // 1. First generate string with configuration
-    google::protobuf::util::Status status;
     google::protobuf::util::JsonPrintOptions opts;
     std::string str;
 
@@ -122,7 +120,7 @@ bool ProtobufReaderWriter::write(const google::protobuf::Message &message) {
     // this field in output, enable this
     opts.always_print_primitive_fields = true;
 
-    status = google::protobuf::util::MessageToJsonString(message, &str, opts);
+    auto status = google::protobuf::util::MessageToJsonString(message, &str, opts);
     if (!status.ok()) {
         return false;
     };
