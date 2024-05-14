@@ -15,6 +15,9 @@ public:
     TraceCacheBase() = default;
     virtual ~TraceCacheBase() = default;
 
+    using ITraceCache::read;
+    using ITraceCache::write;
+
     virtual bool read(const std::string &key,
                       google::protobuf::Message &value) override;
 

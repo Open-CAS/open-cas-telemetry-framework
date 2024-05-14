@@ -21,7 +21,7 @@ namespace octf {
 class ITraceCache : public NonCopyable {
 public:
     ITraceCache() = default;
-    ~ITraceCache() = default;
+    virtual ~ITraceCache() = default;
 
     /**
      * @brief Clears entire content of the cache
