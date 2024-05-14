@@ -6,6 +6,7 @@
 #ifndef SOURCE_OCTF_UTILS_EXCEPTION_H
 #define SOURCE_OCTF_UTILS_EXCEPTION_H
 #include <string>
+#include <cstdint>
 
 namespace octf {
 
