@@ -1,3 +1,4 @@
+add_subdirectory(proto)
 add_subdirectory(cli)
 add_subdirectory(communication)
 add_subdirectory(interface)

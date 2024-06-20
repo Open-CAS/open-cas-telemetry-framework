@@ -144,7 +144,6 @@ void printKeys(stringstream &ss,
 }
 
 void printOutputMessage(MessageShRef message) {
-    google::protobuf::util::Status status;
     google::protobuf::util::JsonPrintOptions opts;
     string strOutput;
 
@@ -156,7 +155,7 @@ void printOutputMessage(MessageShRef message) {
     // this field in output, enable this
     opts.always_print_primitive_fields = true;
 
-    status = google::protobuf::util::MessageToJsonString(*message, &strOutput,
+    auto status = google::protobuf::util::MessageToJsonString(*message, &strOutput,
                                                          opts);
     if (!status.ok()) {
         throw ProtoBufferException(status.ToString());

@@ -7,6 +7,7 @@
 #define SOURCE_OCTF_UTILS_PROTOBUFREADERWRITER_H
 
 #include <errno.h>
+#include <mutex>
 #include <google/protobuf/message.h>
 #include <octf/node/NodeId.h>
 

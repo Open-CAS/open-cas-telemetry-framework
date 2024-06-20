@@ -2,4 +2,4 @@
 build/
 tools/coding_style/backup
 tools/third_party/
-
+.vscode/

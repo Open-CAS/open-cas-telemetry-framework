@@ -35,8 +35,12 @@ public:
 
     void handleEvent(std::shared_ptr<EventType> traceEvent) override {
         m_jsonTrace.clear();
-        google::protobuf::util::MessageToJsonString(
+        auto status = google::protobuf::util::MessageToJsonString(
                 *traceEvent.get(), &m_jsonTrace, m_jsonOptions);
+
+        if (!status.ok()) {
+            throw Exception("Failed to convert event to JSON");
+        }
 
         // TODO (mariuszbarczak) Output stream into which print traces should be
         // defined by constructor
@@ -44,7 +48,7 @@ public:
     }
 
 private:
-    google::protobuf::util::JsonOptions m_jsonOptions;
+    google::protobuf::util::JsonPrintOptions m_jsonOptions;
     std::string m_jsonTrace;
 };
 

@@ -32,7 +32,7 @@ private:
     TraceShRef m_trace;
     table::Table m_table;
     proto::OutputFormat m_format;
-    google::protobuf::util::JsonOptions m_jsonOptions;
+    google::protobuf::util::JsonPrintOptions m_jsonOptions;
     std::string m_jsonTrace;
 };
 

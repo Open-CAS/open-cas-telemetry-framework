@@ -2,21 +2,18 @@
 set(srcDir ${CMAKE_CURRENT_SOURCE_DIR}/octf)
 set(buildDir ${CMAKE_CURRENT_BINARY_DIR}/octf)
 
-add_library(octf SHARED ""
-	 $<TARGET_OBJECTS:protooctf>
-	 $<TARGET_OBJECTS:safestringlib>
-)
-set(OCTF_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/octf/proto)
 add_subdirectory(third_party)
-add_subdirectory(octf)
+find_package(Protobuf CONFIG REQUIRED)
 
-find_package(Protobuf 3.0 REQUIRED)
-
-add_subdirectory(octf/proto)
-set(PROTOBUF_IMPORT_DIRS  "${PROTOBUF_IMPORT_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}/octf/proto")
-
+add_library(octf SHARED ""
+	$<TARGET_OBJECTS:protooctf>
+	$<TARGET_OBJECTS:safestringlib>
+)
 set_target_properties(octf PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_options(octf PRIVATE -Wall -Wextra)
+
+set(OCTF_PROTO_DIR ${CMAKE_CURRENT_BINARY_DIR}/octf/proto)
+
 target_include_directories(octf
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -25,26 +22,25 @@ target_include_directories(octf
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf/proto>
 	$<INSTALL_INTERFACE:${OCTF_INCLUDE_DIR}/octf>
 )
-target_include_directories(octf
-	SYSTEM PRIVATE ${PROTOBUF_INCLUDE_DIR}
-)
 
 # Specify libraries to link
 target_link_libraries(octf PUBLIC pthread)
-target_link_libraries(octf PRIVATE ${PROTOBUF_LIBRARY})
+target_link_libraries(octf PUBLIC protobuf::libprotobuf)
 target_link_libraries(octf PRIVATE fort)
+
+add_subdirectory(octf)
 
 # Add version definitions
 target_compile_definitions(octf
-    PUBLIC
-    OCTF_VERSION=${OCTF_VERSION}
-    OCTF_VERSION_LABEL=${OCTF_VERSION_LABEL}
+	PUBLIC
+	OCTF_VERSION=${OCTF_VERSION}
+	OCTF_VERSION_LABEL=${OCTF_VERSION_LABEL}
 )
 
 # Define static version of octf library and copy all properties from shared one
 add_library(octf-static STATIC EXCLUDE_FROM_ALL ""
-	 $<TARGET_OBJECTS:protooctf>
-	 $<TARGET_OBJECTS:safestringlib>
+	$<TARGET_OBJECTS:protooctf>
+	$<TARGET_OBJECTS:safestringlib>
 )
 
 get_target_property(OCTF_SRCS octf SOURCES)
@@ -65,15 +61,15 @@ set_target_properties(octf-static PROPERTIES INCLUDE_DIRECTORIES "${OCTF_INC}")
 set_target_properties(octf-static PROPERTIES COMPILE_OPTIONS "${OCTF_OPTS}")
 set_target_properties(octf-static PROPERTIES COMPILE_DEFINITIONS "${OCTF_DEFS}")
 
-
 file(GLOB_RECURSE protoFiles
-    ${srcDir}/proto/*.proto)
+	${srcDir}/proto/*.proto)
 file(GLOB_RECURSE publicHeaders
-    ${srcDir}/*.h)
+	${srcDir}/*.h)
 
 # Replace all .proto extensions to pb.h, this is needed in order to
 # get a list of pb.h files before they are generated
 string(REPLACE "\.proto" "\.pb.h" protoHeaders "${protoFiles}")
+
 # Modify path from source to build
 STRING(REGEX REPLACE
 	"${srcDir}([^;]*\.pb\.h)"
@@ -81,23 +77,24 @@ STRING(REGEX REPLACE
 	protoHeaders
 	"${protoHeaders}")
 set(publicHeaders ${publicHeaders} ${protoHeaders})
+
 # Remove headers not added to sdk (from internal directories)
 FOREACH(item ${publicHeaders})
-    IF(${item} MATCHES ".*internal\/.*")
-        LIST(REMOVE_ITEM publicHeaders ${item})
-    ENDIF(${item} MATCHES ".*internal\/.*")
+	IF(${item} MATCHES ".*internal\/.*")
+		LIST(REMOVE_ITEM publicHeaders ${item})
+	ENDIF(${item} MATCHES ".*internal\/.*")
 ENDFOREACH(item)
 
 # Generate and copy octf.h header file, do this in pre-link phase
 add_custom_command(
-    TARGET octf
-    PRE_LINK
-    COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
+	TARGET octf
+	PRE_LINK
+	COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
 add_custom_command(
-    TARGET octf-static
-    PRE_LINK
-    COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
+	TARGET octf-static
+	PRE_LINK
+	COMMAND ${srcDir}/generateCommonHeader.sh "\"${publicHeaders}\"" ${buildDir}
 )
 
 # Install install-manifest with list of installed files, to allow uninstalling
@@ -115,21 +112,19 @@ install(FILES ${OCTF_MANIFEST_PREINSTALL}
 # because we must use GNUUtils to obtain the proper path to install-manifest
 add_custom_target(octf-uninstall
 	COMMAND test -f ${OCTF_MANIFEST_POSTINSTALL} &&
-	 xargs rm -vf < ${OCTF_MANIFEST_POSTINSTALL} ||
-	 echo "-- No OCTF install manifest found: ${OCTF_MANIFEST_POSTINSTALL} Nothing to uninstall!"
+	xargs rm -vf < ${OCTF_MANIFEST_POSTINSTALL} ||
+	echo "-- No OCTF install manifest found: ${OCTF_MANIFEST_POSTINSTALL} Nothing to uninstall!"
 )
-
 
 # Install octf.so library and add octf target to export group 'octf-targets'
 install(TARGETS octf DESTINATION ${OCTF_LIBRARY_DIR} EXPORT octf-targets COMPONENT octf-install)
 
-if (${CMAKE_INSTALL_PREFIX} STREQUAL "/")
-    install(
-        CODE "execute_process(COMMAND ldconfig)"
-        COMPONENT octf-post-install
-    )
+if(${CMAKE_INSTALL_PREFIX} STREQUAL "/")
+	install(
+		CODE "execute_process(COMMAND ldconfig)"
+		COMPONENT octf-post-install
+	)
 endif()
-
 
 # Install headers and proto files
 install(DIRECTORY octf ${CMAKE_CURRENT_BINARY_DIR}/octf

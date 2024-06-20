@@ -5,6 +5,7 @@
 
 #ifndef SOURCE_OCTF_UTILS_EXCEPTION_H
 #define SOURCE_OCTF_UTILS_EXCEPTION_H
+#include <cstdint>
 #include <string>
 #include <cstdint>
 

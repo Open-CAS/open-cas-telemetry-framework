@@ -1,12 +1,12 @@
 [submodule "source/third_party/safestringlib"]
 	path = source/third_party/safestringlib
 	url = https://github.com/intel/safestringlib
-[submodule "source/third_party/protobuf"]
-	path = source/third_party/protobuf
-	url = https://github.com/protocolbuffers/protobuf.git
 [submodule "source/third_party/googletest"]
 	path = source/third_party/googletest
 	url = https://github.com/google/googletest
 [submodule "source/third_party/libfort"]
 	path = source/third_party/libfort
 	url = https://github.com/seleznevae/libfort.git
+[submodule "source/third_party/grpc"]
+	path = source/third_party/grpc
+	url = https://github.com/grpc/grpc.git
